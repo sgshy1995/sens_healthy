@@ -13,7 +13,27 @@ A new Flutter project for sens healthy app.
 
 ## Getting Started
 
+Install pub:
+
+```bash
+flutter pub get
+```
+
+To install fonts to `/lib/iconfont/icon_font.dart`, use:
+
+```shell
+npm install -g iconfont-flutter
+
+npx iconfont-flutter
+```
+
 This project is a starting point for a Flutter application.
+
+```shell
+flutter devices
+
+flutter run -d <device_id>
+```
 
 A few resources to get you started if this is your first Flutter project:
 
