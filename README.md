@@ -29,10 +29,12 @@ npx iconfont-flutter
 
 This project is a starting point for a Flutter application.
 
+**Notice:** You need to send entry to flutter.
+
 ```shell
 flutter devices
 
-flutter run -d <device_id>
+flutter run -t lib/main_dev.dart -d <device_id>
 ```
 
 A few resources to get you started if this is your first Flutter project:
