@@ -5,13 +5,18 @@ import '../app/pages/recovery/recovery.dart';
 import '../app/pages/store/store.dart';
 import '../app/pages/mine/mine.dart';
 import '../components/keepAliveWrapper.dart';
+import '../utils/get_device_id.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    //获取设备信息
+    GetDeviceInfo().getDeviceId();
+
     RxInt currentIndex = 0.obs;
+
     const List<Widget> pages = [
       KeepAliveWrapper(child: PainPage()),
       KeepAliveWrapper(child: RecoveryPage()),

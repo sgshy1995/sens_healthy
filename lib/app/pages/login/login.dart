@@ -1,11 +1,14 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+
 import 'package:get/get.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:sens_healthy/iconfont.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../../../iconfont/icon_font.dart';
+import 'login_phone.dart';
+import '../../../components/toast.dart';
+
+import '../../../utils/get_device_id.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -27,9 +30,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   late bool isChecked;
 
+  late var res;
+
   @override
   void initState() {
     super.initState();
+
+    //获取设备信息
+    GetDeviceInfo().getDeviceId();
 
     isChecked = false;
 
@@ -38,7 +46,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     _controller2 =
         AnimationController(vsync: this, duration: const Duration(seconds: 2));
     _controller3 =
-        AnimationController(vsync: this, duration: const Duration(seconds: 4));
+        AnimationController(vsync: this, duration: const Duration(seconds: 1));
 
     _fadeAnimation = Tween<double>(begin: 0, end: 1.0).animate(
       CurvedAnimation(
@@ -50,7 +58,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     _fadeBottomAnimation = Tween<double>(begin: 0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller3,
-        curve: Curves.elasticOut, // 应用回弹效果
+        curve: Curves.linear, // 应用回弹效果
       ),
     );
 
@@ -182,17 +190,71 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                           height: 40,
                           child: ElevatedButton(
                             style: const ButtonStyle(),
-                            onPressed: () {},
+                            onPressed: () {
+                              if (!isChecked) {
+                                showToast('请阅读并同意用户协议');
+                              } else {
+                                showModalBottomSheet(
+                                    backgroundColor:
+                                        const Color.fromRGBO(255, 255, 255, 1),
+                                    isScrollControlled: true,
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return SingleChildScrollView(
+                                          child: Padding(
+                                              padding: EdgeInsets.only(
+                                                  bottom: MediaQuery.of(context)
+                                                      .viewInsets
+                                                      .bottom),
+                                              child:
+                                                  LoginPhone() // Your form widget here
+                                              ));
+                                    });
+                              }
+                            },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                IconFont(IconNames.phone, size: 20),
+                                IconFont(IconNames.phone, size: 18),
                                 Container(
                                   padding: const EdgeInsets.only(left: 12),
                                   child: const Text(
-                                    '手机登录',
+                                    '手机号登录',
                                     style: TextStyle(
-                                        color: Colors.black, fontSize: 16),
+                                        color: Colors.black, fontSize: 14),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const SizedBox(
+                                  width: 36,
+                                  child: Divider(
+                                    color: Colors.white,
+                                    height: 2,
+                                  ),
+                                ),
+                                Container(
+                                  margin:
+                                      const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                                  width: 4,
+                                  child: const Divider(
+                                    color: Colors.white,
+                                    height: 2,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 36,
+                                  child: Divider(
+                                    color: Colors.white,
+                                    height: 2,
                                   ),
                                 )
                               ],
@@ -202,8 +264,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         Container(
                           margin: const EdgeInsets.only(bottom: 24),
                           height: 40,
+                          width: 40,
                           child: ElevatedButton(
                             style: ButtonStyle(
+                                padding: MaterialStateProperty.all<EdgeInsets>(
+                                    const EdgeInsets.all(0)),
                                 backgroundColor: MaterialStateProperty.all(
                                     Colors.transparent),
                                 shape: MaterialStateProperty.all(
@@ -215,20 +280,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                                 Color.fromRGBO(38, 220, 117, 1),
                                             width: 2)))),
                             onPressed: () {},
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                IconFont(IconNames.weixin, size: 20),
-                                Container(
-                                  padding: const EdgeInsets.only(left: 12),
-                                  child: const Text(
-                                    '微信登录',
-                                    style: TextStyle(
-                                        color: Color.fromRGBO(38, 220, 117, 1),
-                                        fontSize: 16),
-                                  ),
-                                )
-                              ],
+                            child: Center(
+                              child: IconFont(IconNames.weixin, size: 18),
                             ),
                           ),
                         ),
