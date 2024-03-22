@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
+import 'package:sens_healthy/app/models/data_model.dart';
 import '../global_client_provider.dart';
+import '../../models/user_model.dart';
 
 class UserModel {
   final String code;
@@ -110,6 +112,30 @@ class UserClientProvider extends GlobalClientProvider {
     final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
     final LoginModel capturePhoneModel = LoginModel.fromJson(jsonMap);
     return capturePhoneModel;
+  }
+
+  // Get request
+  Future<DataFinalModel<UserTypeModel>> getUserInfoByJWTAction() async {
+    final jsonData = await get('/user');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel<UserTypeModel> dataFinalUserTypeModel = DataFinalModel(
+        code: jsonMap['code'],
+        message: jsonMap['message'],
+        data: UserTypeModel.fromJson(jsonMap['data']));
+    return dataFinalUserTypeModel;
+  }
+
+  // Get request
+  Future<DataFinalModel<UserInfoTypeModel>> getInfoByJWTAction() async {
+    final jsonData = await get('/user_info/user');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel<UserInfoTypeModel> dataFinalUserInfoTypeModel =
+        DataFinalModel(
+            code: jsonMap['code'],
+            message: jsonMap['message'],
+            data: UserInfoTypeModel.fromJson(jsonMap['data']));
+    return dataFinalUserInfoTypeModel;
   }
 
   // Post request

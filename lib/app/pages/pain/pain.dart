@@ -10,8 +10,11 @@ class PainPage extends StatefulWidget {
 class _PainPageState extends State<PainPage> {
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: const Text('首页'),
+    return Container(
+      decoration: const BoxDecoration(color: Color.fromARGB(162, 192, 83, 119)),
+      child: const Center(
+        child: Text('首页'),
+      ),
     );
   }
 }

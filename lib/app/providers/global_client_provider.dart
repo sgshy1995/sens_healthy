@@ -56,9 +56,10 @@ class GlobalClientProvider extends GetConnect {
     httpClient.timeout = const Duration(seconds: 10);
     // It's will attach 'apikey' property on header from all requests
     httpClient.addRequestModifier<dynamic>((request) {
-      print('添加了一次头');
       if (userController.token.isNotEmpty) {
-        request.headers['Authorization'] = "Bearer $userController.token";
+        final token = userController.token;
+        request.headers['Authorization'] = "Bearer $token";
+        print("添加了一次头 $userController.token.toString()");
       }
 
       request.headers['Connection'] = 'close';

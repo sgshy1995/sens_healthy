@@ -115,7 +115,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       height: double.infinity,
       decoration: const BoxDecoration(
           image: DecorationImage(
-              image: AssetImage('images/login_back.png'), fit: BoxFit.cover)),
+              image: AssetImage('assets/images/login_back.png'),
+              fit: BoxFit.cover)),
       child: Container(
         width: double.infinity,
         height: double.infinity,
@@ -152,7 +153,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                             width: 36,
                             height: 36,
                             child: Image.asset(
-                              'images/logo.png',
+                              'assets/images/logo.png',
                               fit: BoxFit.contain,
                             )),
                       ),
@@ -164,7 +165,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 left: 36,
                 child: SlideTransition(
                   position: _slideName1Animation,
-                  child: SvgPicture.asset('images/name1.svg',
+                  child: SvgPicture.asset('assets/images/name1.svg',
                       height: 20, semanticsLabel: 'Acme Logo'),
                 )),
             Positioned(
@@ -172,7 +173,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 left: 36,
                 child: SlideTransition(
                   position: _slideName2Animation,
-                  child: SvgPicture.asset('images/name2.svg',
+                  child: SvgPicture.asset('assets/images/name2.svg',
                       height: 20, semanticsLabel: 'Acme Logo 1'),
                 )),
             Column(

@@ -45,6 +45,7 @@ dependencies:
   flutter_dotenv: ^5.1.0
   uuid: ^4.3.2
   device_info_plus: ^9.1.2
+  lottie: ^3.1.0
 
 dev_dependencies:
   flutter_test:
@@ -72,10 +73,18 @@ flutter:
   assets:
     - .env.dev
     - .env.prod
-    - images/login_back.png
-    - images/logo.png
-    - images/name1.svg
-    - images/name2.svg
+    - assets/images/login_back.png
+    - assets/images/logo.png
+    - assets/images/name1.svg
+    - assets/images/name2.svg
+    - assets/images/tabs/home.png
+    - assets/images/tabs/recovery.png
+    - assets/images/tabs/store.png
+    - assets/images/tabs/mine.png
+    - assets/lottie/home-new.json
+    - assets/lottie/recovery-new.json
+    - assets/lottie/store-new.json
+    - assets/lottie/mine-new.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

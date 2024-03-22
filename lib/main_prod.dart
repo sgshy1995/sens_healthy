@@ -16,6 +16,7 @@ Future main() async {
   // Try reading data from the 'action' key. If it doesn't exist, returns null.
   final String? token = prefs.getString('token');
   runApp(GetMaterialApp(
+      debugShowCheckedModeBanner: false,
       initialRoute: token is String ? '/' : '/login',
       getPages: [
         GetPage(
