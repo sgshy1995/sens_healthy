@@ -119,7 +119,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     //获取设备信息
     GetDeviceInfo().getDeviceId();
 
-    List<Widget> pages = const [
+    List<Widget> pages = [
       KeepAliveWrapper(child: PainPage()),
       KeepAliveWrapper(child: RecoveryPage()),
       KeepAliveWrapper(child: StorePage()),
