@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late final AnimationController _animationStoreController;
   late final AnimationController _animationMineController;
 
-  RxInt currentIndex = 0.obs;
+  int currentIndex = 0;
 
   void getUserInfo() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -87,10 +87,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void changeTab(int index) {
-    if (currentIndex.value == index) {
+    if (currentIndex == index) {
       return;
     }
-    currentIndex.value = index;
+    setState(() {
+      currentIndex = index;
+    });
     print('tab chage $index');
     switch (index) {
       case 0:
@@ -114,131 +116,135 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
+  List<Widget> pages = const [
+    KeepAliveWrapper(child: PainPage()),
+    KeepAliveWrapper(child: RecoveryPage()),
+    KeepAliveWrapper(child: StorePage()),
+    KeepAliveWrapper(child: MinePage())
+  ];
+
   @override
   Widget build(BuildContext context) {
     //获取设备信息
     GetDeviceInfo().getDeviceId();
 
-    List<Widget> pages = [
-      KeepAliveWrapper(child: PainPage()),
-      KeepAliveWrapper(child: RecoveryPage()),
-      KeepAliveWrapper(child: StorePage()),
-      KeepAliveWrapper(child: MinePage())
-    ];
-    return Obx(() => Scaffold(
-          bottomNavigationBar: BottomNavigationBar(
-            fixedColor: const Color.fromRGBO(211, 66, 67, 1), //选中的颜色
-            type: BottomNavigationBarType.fixed, //如果底部有4个或者4个以上的菜单的时候就需要配置这个参数
-            currentIndex: currentIndex.value,
-            onTap: changeTab,
-            unselectedLabelStyle: const TextStyle(
-                fontSize: 12, color: Color.fromRGBO(0, 0, 0, 1)),
-            selectedLabelStyle: const TextStyle(
-                fontSize: 12, color: Color.fromRGBO(211, 66, 67, 1)),
-            items: [
-              BottomNavigationBarItem(
-                  icon: currentIndex.value == 0
-                      ? SizedBox(
-                          width: 26,
-                          height: 26,
-                          child: Center(
-                            child: Lottie.asset(
-                              'assets/lottie/home-new.json',
-                              fit: BoxFit.contain,
-                              repeat: false,
-                              controller: _animationHomeController,
-                            ),
-                          ),
-                        )
-                      : SizedBox(
-                          width: 26,
-                          height: 26,
-                          child: Center(
-                            child: Image.asset(
-                              'assets/images/tabs/home.png',
-                              fit: BoxFit.contain,
-                            ),
-                          ),
+    return Scaffold(
+      bottomNavigationBar: BottomNavigationBar(
+        fixedColor: const Color.fromRGBO(211, 66, 67, 1), //选中的颜色
+        type: BottomNavigationBarType.fixed, //如果底部有4个或者4个以上的菜单的时候就需要配置这个参数
+        currentIndex: currentIndex,
+        onTap: changeTab,
+        unselectedLabelStyle:
+            const TextStyle(fontSize: 12, color: Color.fromRGBO(0, 0, 0, 1)),
+        selectedLabelStyle: const TextStyle(
+            fontSize: 12, color: Color.fromRGBO(211, 66, 67, 1)),
+        items: [
+          BottomNavigationBarItem(
+              icon: currentIndex == 0
+                  ? SizedBox(
+                      width: 26,
+                      height: 26,
+                      child: Center(
+                        child: Lottie.asset(
+                          'assets/lottie/home-new.json',
+                          fit: BoxFit.contain,
+                          repeat: false,
+                          controller: _animationHomeController,
                         ),
-                  label: "首页"),
-              BottomNavigationBarItem(
-                  icon: currentIndex.value == 1
-                      ? SizedBox(
-                          width: 26,
-                          height: 26,
-                          child: Center(
-                            child: Lottie.asset(
-                              'assets/lottie/recovery-new.json',
-                              fit: BoxFit.contain,
-                              repeat: false,
-                              controller: _animationRecoveryController,
-                            ),
-                          ),
-                        )
-                      : SizedBox(
-                          width: 26,
-                          height: 26,
-                          child: Center(
-                            child: Image.asset(
-                              'assets/images/tabs/recovery.png',
-                              fit: BoxFit.contain,
-                            ),
-                          ),
+                      ),
+                    )
+                  : SizedBox(
+                      width: 26,
+                      height: 26,
+                      child: Center(
+                        child: Image.asset(
+                          'assets/images/tabs/home.png',
+                          fit: BoxFit.contain,
                         ),
-                  label: "康复"),
-              BottomNavigationBarItem(
-                  icon: currentIndex.value == 2
-                      ? SizedBox(
-                          width: 26,
-                          height: 26,
-                          child: Center(
-                            child: Lottie.asset(
-                              'assets/lottie/store-new.json',
-                              fit: BoxFit.contain,
-                              repeat: false,
-                              controller: _animationStoreController,
-                            ),
-                          ),
-                        )
-                      : SizedBox(
-                          width: 26,
-                          height: 26,
-                          child: Center(
-                            child: Image.asset(
-                              'assets/images/tabs/store.png',
-                              fit: BoxFit.contain,
-                            ),
-                          ),
+                      ),
+                    ),
+              label: "首页"),
+          BottomNavigationBarItem(
+              icon: currentIndex == 1
+                  ? SizedBox(
+                      width: 26,
+                      height: 26,
+                      child: Center(
+                        child: Lottie.asset(
+                          'assets/lottie/recovery-new.json',
+                          fit: BoxFit.contain,
+                          repeat: false,
+                          controller: _animationRecoveryController,
                         ),
-                  label: "商城"),
-              BottomNavigationBarItem(
-                  icon: currentIndex.value == 3
-                      ? SizedBox(
-                          width: 26,
-                          height: 26,
-                          child: Center(
-                            child: Lottie.asset(
-                              'assets/lottie/mine-new.json',
-                              fit: BoxFit.contain,
-                              repeat: false,
-                              controller: _animationMineController,
-                            ),
-                          ),
-                        )
-                      : SizedBox(
-                          width: 26,
-                          height: 26,
-                          child: Center(
-                            child: Image.asset(
-                              'assets/images/tabs/mine.png',
-                              fit: BoxFit.contain,
-                            ),
-                          ),
+                      ),
+                    )
+                  : SizedBox(
+                      width: 26,
+                      height: 26,
+                      child: Center(
+                        child: Image.asset(
+                          'assets/images/tabs/recovery.png',
+                          fit: BoxFit.contain,
                         ),
-                  label: "我的")
-            ],
-          ),
-          body: pages[currentIndex.value],
-        ));
+                      ),
+                    ),
+              label: "康复"),
+          BottomNavigationBarItem(
+              icon: currentIndex == 2
+                  ? SizedBox(
+                      width: 26,
+                      height: 26,
+                      child: Center(
+                        child: Lottie.asset(
+                          'assets/lottie/store-new.json',
+                          fit: BoxFit.contain,
+                          repeat: false,
+                          controller: _animationStoreController,
+                        ),
+                      ),
+                    )
+                  : SizedBox(
+                      width: 26,
+                      height: 26,
+                      child: Center(
+                        child: Image.asset(
+                          'assets/images/tabs/store.png',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+              label: "商城"),
+          BottomNavigationBarItem(
+              icon: currentIndex == 3
+                  ? SizedBox(
+                      width: 26,
+                      height: 26,
+                      child: Center(
+                        child: Lottie.asset(
+                          'assets/lottie/mine-new.json',
+                          fit: BoxFit.contain,
+                          repeat: false,
+                          controller: _animationMineController,
+                        ),
+                      ),
+                    )
+                  : SizedBox(
+                      width: 26,
+                      height: 26,
+                      child: Center(
+                        child: Image.asset(
+                          'assets/images/tabs/mine.png',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+              label: "我的")
+        ],
+      ),
+      body: IndexedStack(
+        index: currentIndex,
+        children: pages,
+      ),
+    );
   }
 }
