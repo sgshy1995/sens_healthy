@@ -47,6 +47,10 @@ dependencies:
   device_info_plus: ^9.1.2
   lottie: ^3.1.0
   pull_to_refresh: ^2.0.0
+  carousel_slider: ^4.2.1
+  intl: ^0.19.0
+  photo_view: ^0.14.0
+  shimmer: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -86,6 +90,10 @@ flutter:
     - assets/lottie/recovery-new.json
     - assets/lottie/store-new.json
     - assets/lottie/mine-new.json
+    - assets/images/pain_item_1.png
+    - assets/images/pain_item_2.png
+    - assets/images/avatar.webp
+    - assets/images/empty.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../iconfont/icon_font.dart';
 import './pain_question.dart';
+import './pain_consult.dart';
+import '../../../components/keepAliveWrapper.dart';
 
 class PainPage extends StatefulWidget {
   const PainPage({super.key});
@@ -13,9 +15,8 @@ class _PainPageState extends State<PainPage>
     with SingleTickerProviderStateMixin {
   final GlobalKey<PainQuestionPageState> _painQuestionPageState =
       GlobalKey<PainQuestionPageState>();
-
-  final ScrollController _scrollController = ScrollController();
-  bool _isAppBarFloating = false;
+  final GlobalKey<PainConsultPageState> _painConsultPageState =
+      GlobalKey<PainConsultPageState>();
 
   late TabController _tabController;
   double _opacity = 1.0; // 初始透明度
@@ -24,14 +25,12 @@ class _PainPageState extends State<PainPage>
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_handleScroll);
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabSelection);
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -51,45 +50,19 @@ class _PainPageState extends State<PainPage>
     });
   }
 
-  void scrollSignToBottom() {
-    // 下滑
-    _scrollController.jumpTo(0);
-  }
-
-  void _handleScroll() {
-    // 计算滚动位置百分比
-    double percentage = _scrollController.offset / (36 + 12);
-    // 根据百分比计算透明度
-    double opacity = 1.0 - percentage;
-    // 更新透明度
-    setState(() {
-      _opacity = opacity.clamp(0.0, 1.0); // 限制透明度在 0.0 到 1.0 之间
-    });
-
-    if (_scrollController.offset > (36 + 12) && !_isAppBarFloating) {
-      setState(() {
-        _isAppBarFloating = true;
-      });
-    } else if (_scrollController.offset <= (36 + 12) && _isAppBarFloating) {
-      setState(() {
-        _isAppBarFloating = false;
-      });
-    }
-  }
-
   void _handleTabSelection() {
     // 在这里处理标签的点击事件
     print('Tab index: ${_tabController.index}');
-    scrollToTop();
+    //scrollToTop();
   }
 
-  void scrollToTop() {
-    _scrollController.animateTo(
-      0.0, // 滚动位置为顶部
-      duration: const Duration(milliseconds: 300), // 动画持续时间
-      curve: Curves.easeInOut, // 动画曲线
-    );
-  }
+  // void scrollToTop() {
+  //   _scrollController.animateTo(
+  //     0.0, // 滚动位置为顶部
+  //     duration: const Duration(milliseconds: 300), // 动画持续时间
+  //     curve: Curves.easeInOut, // 动画曲线
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -106,8 +79,12 @@ class _PainPageState extends State<PainPage>
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    PainQuestionPage(scrollCallBack: scrollCallBack),
-                    Center(child: Text('Tab 2 content'))
+                    KeepAliveWrapper(
+                        child: PainQuestionPage(
+                            key: _painQuestionPageState,
+                            scrollCallBack: scrollCallBack)),
+                    KeepAliveWrapper(
+                        child: PainConsultPage(key: _painConsultPageState)),
                   ],
                 ),
               )
@@ -182,8 +159,8 @@ class _PainPageState extends State<PainPage>
                                 Row(
                                   children: [
                                     Container(
-                                      width: 36,
-                                      height: 36,
+                                      width: 24,
+                                      height: 24,
                                       margin: const EdgeInsets.only(
                                           right: 12, left: 18),
                                       child: Center(
@@ -195,8 +172,8 @@ class _PainPageState extends State<PainPage>
                                       ),
                                     ),
                                     Container(
-                                      width: 36,
-                                      height: 36,
+                                      width: 24,
+                                      height: 24,
                                       margin: const EdgeInsets.only(right: 6),
                                       child: Center(
                                         child: IconFont(
@@ -217,6 +194,13 @@ class _PainPageState extends State<PainPage>
                         height: 50, // TabBar高度
                         color: Colors.white,
                         child: TabBar(
+                          onTap: (index) {
+                            if (index == 1) {
+                              // 切换时滚动到顶部
+                              _painQuestionPageState.currentState
+                                  ?.scrollToTop();
+                            }
+                          },
                           indicator: const BoxDecoration(
                             border: Border(
                               bottom: BorderSide(
@@ -236,7 +220,32 @@ class _PainPageState extends State<PainPage>
                         color: Color.fromRGBO(243, 243, 244, 1),
                       )
                     ],
-                  )))
+                  ))),
+          Positioned(
+              bottom: 24,
+              right: 24,
+              child: Container(
+                width: 48,
+                height: 48,
+                decoration: const BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color.fromRGBO(158, 158, 158, 0.3),
+                        spreadRadius: 3,
+                        blurRadius: 4,
+                        offset: Offset(0, 3), // changes position of shadow
+                      ),
+                    ],
+                    color: Color.fromRGBO(211, 66, 67, 1),
+                    borderRadius: BorderRadius.all(Radius.circular(24))),
+                child: Center(
+                  child: IconFont(
+                    IconNames.tianjia,
+                    size: 24,
+                    color: 'rgb(255,255,255)',
+                  ),
+                ),
+              ))
         ],
       ),
     );

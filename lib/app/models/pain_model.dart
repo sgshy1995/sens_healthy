@@ -1,6 +1,8 @@
 class PainQuestionTypeModel {
   final String id; //问题id
   final String user_id; //用户id
+  final String? avatar; //用户头像
+  final String? name; //用户名字
   final int has_major; //是否有专业回答 1 是 0 否
   final String pain_type; //伤痛类型
   final String description; //问题描述
@@ -19,6 +21,8 @@ class PainQuestionTypeModel {
   PainQuestionTypeModel(
       {required this.id,
       required this.user_id,
+      this.avatar,
+      this.name,
       required this.has_major,
       required this.pain_type,
       required this.description,
@@ -34,11 +38,14 @@ class PainQuestionTypeModel {
       required this.status,
       required this.created_at,
       required this.updated_at});
+
   factory PainQuestionTypeModel.fromJson(Map<String, dynamic>? json) {
     return json != null
         ? PainQuestionTypeModel(
             id: json['id'],
             user_id: json['user_id'],
+            avatar: json['avatar'],
+            name: json['name'],
             has_major: json['has_major'],
             pain_type: json['pain_type'],
             description: json['description'],
@@ -57,6 +64,8 @@ class PainQuestionTypeModel {
         : PainQuestionTypeModel(
             id: '',
             user_id: '',
+            avatar: null,
+            name: null,
             has_major: 0,
             pain_type: '',
             description: '',
