@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 void showToast(String msg, {Color? backgroundColor, Color? textColor}) {
   Fluttertoast.showToast(
       msg: msg,
-      toastLength: Toast.LENGTH_SHORT,
+      toastLength: Toast.LENGTH_LONG,
       gravity: ToastGravity.CENTER,
       timeInSecForIosWeb: 1,
       backgroundColor: backgroundColor ?? const Color.fromRGBO(0, 0, 0, 0.8),

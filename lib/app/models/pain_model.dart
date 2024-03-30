@@ -1,3 +1,5 @@
+import 'dart:io';
+
 class PainQuestionTypeModel {
   final String id; //问题id
   final String user_id; //用户id
@@ -15,6 +17,7 @@ class PainQuestionTypeModel {
   final String? collect_user_ids; //收藏id集合
   final int anonymity; //是否匿名 1 是 0 否
   final String? image_data; //影像资料
+  final String? location; //IP归属地
   final int status; //问题状态 1 正常 0 删除
   final String created_at;
   final String updated_at;
@@ -35,6 +38,7 @@ class PainQuestionTypeModel {
       this.collect_user_ids,
       required this.anonymity,
       this.image_data,
+      this.location,
       required this.status,
       required this.created_at,
       required this.updated_at});
@@ -58,6 +62,7 @@ class PainQuestionTypeModel {
             collect_user_ids: json['collect_user_ids'],
             anonymity: json['anonymity'],
             image_data: json['image_data'],
+            location: json['location'],
             status: json['status'],
             created_at: json['created_at'],
             updated_at: json['updated_at'])
@@ -78,8 +83,30 @@ class PainQuestionTypeModel {
             collect_user_ids: null,
             anonymity: 0,
             image_data: null,
+            location: null,
             status: 0,
             created_at: '',
             updated_at: '');
   }
+}
+
+class PainFileUploadTypeModel {
+  final String id; //Id
+  final File file; //文件
+  final String localPath; //本地路劲
+  final String filename; //文件名
+  final String fileType; //文件类型（后缀）
+  final String mimeType; //mimeType
+  late int status; //上传状态 0 未上传 1 已上传成功 2 上传未审核通过
+  late String? realKey; //bucket桶key
+
+  PainFileUploadTypeModel(
+      {required this.id,
+      required this.file,
+      required this.localPath,
+      required this.filename,
+      required this.fileType,
+      required this.mimeType,
+      required this.status,
+      this.realKey});
 }

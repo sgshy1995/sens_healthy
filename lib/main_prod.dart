@@ -7,6 +7,8 @@ import './app/middlewares/route.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import './app/bindings/home_binding.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import './app/pages/pain/pain_question_detail.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env.prod"); // 加载开发环境配置
@@ -15,17 +17,24 @@ Future main() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   // Try reading data from the 'action' key. If it doesn't exist, returns null.
   final String? token = prefs.getString('token');
-  runApp(GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      initialRoute: token is String ? '/' : '/login',
-      getPages: [
-        GetPage(
-          name: '/',
-          page: () => const HomePage(),
-          middlewares: [AuthMiddleware()],
-        ),
-        GetPage(name: '/login', page: () => const LoginPage()),
-        GetPage(name: '/agreement', page: () => AgreementPage()),
-      ],
-      initialBinding: HomeBinding()));
+  initializeDateFormatting('zh_CN', null).then((_) {
+    runApp(GetMaterialApp(
+        debugShowCheckedModeBanner: false,
+        initialRoute: token is String ? '/' : '/login',
+        getPages: [
+          GetPage(
+            name: '/',
+            page: () => const HomePage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(name: '/login', page: () => const LoginPage()),
+          GetPage(name: '/agreement', page: () => AgreementPage()),
+          GetPage(
+            name: '/pain_question_detail',
+            page: () => const PainQuestionDetailPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+        ],
+        initialBinding: HomeBinding()));
+  });
 }

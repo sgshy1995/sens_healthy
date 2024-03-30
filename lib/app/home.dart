@@ -4,7 +4,7 @@ import '../app/pages/pain/pain.dart';
 import '../app/pages/recovery/recovery.dart';
 import '../app/pages/store/store.dart';
 import '../app/pages/mine/mine.dart';
-import '../components/keepAliveWrapper.dart';
+import '../components/keep_alive_wrapper.dart';
 import '../utils/get_device_id.dart';
 import 'package:lottie/lottie.dart';
 import './models/user_model.dart';

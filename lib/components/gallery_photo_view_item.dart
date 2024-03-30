@@ -1,23 +1,26 @@
 import 'package:flutter/widgets.dart';
 
 class GalleryExampleItem {
-  GalleryExampleItem({
-    required this.id,
-    required this.resource,
-    this.isSvg = false,
-  });
+  GalleryExampleItem(
+      {required this.id,
+      required this.resource,
+      this.isSvg = false,
+      this.canBeDownloaded = true,
+      this.imageType = 'network'});
 
   final String id;
   final String resource;
   final bool isSvg;
+  final String imageType;
+  final bool canBeDownloaded;
 }
 
 class GalleryExampleItemThumbnail extends StatelessWidget {
   const GalleryExampleItemThumbnail({
-    Key? key,
+    super.key,
     required this.galleryExampleItem,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   final GalleryExampleItem galleryExampleItem;
 

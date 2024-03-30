@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../../../iconfont/icon_font.dart';
 import './pain_question.dart';
 import './pain_consult.dart';
-import '../../../components/keepAliveWrapper.dart';
+import '../../../components/keep_alive_wrapper.dart';
+import 'package:get/get.dart';
+import './pain_question_publish.dart';
 
 class PainPage extends StatefulWidget {
   const PainPage({super.key});
@@ -54,6 +56,35 @@ class _PainPageState extends State<PainPage>
     // 在这里处理标签的点击事件
     print('Tab index: ${_tabController.index}');
     //scrollToTop();
+  }
+
+  void handleGoToPublish() async {
+    final result = await Navigator.push<String>(
+      context,
+      PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const PainQuestionPublishPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final curvedAnimation =
+                CurvedAnimation(parent: animation, curve: Curves.easeInOut);
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.0, 1.0),
+                end: Offset.zero,
+              )
+                  .chain(CurveTween(curve: Curves.easeInOut))
+                  .animate(curvedAnimation),
+              child: child,
+            );
+          }),
+    );
+    if (result == 'success') {
+      _painQuestionPageState.currentState?.onRefresh();
+    }
+    // Get.to(
+    //   PainQuestionPublishPage(),
+    //   transition: Transition.downToUp,
+    // );
   }
 
   // void scrollToTop() {
@@ -224,25 +255,28 @@ class _PainPageState extends State<PainPage>
           Positioned(
               bottom: 24,
               right: 24,
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: const BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color.fromRGBO(158, 158, 158, 0.3),
-                        spreadRadius: 3,
-                        blurRadius: 4,
-                        offset: Offset(0, 3), // changes position of shadow
-                      ),
-                    ],
-                    color: Color.fromRGBO(211, 66, 67, 1),
-                    borderRadius: BorderRadius.all(Radius.circular(24))),
-                child: Center(
-                  child: IconFont(
-                    IconNames.tianjia,
-                    size: 24,
-                    color: 'rgb(255,255,255)',
+              child: InkWell(
+                onTap: handleGoToPublish,
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: const BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromRGBO(158, 158, 158, 0.3),
+                          spreadRadius: 3,
+                          blurRadius: 4,
+                          offset: Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                      color: Color.fromRGBO(211, 66, 67, 1),
+                      borderRadius: BorderRadius.all(Radius.circular(24))),
+                  child: Center(
+                    child: IconFont(
+                      IconNames.tianjia,
+                      size: 24,
+                      color: 'rgb(255,255,255)',
+                    ),
                   ),
                 ),
               ))

@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:get/get.dart';
 import 'package:sens_healthy/app/models/data_model.dart';
 import '../global_client_provider.dart';
 import '../../models/user_model.dart';
 import '../../models/pain_model.dart';
+import 'package:dio/dio.dart' as dio;
 
 class UserModel {
   final String code;
@@ -154,6 +157,43 @@ class PainClientProvider extends GlobalClientProvider {
     return dataFinalModel;
   }
 
+  // 文件上传
+  Future<DataFinalModel<String?>> painQuestionImageDataUploadAction(
+      File file, String filename) async {
+    final FormData formData =
+        FormData({'file': MultipartFile(file, filename: filename)});
+    final jsonData = await post('/pain_question/upload/data', formData);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel<String?> dataFinalUploadModel = DataFinalModel(
+        code: jsonMap['code'],
+        message: jsonMap['message'],
+        data: jsonMap['data']);
+    return dataFinalUploadModel;
+  }
+
+  // 删除不必要图片
+  Future<DataFinalModel> removeUnnecessaryImagesAction(
+      List<String> keys) async {
+    final jsonData = await post('/pain_question/unnecessary', {'keys': keys});
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel dataFinalModel =
+        DataFinalModel(code: jsonMap['code'], message: jsonMap['message']);
+    return dataFinalModel;
+  }
+
+  // 发布问题
+  Future<DataFinalModel> painQuestionCreateAction(
+      Map<String, dynamic> json) async {
+    final jsonData = await post('/pain_question', json);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel dataFinalPainQuestionCreate = DataFinalModel(
+      code: jsonMap['code'],
+      message: jsonMap['message'],
+    );
+    return dataFinalPainQuestionCreate;
+  }
+
   // Get request
   Future<String> captureAction(String deviceId) async {
     final jsonData = await get('/auth/capture', query: {"device_id": deviceId});
@@ -174,16 +214,6 @@ class PainClientProvider extends GlobalClientProvider {
     final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
     final CapturePhoneModel capturePhoneModel =
         CapturePhoneModel.fromJson(jsonMap);
-    return capturePhoneModel;
-  }
-
-  // Get request
-  Future<LoginModel> loginAction(
-      String deviceId, String phone, String capture) async {
-    final jsonData = await post('/user/login',
-        {"device_id": deviceId, "phone": phone, "capture_phone": capture});
-    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
-    final LoginModel capturePhoneModel = LoginModel.fromJson(jsonMap);
     return capturePhoneModel;
   }
 

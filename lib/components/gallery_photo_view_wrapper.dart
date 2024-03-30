@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
-import './galleryExampleItem.dart';
+import 'package:sens_healthy/components/toast.dart';
+import 'gallery_photo_view_item.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../iconfont/icon_font.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/services.dart';
 
 class GalleryPhotoViewWrapper extends StatefulWidget {
   GalleryPhotoViewWrapper({
+    super.key,
     this.loadingBuilder,
     this.backgroundDecoration,
     this.minScale,
@@ -38,6 +44,18 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     setState(() {
       currentIndex = index;
     });
+  }
+
+  void downLoadImage(int index) async {
+    var response = await Dio().get(widget.galleryItems[index].resource,
+        options: Options(responseType: ResponseType.bytes));
+    final result =
+        await ImageGallerySaver.saveImage(Uint8List.fromList(response.data));
+    if (result['isSuccess']) {
+      showToast('保存成功');
+    } else {
+      showToast('保存失败，请重试');
+    }
   }
 
   @override
@@ -94,7 +112,30 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
                         ),
                       ),
                     ),
-                  ))
+                  )),
+              Positioned(
+                  bottom: MediaQuery.of(context).padding.bottom + 24,
+                  right: 24,
+                  child: widget.galleryItems[currentIndex].canBeDownloaded
+                      ? InkWell(
+                          onTap: () => downLoadImage(currentIndex),
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: const BoxDecoration(
+                                color: Color.fromRGBO(0, 0, 0, 0.6),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(12))),
+                            child: Center(
+                              child: IconFont(
+                                IconNames.xiazai,
+                                size: 32,
+                                color: '#fff',
+                              ),
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink())
             ],
           ),
         ),
@@ -120,12 +161,20 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
             maxScale: PhotoViewComputedScale.covered * 4.1,
             heroAttributes: PhotoViewHeroAttributes(tag: item.id),
           )
-        : PhotoViewGalleryPageOptions(
-            imageProvider: CachedNetworkImageProvider(item.resource),
-            initialScale: PhotoViewComputedScale.contained,
-            minScale: PhotoViewComputedScale.contained * (0.5 + index / 10),
-            maxScale: PhotoViewComputedScale.covered * 4.1,
-            heroAttributes: PhotoViewHeroAttributes(tag: item.id),
-          );
+        : item.imageType == 'network'
+            ? PhotoViewGalleryPageOptions(
+                imageProvider: CachedNetworkImageProvider(item.resource),
+                initialScale: PhotoViewComputedScale.contained,
+                minScale: PhotoViewComputedScale.contained * (0.5 + index / 10),
+                maxScale: PhotoViewComputedScale.covered * 4.1,
+                heroAttributes: PhotoViewHeroAttributes(tag: item.id),
+              )
+            : PhotoViewGalleryPageOptions(
+                imageProvider: AssetImage(item.resource),
+                initialScale: PhotoViewComputedScale.contained,
+                minScale: PhotoViewComputedScale.contained * (0.5 + index / 10),
+                maxScale: PhotoViewComputedScale.covered * 4.1,
+                heroAttributes: PhotoViewHeroAttributes(tag: item.id),
+              );
   }
 }

@@ -15,8 +15,8 @@ import '../../controllers/global_controller.dart';
 import '../../controllers/user_controller.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
-import '../../../components/galleryPhotoViewWrapper.dart';
-import '../../../components/galleryExampleItem.dart';
+import '../../../components/gallery_photo_view_wrapper.dart';
+import '../../../components/gallery_photo_view_item.dart';
 import 'dart:async';
 import 'package:shimmer/shimmer.dart';
 
@@ -63,7 +63,7 @@ class PainQuestionPageState extends State<PainQuestionPage>
 
   /* 点赞方法 */
   void handleClickLike(String id) {
-    if (_likeLoading) {
+    if (_likeLoading || _collectLoading) {
       return;
     }
     final int index = painQuestionDataPagination.data
@@ -90,39 +90,49 @@ class PainQuestionPageState extends State<PainQuestionPage>
             setState(() {
               painQuestionDataPagination.data[index] = painQuestionNew;
               showToast(status == 1 ? '已点赞' : '已取消点赞');
-              setState(() {
-                _likeLoading = false;
+              Future.delayed(const Duration(seconds: 2), () {
+                setState(() {
+                  _likeLoading = false;
+                });
               });
             });
           } else {
             showToast(result1.message);
-            setState(() {
-              _likeLoading = false;
+            Future.delayed(const Duration(seconds: 2), () {
+              setState(() {
+                _likeLoading = false;
+              });
             });
           }
         }).catchError((e1) {
           showToast('操作失败，请稍后再试');
-          setState(() {
-            _likeLoading = false;
+          Future.delayed(const Duration(seconds: 2), () {
+            setState(() {
+              _likeLoading = false;
+            });
           });
         });
       } else {
         showToast(result.message);
-        setState(() {
-          _likeLoading = false;
+        Future.delayed(const Duration(seconds: 2), () {
+          setState(() {
+            _likeLoading = false;
+          });
         });
       }
     }).catchError((e) {
       showToast('操作失败，请稍后再试');
-      setState(() {
-        _likeLoading = false;
+      Future.delayed(const Duration(seconds: 2), () {
+        setState(() {
+          _likeLoading = false;
+        });
       });
     });
   }
 
   /* 收藏方法 */
   void handleClickCollect(String id) {
-    if (_collectLoading) {
+    if (_collectLoading || _likeLoading) {
       return;
     }
     final int index = painQuestionDataPagination.data
@@ -149,32 +159,42 @@ class PainQuestionPageState extends State<PainQuestionPage>
             setState(() {
               painQuestionDataPagination.data[index] = painQuestionNew;
               showToast(status == 1 ? '已收藏' : '已取消收藏');
-              setState(() {
-                _collectLoading = false;
+              Future.delayed(const Duration(seconds: 2), () {
+                setState(() {
+                  _collectLoading = false;
+                });
               });
             });
           } else {
             showToast(result1.message);
-            setState(() {
-              _collectLoading = false;
+            Future.delayed(const Duration(seconds: 2), () {
+              setState(() {
+                _collectLoading = false;
+              });
             });
           }
         }).catchError((e1) {
           showToast('操作失败，请稍后再试');
-          setState(() {
-            _collectLoading = false;
+          Future.delayed(const Duration(seconds: 2), () {
+            setState(() {
+              _collectLoading = false;
+            });
           });
         });
       } else {
         showToast(result.message);
-        setState(() {
-          _collectLoading = false;
+        Future.delayed(const Duration(seconds: 2), () {
+          setState(() {
+            _collectLoading = false;
+          });
         });
       }
     }).catchError((e) {
       showToast('操作失败，请稍后再试');
-      setState(() {
-        _collectLoading = false;
+      Future.delayed(const Duration(seconds: 2), () {
+        setState(() {
+          _collectLoading = false;
+        });
       });
     });
   }
@@ -255,6 +275,18 @@ class PainQuestionPageState extends State<PainQuestionPage>
     ).animate(_RotateController);
   }
 
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _scrollController.dispose();
+    _refreshController.dispose();
+    _RotateController.dispose();
+    // painClientProvider.dispose();
+    // userController.dispose();
+    // globalController.dispose();
+  }
+
   void _scrollListener() {
     setState(() {
       _scrollDistance = _scrollController.offset;
@@ -267,6 +299,10 @@ class PainQuestionPageState extends State<PainQuestionPage>
         _rotationAngle = 0;
       }
     });
+  }
+
+  void onRefresh() {
+    _onRefresh();
   }
 
   void _onRefresh() async {
@@ -301,6 +337,10 @@ class PainQuestionPageState extends State<PainQuestionPage>
   final Key linkKey = GlobalKey();
 
   EdgeInsets safePadding = MediaQuery.of(Get.context!).padding;
+
+  void handleGoToDetail(String questionId) {
+    Get.toNamed('/pain_question_detail', arguments: {'questionId': questionId});
+  }
 
   Widget buildHeader(BuildContext context, RefreshStatus? mode) {
     return Container(
@@ -707,7 +747,7 @@ class PainQuestionPageState extends State<PainQuestionPage>
                               color: Color.fromRGBO(33, 33, 33, 1),
                               fontSize: 14));
                     } else {
-                      body = const Text("没有更多数据了~",
+                      body = const Text("没有更多内容了~",
                           style: TextStyle(
                               color: Color.fromRGBO(33, 33, 33, 1),
                               fontSize: 14));
@@ -1074,26 +1114,23 @@ class PainQuestionPageState extends State<PainQuestionPage>
                         Navigator.push(
                           context,
                           PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    GalleryPhotoViewWrapper(
-                              galleryItems: galleryItems,
-                              backgroundDecoration: const BoxDecoration(
-                                color: Colors.black,
-                              ),
-                              initialIndex: index,
-                              scrollDirection: Axis.horizontal,
-                            ),
-                            transitionsBuilder: (context, animation,
-                                secondaryAnimation, child) {
-                              return FadeTransition(
-                                opacity: animation,
-                                child: child,
-                              );
-                            },
-                            transitionDuration:
-                                const Duration(milliseconds: 200),
-                          ),
+                              pageBuilder: (context, animation,
+                                      secondaryAnimation) =>
+                                  GalleryPhotoViewWrapper(
+                                    galleryItems: galleryItems,
+                                    backgroundDecoration: const BoxDecoration(
+                                      color: Colors.black,
+                                    ),
+                                    initialIndex: index,
+                                    scrollDirection: Axis.horizontal,
+                                  ),
+                              transitionsBuilder: (context, animation,
+                                  secondaryAnimation, child) {
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                );
+                              }),
                         );
                       }
 
@@ -1114,339 +1151,350 @@ class PainQuestionPageState extends State<PainQuestionPage>
                       final bool readyCollect =
                           collectIdsList.contains(userController.userInfo.id);
 
-                      return Container(
-                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            (i != 0
-                                ? Container(
-                                    margin: const EdgeInsets.only(bottom: 24),
-                                    child: const Divider(
-                                      height: 2,
-                                      color: Color.fromRGBO(233, 234, 235, 1),
-                                    ),
-                                  )
-                                : const SizedBox(
-                                    height: 0,
-                                  )),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 44,
-                                  height: 44,
-                                  margin: const EdgeInsets.only(right: 12),
-                                  child: (itemData.anonymity == 1 ||
-                                          itemData.avatar == null)
-                                      ? const CircleAvatar(
-                                          radius: 22,
-                                          backgroundImage: AssetImage(
-                                              'assets/images/avatar.webp'),
-                                        )
-                                      : CircleAvatar(
-                                          radius: 22,
-                                          backgroundImage:
-                                              CachedNetworkImageProvider(
-                                                  '${globalController.cdnBaseUrl}/${itemData.avatar}'),
+                      return InkWell(
+                        onTap: () => handleGoToDetail(itemData.id),
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              (i != 0
+                                  ? Container(
+                                      margin: const EdgeInsets.only(bottom: 24),
+                                      child: const Divider(
+                                        height: 2,
+                                        color: Color.fromRGBO(233, 234, 235, 1),
+                                      ),
+                                    )
+                                  : const SizedBox(
+                                      height: 0,
+                                    )),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    margin: const EdgeInsets.only(right: 12),
+                                    child: (itemData.anonymity == 1 ||
+                                            itemData.avatar == null)
+                                        ? const CircleAvatar(
+                                            radius: 22,
+                                            backgroundImage: AssetImage(
+                                                'assets/images/avatar.webp'),
+                                          )
+                                        : CircleAvatar(
+                                            radius: 22,
+                                            backgroundImage:
+                                                CachedNetworkImageProvider(
+                                                    '${globalController.cdnBaseUrl}/${itemData.avatar}'),
+                                          ),
+                                  ),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        margin:
+                                            const EdgeInsets.only(bottom: 0),
+                                        child: Text(
+                                          name,
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color:
+                                                  Color.fromRGBO(0, 0, 0, 1)),
                                         ),
-                                ),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      margin: const EdgeInsets.only(bottom: 0),
-                                      child: Text(
-                                        name,
+                                      ),
+                                      Text(
+                                        showQuestionTime,
                                         style: const TextStyle(
                                             fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color.fromRGBO(0, 0, 0, 1)),
-                                      ),
-                                    ),
-                                    Text(
-                                      showQuestionTime,
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.normal,
-                                          color: Color.fromRGBO(33, 33, 33, 1)),
-                                    )
-                                  ],
-                                )
-                              ],
-                            ),
-                            Container(
-                              margin: const EdgeInsets.only(top: 12),
-                              child: RichText(
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.left,
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: '#$painType#',
-                                        style: const TextStyle(
-                                            color:
-                                                Color.fromRGBO(0, 102, 204, 1),
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.normal),
-                                      ),
-                                      const WidgetSpan(
-                                        child: SizedBox(width: 6), // 设置间距为10
-                                      ),
-                                      TextSpan(
-                                        text: description,
-                                        style: const TextStyle(
-                                            color: Color.fromRGBO(0, 0, 0, 1),
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.normal),
+                                            fontWeight: FontWeight.normal,
+                                            color: Color.fromRGBO(
+                                                102, 102, 102, 1)),
                                       )
                                     ],
-                                  )),
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(
-                                  top: 12,
-                                  bottom: imagesList.isNotEmpty ? 18 : 0),
-                              child: Stack(
-                                children: [
-                                  imagesList.length >= 2
-                                      ? GridView.builder(
-                                          gridDelegate:
-                                              SliverGridDelegateWithFixedCrossAxisCount(
-                                                  crossAxisCount:
-                                                      imagesList.length >= 3
-                                                          ? 3
-                                                          : 2, // 交叉轴子项数量
-                                                  mainAxisSpacing: 0, // 主轴间距
-                                                  crossAxisSpacing: 8, // 交叉轴间距
-                                                  childAspectRatio: 1,
-                                                  mainAxisExtent:
-                                                      itemWidthAndHeight),
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          padding: EdgeInsets.zero, // 设置为零边距
-                                          shrinkWrap: true,
-                                          itemCount:
-                                              imagesList.length >= 3 ? 3 : 2,
-                                          itemBuilder: (BuildContext context,
-                                              int index) {
-                                            return index == 2
-                                                ? Container(
-                                                    color: Colors.white,
-                                                    child: CachedNetworkImage(
-                                                      imageUrl:
-                                                          '${globalController.cdnBaseUrl}/${imagesList[index]}',
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  )
-                                                : GestureDetector(
-                                                    onTap: () =>
-                                                        open(context, index),
-                                                    child: Hero(
-                                                      tag: galleryItems[index]
-                                                          .id,
-                                                      child: Container(
-                                                        color: Colors.white,
-                                                        child:
-                                                            CachedNetworkImage(
-                                                          imageUrl:
-                                                              '${globalController.cdnBaseUrl}/${imagesList[index]}',
-                                                          fit: BoxFit.cover,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                          })
-                                      : (imagesList.isNotEmpty &&
-                                              imagesList[0].isNotEmpty)
-                                          ? GestureDetector(
-                                              onTap: () => open(context, 0),
-                                              child: Hero(
-                                                tag: galleryItems[0].id,
-                                                child: SizedBox(
-                                                  width:
-                                                      mediaQuerySizeInfo.width /
-                                                          7 *
-                                                          5,
-                                                  height:
-                                                      mediaQuerySizeInfo.width /
-                                                          7 *
-                                                          5 /
-                                                          16 *
-                                                          9,
-                                                  child: CachedNetworkImage(
-                                                    imageUrl:
-                                                        '${globalController.cdnBaseUrl}/${imagesList[0]}',
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                ),
-                                              ),
-                                            )
-                                          : const SizedBox.shrink(),
-                                  Positioned(
-                                      top: 0,
-                                      right: 0,
-                                      child: imagesList.length > 3
-                                          ? GestureDetector(
-                                              onTap: () => open(context, 2),
-                                              child: Hero(
-                                                tag: galleryItems[2].id,
-                                                child: Container(
-                                                  width: itemWidthAndHeight,
-                                                  height: itemWidthAndHeight,
-                                                  color: const Color.fromRGBO(
-                                                      0, 0, 0, 0.5),
-                                                  child: Center(
-                                                      child: Text(
-                                                    '+${imagesList.length - 3}',
-                                                    style: const TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  )),
-                                                ),
-                                              ),
-                                            )
-                                          : const SizedBox(
-                                              height: 0,
-                                            ))
-                                ],
-                              ),
-                            ),
-                            Container(
-                              margin: const EdgeInsets.only(top: 0, bottom: 12),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        margin:
-                                            const EdgeInsets.only(right: 24),
-                                        child: Row(
-                                          children: [
-                                            InkWell(
-                                              onTap: () =>
-                                                  handleClickLike(itemData.id),
-                                              child: Container(
-                                                margin: const EdgeInsets.only(
-                                                    right: 4),
-                                                width: 24,
-                                                height: 24,
-                                                child: readyLike
-                                                    ? IconFont(
-                                                        IconNames.dianzan_1,
-                                                        size: 24,
-                                                        color: '#000',
-                                                      )
-                                                    : IconFont(
-                                                        IconNames.dianzan,
-                                                        size: 24,
-                                                        color: '#000',
-                                                      ),
-                                              ),
-                                            ),
-                                            Text(
-                                              '${itemData.like_num}',
-                                              style: const TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      0, 0, 0, 1),
-                                                  fontSize: 14,
-                                                  fontWeight:
-                                                      FontWeight.normal),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                      Container(
-                                        margin:
-                                            const EdgeInsets.only(right: 24),
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              margin: const EdgeInsets.only(
-                                                  right: 4),
-                                              width: 24,
-                                              height: 24,
-                                              child: IconFont(
-                                                IconNames.xiaoxi,
-                                                size: 24,
-                                                color: '#000',
-                                              ),
-                                            ),
-                                            Text(
-                                              '${itemData.reply_num}',
-                                              style: const TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      0, 0, 0, 1),
-                                                  fontSize: 14,
-                                                  fontWeight:
-                                                      FontWeight.normal),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                      Container(
-                                        margin:
-                                            const EdgeInsets.only(right: 24),
-                                        child: Row(
-                                          children: [
-                                            InkWell(
-                                              onTap: () => handleClickCollect(
-                                                  itemData.id),
-                                              child: Container(
-                                                margin: const EdgeInsets.only(
-                                                    right: 4),
-                                                width: 24,
-                                                height: 24,
-                                                child: readyCollect
-                                                    ? IconFont(
-                                                        IconNames.shoucang_1,
-                                                        size: 24,
-                                                        color: '#000',
-                                                      )
-                                                    : IconFont(
-                                                        IconNames.shoucang,
-                                                        size: 24,
-                                                        color: '#000',
-                                                      ),
-                                              ),
-                                            ),
-                                            Text(
-                                              '${itemData.collect_num}',
-                                              style: const TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      0, 0, 0, 1),
-                                                  fontSize: 14,
-                                                  fontWeight:
-                                                      FontWeight.normal),
-                                            )
-                                          ],
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: IconFont(
-                                      IconNames.fenxiang,
-                                      size: 24,
-                                      color: '#000',
-                                    ),
                                   )
                                 ],
                               ),
-                            )
-                          ],
+                              Container(
+                                margin: const EdgeInsets.only(top: 12),
+                                child: RichText(
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.left,
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: '#$painType#',
+                                          style: const TextStyle(
+                                              color: Color.fromRGBO(
+                                                  0, 102, 204, 1),
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.normal),
+                                        ),
+                                        const WidgetSpan(
+                                          child: SizedBox(width: 6), // 设置间距为10
+                                        ),
+                                        TextSpan(
+                                          text: description,
+                                          style: const TextStyle(
+                                              color: Color.fromRGBO(0, 0, 0, 1),
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.normal),
+                                        )
+                                      ],
+                                    )),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(
+                                    top: 12,
+                                    bottom: imagesList.isNotEmpty ? 18 : 0),
+                                child: Stack(
+                                  children: [
+                                    imagesList.length >= 2
+                                        ? GridView.builder(
+                                            gridDelegate:
+                                                SliverGridDelegateWithFixedCrossAxisCount(
+                                                    crossAxisCount:
+                                                        imagesList.length >= 3
+                                                            ? 3
+                                                            : 2, // 交叉轴子项数量
+                                                    mainAxisSpacing: 0, // 主轴间距
+                                                    crossAxisSpacing:
+                                                        8, // 交叉轴间距
+                                                    childAspectRatio: 1,
+                                                    mainAxisExtent:
+                                                        itemWidthAndHeight),
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
+                                            padding: EdgeInsets.zero, // 设置为零边距
+                                            shrinkWrap: true,
+                                            itemCount:
+                                                imagesList.length >= 3 ? 3 : 2,
+                                            itemBuilder: (BuildContext context,
+                                                int index) {
+                                              return index == 2
+                                                  ? Container(
+                                                      color: Colors.white,
+                                                      child: CachedNetworkImage(
+                                                        imageUrl:
+                                                            '${globalController.cdnBaseUrl}/${imagesList[index]}',
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    )
+                                                  : GestureDetector(
+                                                      onTap: () =>
+                                                          open(context, index),
+                                                      child: Hero(
+                                                        tag: galleryItems[index]
+                                                            .id,
+                                                        child: Container(
+                                                          color: Colors.white,
+                                                          child:
+                                                              CachedNetworkImage(
+                                                            imageUrl:
+                                                                '${globalController.cdnBaseUrl}/${imagesList[index]}',
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    );
+                                            })
+                                        : (imagesList.isNotEmpty &&
+                                                imagesList[0].isNotEmpty)
+                                            ? GestureDetector(
+                                                onTap: () => open(context, 0),
+                                                child: Hero(
+                                                  tag: galleryItems[0].id,
+                                                  child: SizedBox(
+                                                    width: mediaQuerySizeInfo
+                                                            .width /
+                                                        7 *
+                                                        5,
+                                                    height: mediaQuerySizeInfo
+                                                            .width /
+                                                        7 *
+                                                        5 /
+                                                        16 *
+                                                        9,
+                                                    child: CachedNetworkImage(
+                                                      imageUrl:
+                                                          '${globalController.cdnBaseUrl}/${imagesList[0]}',
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            : const SizedBox.shrink(),
+                                    Positioned(
+                                        top: 0,
+                                        right: 0,
+                                        child: imagesList.length > 3
+                                            ? GestureDetector(
+                                                onTap: () => open(context, 2),
+                                                child: Hero(
+                                                  tag: galleryItems[2].id,
+                                                  child: Container(
+                                                    width: itemWidthAndHeight,
+                                                    height: itemWidthAndHeight,
+                                                    color: const Color.fromRGBO(
+                                                        0, 0, 0, 0.5),
+                                                    child: Center(
+                                                        child: Text(
+                                                      '+${imagesList.length - 3}',
+                                                      style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    )),
+                                                  ),
+                                                ),
+                                              )
+                                            : const SizedBox(
+                                                height: 0,
+                                              ))
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                margin:
+                                    const EdgeInsets.only(top: 0, bottom: 12),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          margin:
+                                              const EdgeInsets.only(right: 24),
+                                          child: Row(
+                                            children: [
+                                              InkWell(
+                                                onTap: () => handleClickLike(
+                                                    itemData.id),
+                                                child: Container(
+                                                  margin: const EdgeInsets.only(
+                                                      right: 4),
+                                                  width: 24,
+                                                  height: 24,
+                                                  child: readyLike
+                                                      ? IconFont(
+                                                          IconNames.dianzan_1,
+                                                          size: 24,
+                                                          color:
+                                                              'rgb(211,66,67)',
+                                                        )
+                                                      : IconFont(
+                                                          IconNames.dianzan,
+                                                          size: 24,
+                                                          color: '#000',
+                                                        ),
+                                                ),
+                                              ),
+                                              Text(
+                                                '${itemData.like_num > 99 ? '99+' : itemData.like_num}',
+                                                style: const TextStyle(
+                                                    color: Color.fromRGBO(
+                                                        0, 0, 0, 1),
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.normal),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          margin:
+                                              const EdgeInsets.only(right: 24),
+                                          child: Row(
+                                            children: [
+                                              InkWell(
+                                                onTap: () => handleClickCollect(
+                                                    itemData.id),
+                                                child: Container(
+                                                  margin: const EdgeInsets.only(
+                                                      right: 4),
+                                                  width: 24,
+                                                  height: 24,
+                                                  child: readyCollect
+                                                      ? IconFont(
+                                                          IconNames.shoucang_1,
+                                                          size: 24,
+                                                          color:
+                                                              'rgb(252,189,84)',
+                                                        )
+                                                      : IconFont(
+                                                          IconNames.shoucang,
+                                                          size: 24,
+                                                          color: '#000',
+                                                        ),
+                                                ),
+                                              ),
+                                              Text(
+                                                '${itemData.collect_num > 99 ? '99+' : itemData.collect_num}',
+                                                style: const TextStyle(
+                                                    color: Color.fromRGBO(
+                                                        0, 0, 0, 1),
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.normal),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          margin:
+                                              const EdgeInsets.only(right: 24),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                margin: const EdgeInsets.only(
+                                                    right: 4),
+                                                width: 24,
+                                                height: 24,
+                                                child: IconFont(
+                                                  IconNames.xiaoxi,
+                                                  size: 24,
+                                                  color: '#000',
+                                                ),
+                                              ),
+                                              Text(
+                                                '${itemData.reply_num > 99 ? '99+' : itemData.reply_num}',
+                                                style: const TextStyle(
+                                                    color: Color.fromRGBO(
+                                                        0, 0, 0, 1),
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.normal),
+                                              )
+                                            ],
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: IconFont(
+                                        IconNames.fenxiang,
+                                        size: 24,
+                                        color: '#000',
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
                         ),
                       );
                     }, childCount: painQuestionDataPagination.data.length))
