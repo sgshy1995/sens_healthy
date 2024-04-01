@@ -1,4 +1,6 @@
 import 'package:carousel_slider/carousel_controller.dart';
+import './pain_reply_sheet.dart';
+import './pain_comment_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/src/rx_typedefs/rx_typedefs.dart';
@@ -54,7 +56,10 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
 
+  final GlobalKey _replyTitleKey = GlobalKey();
+
   bool _readyLoad = false;
+  bool _readyLoadReply = false;
 
   String dataId = '';
 
@@ -80,12 +85,29 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
       created_at: '',
       updated_at: '');
 
+  int _currentPageNo = 1;
+  DataPaginationInModel<List<PainReplyTypeModel>> painReplyDataPagination =
+      DataPaginationInModel(
+          data: [], pageNo: 1, pageSize: 10, totalPage: 0, totalCount: 0);
+
   void handleGoBack() {
     Get.back();
   }
 
   void _onLoading() async {
     // monitor network fetch
+    String result;
+    try {
+      result = await getPainReplies();
+      print('最终的加载结果是: $result');
+      if (result == 'success') {
+        _refreshController.loadComplete();
+      } else {
+        _refreshController.loadNoData();
+      }
+    } catch (e) {
+      _refreshController.loadFailed();
+    }
   }
 
   void getDetailData() {
@@ -97,10 +119,10 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
           setState(() {
             _readyLoad = true;
           });
+          getPainReplies(page: 1);
         });
       }
     });
-    ;
   }
 
   /* 点赞、收藏 状态 */
@@ -171,9 +193,156 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
     });
   }
 
+  /* 答复点赞方法 */
+  void handleClickLikeReply(PainReplyTypeModel dataItemReply) {
+    if (_likeLoading || _collectLoading) {
+      return;
+    }
+    final List<String> likeIdsListReply = dataItemReply.like_user_ids != null
+        ? dataItemReply.like_user_ids!.split(',').toSet().toList()
+        : [];
+    updatePainReplyLike(
+        dataItemReply.id,
+        likeIdsListReply.contains(userController.userInfo.id) ? 0 : 1,
+        painReplyDataPagination.pageNo);
+  }
+
+  void updatePainReplyLike(String id, int status, int pageNo) {
+    setState(() {
+      _likeLoading = true;
+    });
+    painClientProvider.updateReplyLikeAction(id, status, pageNo).then((result) {
+      if (result.code == 200) {
+        painClientProvider.getReplyByIdAction(id).then((result1) {
+          if (result1.code == 200) {
+            final painReplyNew = result1.data!;
+            final index = painReplyDataPagination.data
+                .indexWhere((item) => item.id == id);
+            painReplyNew.expand_num =
+                painReplyDataPagination.data[index].expand_num;
+            setState(() {
+              painReplyDataPagination.data[index] = painReplyNew;
+              showToast(status == 1 ? '已点赞' : '已取消点赞');
+              Future.delayed(const Duration(seconds: 2), () {
+                setState(() {
+                  _likeLoading = false;
+                });
+              });
+            });
+          } else {
+            showToast(result1.message);
+            Future.delayed(const Duration(seconds: 2), () {
+              setState(() {
+                _likeLoading = false;
+              });
+            });
+          }
+        }).catchError((e1) {
+          showToast('操作失败，请稍后再试');
+          Future.delayed(const Duration(seconds: 2), () {
+            setState(() {
+              _likeLoading = false;
+            });
+          });
+        });
+      } else {
+        showToast(result.message);
+        Future.delayed(const Duration(seconds: 2), () {
+          setState(() {
+            _likeLoading = false;
+          });
+        });
+      }
+    }).catchError((e) {
+      showToast('操作失败，请稍后再试');
+      Future.delayed(const Duration(seconds: 2), () {
+        setState(() {
+          _likeLoading = false;
+        });
+      });
+    });
+  }
+
+  /* 评论点赞方法 */
+  void handleClickCommentReply(
+      PainReplyTypeModel dataItemReply, PainCommentTypeModel dataItemComment) {
+    if (_likeLoading || _collectLoading) {
+      return;
+    }
+    final List<String> likeIdsListComment =
+        dataItemComment.like_user_ids != null
+            ? dataItemComment.like_user_ids!.split(',').toSet().toList()
+            : [];
+    updatePainCommentLike(
+        dataItemComment.id,
+        likeIdsListComment.contains(userController.userInfo.id) ? 0 : 1,
+        painReplyDataPagination.pageNo,
+        dataItemReply.id);
+  }
+
+  void updatePainCommentLike(
+      String id, int status, int pageNo, String replyId) {
+    setState(() {
+      _likeLoading = true;
+    });
+    painClientProvider
+        .updateCommentLikeAction(id, status, pageNo)
+        .then((result) {
+      if (result.code == 200) {
+        painClientProvider.getCommentByIdAction(id).then((result1) {
+          if (result1.code == 200) {
+            final painCommentNew = result1.data!;
+            final index = painReplyDataPagination.data
+                .indexWhere((item) => item.id == replyId);
+            final indexIn = painReplyDataPagination.data[index].comments!
+                .indexWhere((item) => item.id == id);
+            setState(() {
+              painReplyDataPagination.data[index].comments![indexIn] =
+                  painCommentNew;
+              showToast(status == 1 ? '已点赞' : '已取消点赞');
+              Future.delayed(const Duration(seconds: 2), () {
+                setState(() {
+                  _likeLoading = false;
+                });
+              });
+            });
+          } else {
+            showToast(result1.message);
+            Future.delayed(const Duration(seconds: 2), () {
+              setState(() {
+                _likeLoading = false;
+              });
+            });
+          }
+        }).catchError((e1) {
+          showToast('操作失败，请稍后再试');
+          Future.delayed(const Duration(seconds: 2), () {
+            setState(() {
+              _likeLoading = false;
+            });
+          });
+        });
+      } else {
+        showToast(result.message);
+        Future.delayed(const Duration(seconds: 2), () {
+          setState(() {
+            _likeLoading = false;
+          });
+        });
+      }
+    }).catchError((e) {
+      showToast('操作失败，请稍后再试');
+      Future.delayed(const Duration(seconds: 2), () {
+        setState(() {
+          _likeLoading = false;
+        });
+      });
+    });
+  }
+
   /* 收藏方法 */
   void handleClickCollect() {
-    if (_collectLoading || _likeLoading) {
+    if (_likeLoading || _collectLoading) {
       return;
     }
     final List<String> collectIdsList =
@@ -236,6 +405,58 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
     });
   }
 
+  /* 展开更多方法 */
+  void handleExpandMore(PainReplyTypeModel replyItem) {
+    final index = painReplyDataPagination.data
+        .indexWhere((item) => item.id == replyItem.id);
+    setState(() {
+      painReplyDataPagination.data[index].expand_num += 5;
+    });
+  }
+
+  Future<String> getPainReplies({int? page}) {
+    Completer<String> completer = Completer();
+    painClientProvider
+        .getPainRepliesByCustomAction(
+            questionId: painQuestionDetail.id,
+            pageNo: page ?? _currentPageNo + 1)
+        .then((value) {
+      final valueGet = value.data.data;
+      valueGet.map((e) {
+        e.expand_num = 3;
+      });
+      final pageNo = value.data.pageNo;
+      final pageSize = value.data.pageSize;
+      final totalPage = value.data.totalPage;
+      final totalCount = value.data.totalCount;
+      setState(() {
+        _currentPageNo = pageNo;
+        if (pageNo == 1) {
+          painReplyDataPagination.data = valueGet;
+        } else {
+          painReplyDataPagination.data.addAll(valueGet);
+        }
+        painReplyDataPagination.pageNo = pageNo;
+        painReplyDataPagination.pageSize = pageSize;
+        painReplyDataPagination.totalPage = totalPage;
+        painReplyDataPagination.totalCount = totalCount;
+        _readyLoadReply = true;
+      });
+      completer.complete(pageNo == totalPage ? 'no-data' : 'success');
+      if (page != null) {
+        if (pageNo != totalPage) {
+          _refreshController.loadComplete();
+        } else {
+          _refreshController.loadNoData();
+        }
+      }
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+
+    return completer.future;
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -249,6 +470,34 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
     // TODO: implement dispose
     super.dispose();
     _refreshController.dispose();
+  }
+
+  String getShowTime(String time) {
+    // 获取当前时间
+    DateTime nowTime = DateTime.now();
+    // 格式化日期
+    String formattedDate = DateFormat('yyyy-MM-dd').format(nowTime);
+    String formattedYearDate = DateFormat('yyyy').format(nowTime);
+    // 获取解析的时间
+    DateTime parsedTime = DateTime.parse(time);
+    // 格式化日期
+    String formattedDateQuestion = DateFormat('yyyy-MM-dd').format(parsedTime);
+    String formattedYearDateQuestion = DateFormat('yyyy').format(parsedTime);
+    final String showTime;
+    if (formattedDate == formattedDateQuestion) {
+      String formattedMinutesDateQuestion =
+          DateFormat('HH:mm').format(parsedTime);
+      showTime = '$formattedMinutesDateQuestion 今天';
+    } else if (formattedYearDate == formattedYearDateQuestion) {
+      String formattedMonthsAndMinutesDateQuestion =
+          DateFormat('HH:mm MM/dd').format(parsedTime);
+      showTime = formattedMonthsAndMinutesDateQuestion;
+    } else {
+      String formattedYearsAndMonthsAndMinutesDateQuestion =
+          DateFormat('HH:mm yy/MM/dd').format(parsedTime);
+      showTime = formattedYearsAndMonthsAndMinutesDateQuestion;
+    }
+    return showTime;
   }
 
   @override
@@ -265,31 +514,7 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
     String showQuestionTime = '';
 
     if (_readyLoad) {
-      // 获取当前时间
-      DateTime nowTime = DateTime.now();
-      // 格式化日期
-      String formattedDate = DateFormat('yyyy-MM-dd').format(nowTime);
-      String formattedYearDate = DateFormat('yyyy').format(nowTime);
-      // 获取问题时间
-      DateTime questionTime = DateTime.parse(painQuestionDetail.question_time);
-      // 格式化日期
-      String formattedDateQuestion =
-          DateFormat('yyyy-MM-dd').format(questionTime);
-      String formattedYearDateQuestion =
-          DateFormat('yyyy').format(questionTime);
-      if (formattedDate == formattedDateQuestion) {
-        String formattedMinutesDateQuestion =
-            DateFormat('HH:mm').format(questionTime);
-        showQuestionTime = '$formattedMinutesDateQuestion 今天';
-      } else if (formattedYearDate == formattedYearDateQuestion) {
-        String formattedMonthsAndMinutesDateQuestion =
-            DateFormat('HH:mm MM/dd').format(questionTime);
-        showQuestionTime = formattedMonthsAndMinutesDateQuestion;
-      } else {
-        String formattedYearsAndMonthsAndMinutesDateQuestion =
-            DateFormat('HH:mm yy/MM/dd').format(questionTime);
-        showQuestionTime = formattedYearsAndMonthsAndMinutesDateQuestion;
-      }
+      showQuestionTime = getShowTime(painQuestionDetail.question_time);
     }
 
     final String painType = painQuestionDetail.pain_type;
@@ -358,6 +583,97 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
       if (!_readyLoad) {
         return;
       }
+    }
+
+    void scrollToReplyTitle() {
+      // 滚动至指定元素位置
+      final RenderObject object =
+          _replyTitleKey.currentContext!.findRenderObject()!;
+      _refreshController.position!.ensureVisible(
+        object,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
+
+    void showReplyBottomSheet() {
+      scrollToReplyTitle();
+      showModalBottomSheet<String?>(
+          backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
+          isScrollControlled: true,
+          context: context,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              top: Radius.zero, // 设置顶部边缘为直角
+            ),
+          ),
+          builder: (BuildContext context) {
+            return SingleChildScrollView(
+                child: Padding(
+                    padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom != 0
+                            ? MediaQuery.of(context).viewInsets.bottom
+                            : mediaQuerySafeInfo.bottom),
+                    child: PainReplySheetPage(
+                      questionId: painQuestionDetail.id,
+                    ) // Your form widget here
+                    ));
+          }).then((result) {
+        if (result == 'success') {
+          getDetailData();
+        }
+      });
+    }
+
+    void showCommentBottomSheet(PainReplyTypeModel replyItem,
+        {PainCommentTypeModel? commentItem}) {
+      showModalBottomSheet<String?>(
+          backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
+          isScrollControlled: true,
+          context: context,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              top: Radius.zero, // 设置顶部边缘为直角
+            ),
+          ),
+          builder: (BuildContext context) {
+            return SingleChildScrollView(
+                child: Padding(
+                    padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom != 0
+                            ? MediaQuery.of(context).viewInsets.bottom
+                            : mediaQuerySafeInfo.bottom),
+                    child: PainCommentSheetPage(
+                        questionId: painQuestionDetail.id,
+                        replyOrCommentCotent: commentItem != null
+                            ? commentItem.comment_content
+                            : replyItem.reply_content,
+                        replyId: replyItem.id,
+                        commentId: commentItem?.id,
+                        commentToUserId: commentItem != null
+                            ? commentItem.user_id
+                            : replyItem.user_id) // Your form widget here
+                    ));
+          }).then((result) {
+        if (result == 'success') {
+          painClientProvider.getReplyByIdAction(replyItem.id).then((result1) {
+            if (result1.code == 200) {
+              final painReplyNew = result1.data!;
+              final index = painReplyDataPagination.data
+                  .indexWhere((item) => item.id == replyItem.id);
+              painReplyNew.expand_num =
+                  painReplyDataPagination.data[index].expand_num + 1;
+              setState(() {
+                painReplyDataPagination.data[index] = painReplyNew;
+              });
+            } else {
+              showToast(result1.message);
+            }
+          }).catchError((e1) {
+            showToast('操作失败，请稍后再试');
+          });
+        }
+      });
     }
 
     void showMoreItems() {
@@ -454,120 +770,244 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
 
     Widget skeleton() {
       return Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
           child: SingleChildScrollView(
             physics: const NeverScrollableScrollPhysics(),
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Column(
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: const BoxDecoration(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.all(Radius.circular(22))),
+                      margin: const EdgeInsets.only(right: 12),
+                      child: Shimmer.fromColors(
+                        baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 6),
+                          child: Container(
                             width: 44,
-                            height: 44,
+                            height: 14,
                             decoration: const BoxDecoration(
-                                color: Colors.transparent,
                                 borderRadius:
-                                    BorderRadius.all(Radius.circular(22))),
+                                    BorderRadius.all(Radius.circular(6))),
                             margin: const EdgeInsets.only(right: 12),
                             child: Shimmer.fromColors(
                               baseColor: const Color.fromRGBO(229, 229, 229, 1),
                               highlightColor: Colors.grey[100]!,
                               child: Container(
                                 width: 44,
-                                height: 44,
+                                height: 14,
                                 decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(6)),
                                   color: Colors.white,
                                 ),
                               ),
                             ),
                           ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                margin: const EdgeInsets.only(bottom: 6),
+                        ),
+                        Container(
+                          width: 60,
+                          height: 14,
+                          decoration: const BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(6))),
+                          margin: const EdgeInsets.only(right: 12),
+                          child: Shimmer.fromColors(
+                            baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: 60,
+                              height: 14,
+                              decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(6)),
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: mediaQuerySizeInfo.width - 24 - 44 - 12,
+                          height: 100,
+                          decoration: const BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(6))),
+                          margin: const EdgeInsets.only(top: 12),
+                          child: Shimmer.fromColors(
+                            baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: 60,
+                              height: 14,
+                              decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(6)),
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: 60,
+                          height: 14,
+                          decoration: const BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(6))),
+                          margin: const EdgeInsets.only(top: 12, bottom: 12),
+                          child: Shimmer.fromColors(
+                            baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: 60,
+                              height: 14,
+                              decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(6)),
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: const BoxDecoration(
+                                  color: Colors.transparent,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(16))),
+                              margin: const EdgeInsets.only(right: 12),
+                              child: Shimmer.fromColors(
+                                baseColor:
+                                    const Color.fromRGBO(229, 229, 229, 1),
+                                highlightColor: Colors.grey[100]!,
                                 child: Container(
-                                  width: 44,
-                                  height: 15,
+                                  width: 32,
+                                  height: 32,
                                   decoration: const BoxDecoration(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(6))),
-                                  margin: const EdgeInsets.only(right: 12),
-                                  child: Shimmer.fromColors(
-                                    baseColor:
-                                        const Color.fromRGBO(229, 229, 229, 1),
-                                    highlightColor: Colors.grey[100]!,
-                                    child: Container(
-                                      width: 44,
-                                      height: 15,
-                                      decoration: const BoxDecoration(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(6)),
-                                        color: Colors.white,
-                                      ),
-                                    ),
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
-                              Container(
-                                margin: const EdgeInsets.only(bottom: 0),
+                            ),
+                            Container(
+                              width: 130,
+                              height: 32,
+                              decoration: const BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(6))),
+                              margin: const EdgeInsets.only(top: 0),
+                              child: Shimmer.fromColors(
+                                baseColor:
+                                    const Color.fromRGBO(229, 229, 229, 1),
+                                highlightColor: Colors.grey[100]!,
                                 child: Container(
-                                  width: 72,
+                                  width: 60,
                                   height: 14,
                                   decoration: const BoxDecoration(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(6))),
-                                  margin: const EdgeInsets.only(right: 12),
-                                  child: Shimmer.fromColors(
-                                    baseColor:
-                                        const Color.fromRGBO(229, 229, 229, 1),
-                                    highlightColor: Colors.grey[100]!,
-                                    child: Container(
-                                      width: 72,
-                                      height: 14,
-                                      decoration: const BoxDecoration(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(6)),
-                                        color: Colors.white,
-                                      ),
-                                    ),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(6)),
+                                    color: Colors.white,
                                   ),
                                 ),
-                              )
-                            ],
-                          )
-                        ],
-                      )
-                    ],
-                  ),
+                              ),
+                            )
+                          ],
+                        )
+                      ],
+                    )
+                  ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 0),
+                const SizedBox(
+                  height: 24,
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: const BoxDecoration(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.all(Radius.circular(22))),
+                      margin: const EdgeInsets.only(right: 12),
+                      child: Shimmer.fromColors(
+                        baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                        highlightColor: Colors.grey[100]!,
                         child: Container(
-                          width: 64,
-                          height: 15,
+                          width: 44,
+                          height: 44,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 6),
+                          child: Container(
+                            width: 44,
+                            height: 14,
+                            decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(6))),
+                            margin: const EdgeInsets.only(right: 12),
+                            child: Shimmer.fromColors(
+                              baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                width: 44,
+                                height: 14,
+                                decoration: const BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(6)),
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: 60,
+                          height: 14,
                           decoration: const BoxDecoration(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(6))),
-                          margin: const EdgeInsets.only(right: 0),
+                          margin: const EdgeInsets.only(right: 12),
                           child: Shimmer.fromColors(
                             baseColor: const Color.fromRGBO(229, 229, 229, 1),
                             highlightColor: Colors.grey[100]!,
                             child: Container(
-                              width: 64,
-                              height: 15,
+                              width: 60,
+                              height: 14,
                               decoration: const BoxDecoration(
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(6)),
@@ -576,70 +1016,19 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                             ),
                           ),
                         ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 12, top: 12),
-                        child: Container(
-                          width: mediaQuerySizeInfo.width - 24,
-                          height: 15,
-                          decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(6))),
-                          margin: const EdgeInsets.only(right: 0),
-                          child: Shimmer.fromColors(
-                            baseColor: const Color.fromRGBO(229, 229, 229, 1),
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              width: mediaQuerySizeInfo.width - 24,
-                              height: 15,
-                              decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(6)),
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 0),
-                        child: Container(
-                          width: 64,
-                          height: 15,
-                          decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(6))),
-                          margin: const EdgeInsets.only(right: 0),
-                          child: Shimmer.fromColors(
-                            baseColor: const Color.fromRGBO(229, 229, 229, 1),
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              width: 64,
-                              height: 15,
-                              decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(6)),
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 12, top: 12),
-                        child: Container(
-                          width: mediaQuerySizeInfo.width - 24,
+                        Container(
+                          width: mediaQuerySizeInfo.width - 24 - 44 - 12,
                           height: 100,
                           decoration: const BoxDecoration(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(6))),
-                          margin: const EdgeInsets.only(right: 0),
+                          margin: const EdgeInsets.only(top: 12),
                           child: Shimmer.fromColors(
                             baseColor: const Color.fromRGBO(229, 229, 229, 1),
                             highlightColor: Colors.grey[100]!,
                             child: Container(
-                              width: mediaQuerySizeInfo.width - 24,
-                              height: 100,
+                              width: 60,
+                              height: 14,
                               decoration: const BoxDecoration(
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(6)),
@@ -648,22 +1037,19 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                             ),
                           ),
                         ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 0),
-                        child: Container(
-                          width: 64,
-                          height: 15,
+                        Container(
+                          width: 60,
+                          height: 14,
                           decoration: const BoxDecoration(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(6))),
-                          margin: const EdgeInsets.only(right: 0),
+                          margin: const EdgeInsets.only(top: 12, bottom: 12),
                           child: Shimmer.fromColors(
                             baseColor: const Color.fromRGBO(229, 229, 229, 1),
                             highlightColor: Colors.grey[100]!,
                             child: Container(
-                              width: 64,
-                              height: 15,
+                              width: 60,
+                              height: 14,
                               decoration: const BoxDecoration(
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(6)),
@@ -672,96 +1058,57 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                             ),
                           ),
                         ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 12, top: 12),
-                        child: Container(
-                          width: mediaQuerySizeInfo.width - 24,
-                          height: 100,
-                          decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(6))),
-                          margin: const EdgeInsets.only(right: 0),
-                          child: Shimmer.fromColors(
-                            baseColor: const Color.fromRGBO(229, 229, 229, 1),
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              width: mediaQuerySizeInfo.width - 24,
-                              height: 100,
+                        Row(
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
                               decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(6)),
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 0),
-                        child: Container(
-                          width: 64,
-                          height: 15,
-                          decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(6))),
-                          margin: const EdgeInsets.only(right: 0),
-                          child: Shimmer.fromColors(
-                            baseColor: const Color.fromRGBO(229, 229, 229, 1),
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              width: 64,
-                              height: 15,
-                              decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(6)),
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 12, 0, 12),
-                        child: GridView.builder(
-                            gridDelegate:
-                                SliverGridDelegateWithMaxCrossAxisExtent(
-                                    // 交叉轴子项数量
-                                    mainAxisSpacing: 8, // 主轴间距
-                                    crossAxisSpacing: 0, // 交叉轴间距
-                                    childAspectRatio: 1,
-                                    mainAxisExtent: itemWidthOnly / 4 * 3,
-                                    maxCrossAxisExtent: itemWidthOnly),
-                            physics: const NeverScrollableScrollPhysics(),
-                            padding: EdgeInsets.zero, // 设置为零边距
-                            shrinkWrap: true,
-                            itemCount: 9,
-                            itemBuilder: (BuildContext context, int index) {
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 0),
+                                  color: Colors.transparent,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(16))),
+                              margin: const EdgeInsets.only(right: 12),
+                              child: Shimmer.fromColors(
+                                baseColor:
+                                    const Color.fromRGBO(229, 229, 229, 1),
+                                highlightColor: Colors.grey[100]!,
                                 child: Container(
+                                  width: 32,
+                                  height: 32,
                                   decoration: const BoxDecoration(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(6))),
-                                  margin: const EdgeInsets.only(right: 0),
-                                  child: Shimmer.fromColors(
-                                    baseColor:
-                                        const Color.fromRGBO(229, 229, 229, 1),
-                                    highlightColor: Colors.grey[100]!,
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(6)),
-                                        color: Colors.white,
-                                      ),
-                                    ),
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
                                   ),
                                 ),
-                              );
-                            }),
-                      )
-                    ],
-                  ),
+                              ),
+                            ),
+                            Container(
+                              width: 130,
+                              height: 32,
+                              decoration: const BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(6))),
+                              margin: const EdgeInsets.only(top: 0),
+                              child: Shimmer.fromColors(
+                                baseColor:
+                                    const Color.fromRGBO(229, 229, 229, 1),
+                                highlightColor: Colors.grey[100]!,
+                                child: Container(
+                                  width: 60,
+                                  height: 14,
+                                  decoration: const BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(6)),
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
+                        )
+                      ],
+                    )
+                  ],
                 )
               ],
             ),
@@ -1130,8 +1477,9 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                                               : const SizedBox.shrink(),
                                         ),
                                         Padding(
+                                          key: _replyTitleKey,
                                           padding: const EdgeInsets.fromLTRB(
-                                              0, 12, 0, 24),
+                                              0, 24, 0, 24),
                                           child: Text(
                                               '全部答伤 · ${painQuestionDetail.reply_num}',
                                               style: const TextStyle(
@@ -1139,6 +1487,9 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.bold)),
                                         ),
+                                        (!_readyLoadReply
+                                            ? skeleton()
+                                            : const SizedBox.shrink()),
                                         (painQuestionDetail.reply_num == 0
                                             ? SizedBox(
                                                 width:
@@ -1175,7 +1526,984 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                                       ],
                                     ),
                                   ),
-                                )
+                                ),
+                                SliverList(
+                                    delegate: SliverChildBuilderDelegate(
+                                  childCount:
+                                      painReplyDataPagination.data.length,
+                                  (context, i) {
+                                    final PainReplyTypeModel itemData =
+                                        painReplyDataPagination.data[i];
+                                    final String name = itemData.name != null
+                                        ? itemData.name!
+                                        : '赴康云用户';
+                                    final String locationReply =
+                                        itemData.location ?? '未知地点';
+                                    final String showReplyTime =
+                                        getShowTime(itemData.reply_time);
+
+                                    final String replyContent =
+                                        itemData.reply_content;
+
+                                    List<String> imagesReplyList = [];
+                                    if (itemData.image_data != null) {
+                                      imagesReplyList = itemData.image_data!
+                                          .split(',')
+                                          .toSet()
+                                          .toList();
+                                    }
+                                    final List<GalleryExampleItem>
+                                        galleryReplyItems =
+                                        imagesReplyList.map((e) {
+                                      return GalleryExampleItem(
+                                          id: e,
+                                          resource:
+                                              '${globalController.cdnBaseUrl}/$e',
+                                          isSvg: false);
+                                    }).toList();
+
+                                    final double itemWidthOnlyReply =
+                                        (mediaQuerySizeInfo.width -
+                                                24 -
+                                                44 -
+                                                12 -
+                                                8 -
+                                                8) /
+                                            3;
+
+                                    void openReply(
+                                        BuildContext context, final int index) {
+                                      Navigator.push(
+                                        context,
+                                        PageRouteBuilder(
+                                            pageBuilder: (context, animation,
+                                                    secondaryAnimation) =>
+                                                GalleryPhotoViewWrapper(
+                                                  galleryItems:
+                                                      galleryReplyItems,
+                                                  backgroundDecoration:
+                                                      const BoxDecoration(
+                                                    color: Colors.black,
+                                                  ),
+                                                  initialIndex: index,
+                                                  scrollDirection:
+                                                      Axis.horizontal,
+                                                ),
+                                            transitionsBuilder: (context,
+                                                animation,
+                                                secondaryAnimation,
+                                                child) {
+                                              return FadeTransition(
+                                                opacity: animation,
+                                                child: child,
+                                              );
+                                            }),
+                                      );
+                                    }
+
+                                    final List<String> likeIdsListReply =
+                                        itemData.like_user_ids != null
+                                            ? itemData.like_user_ids!
+                                                .split(',')
+                                                .toSet()
+                                                .toList()
+                                            : [];
+                                    final bool readyLikeReply = likeIdsListReply
+                                        .contains(userController.userInfo.id);
+
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        (i != 0
+                                            ? Container(
+                                                margin: const EdgeInsets.only(
+                                                    bottom: 24),
+                                                child: const Divider(
+                                                  height: 2,
+                                                  color: Color.fromRGBO(
+                                                      233, 234, 235, 1),
+                                                ),
+                                              )
+                                            : const SizedBox(
+                                                height: 0,
+                                              )),
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Stack(
+                                              children: [
+                                                Container(
+                                                  width: 56,
+                                                  height: 56,
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 12, top: 0),
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.topLeft,
+                                                    child: SizedBox(
+                                                      width: 44,
+                                                      height: 44,
+                                                      child: itemData.avatar ==
+                                                              null
+                                                          ? const CircleAvatar(
+                                                              radius: 22,
+                                                              backgroundImage:
+                                                                  AssetImage(
+                                                                      'assets/images/avatar.webp'),
+                                                            )
+                                                          : CircleAvatar(
+                                                              radius: 22,
+                                                              backgroundImage:
+                                                                  CachedNetworkImageProvider(
+                                                                      '${globalController.cdnBaseUrl}/${itemData.avatar}'),
+                                                            ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                (itemData.authenticate == 2
+                                                    ? Positioned(
+                                                        bottom: 4,
+                                                        right: 6,
+                                                        child: Container(
+                                                          width: 24,
+                                                          height: 24,
+                                                          margin:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  left: 0),
+                                                          child: IconFont(
+                                                              IconNames
+                                                                  .guanfangrenzheng,
+                                                              size: 24),
+                                                        ))
+                                                    : const SizedBox.shrink())
+                                              ],
+                                            ),
+                                            Expanded(
+                                                child: Stack(
+                                              children: [
+                                                Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Text(
+                                                          name,
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 14,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                  color: Color
+                                                                      .fromRGBO(
+                                                                          0,
+                                                                          0,
+                                                                          0,
+                                                                          1)),
+                                                        ),
+                                                        (itemData.identity == 1
+                                                            ? Container(
+                                                                decoration: BoxDecoration(
+                                                                    border: Border.all(
+                                                                        color: const Color
+                                                                            .fromRGBO(
+                                                                            238,
+                                                                            123,
+                                                                            48,
+                                                                            1),
+                                                                        width:
+                                                                            1),
+                                                                    borderRadius:
+                                                                        const BorderRadius
+                                                                            .all(
+                                                                            Radius.circular(2))),
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .fromLTRB(
+                                                                        2,
+                                                                        0,
+                                                                        2,
+                                                                        0),
+                                                                margin:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                        left:
+                                                                            12),
+                                                                child: const Text(
+                                                                    '已认证',
+                                                                    style: TextStyle(
+                                                                        color: Color.fromRGBO(
+                                                                            238,
+                                                                            123,
+                                                                            48,
+                                                                            1),
+                                                                        fontSize:
+                                                                            10)),
+                                                              )
+                                                            : const SizedBox
+                                                                .shrink())
+                                                      ],
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        Text(
+                                                          showReplyTime,
+                                                          style: const TextStyle(
+                                                              fontSize: 14,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .normal,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      102,
+                                                                      102,
+                                                                      102,
+                                                                      1)),
+                                                        ),
+                                                        const Padding(
+                                                          padding: EdgeInsets
+                                                              .fromLTRB(
+                                                                  6, 0, 6, 0),
+                                                          child: Text(
+                                                            '·',
+                                                            style: TextStyle(
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                                color: Color
+                                                                    .fromRGBO(
+                                                                        102,
+                                                                        102,
+                                                                        102,
+                                                                        1)),
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          locationReply,
+                                                          style: const TextStyle(
+                                                              fontSize: 14,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .normal,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      102,
+                                                                      102,
+                                                                      102,
+                                                                      1)),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Container(
+                                                      margin:
+                                                          const EdgeInsets.only(
+                                                              top: 12),
+                                                      child: RichText(
+                                                          maxLines: 3,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          textAlign:
+                                                              TextAlign.left,
+                                                          text: TextSpan(
+                                                            children: [
+                                                              TextSpan(
+                                                                text:
+                                                                    replyContent,
+                                                                style: const TextStyle(
+                                                                    color: Color
+                                                                        .fromRGBO(
+                                                                            0,
+                                                                            0,
+                                                                            0,
+                                                                            1),
+                                                                    fontSize:
+                                                                        15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .normal),
+                                                              )
+                                                            ],
+                                                          )),
+                                                    ),
+                                                    Padding(
+                                                      padding: (imagesReplyList
+                                                                  .isNotEmpty &&
+                                                              imagesReplyList[0]
+                                                                  .isNotEmpty)
+                                                          ? const EdgeInsets
+                                                              .fromLTRB(
+                                                              0, 12, 0, 0)
+                                                          : const EdgeInsets
+                                                              .all(0),
+                                                      child: (imagesReplyList
+                                                                  .isNotEmpty &&
+                                                              imagesReplyList[0]
+                                                                  .isNotEmpty)
+                                                          ? GridView.builder(
+                                                              gridDelegate:
+                                                                  SliverGridDelegateWithMaxCrossAxisExtent(
+                                                                      // 交叉轴子项数量
+                                                                      mainAxisSpacing:
+                                                                          8, // 主轴间距
+                                                                      crossAxisSpacing:
+                                                                          8, // 交叉轴间距
+                                                                      childAspectRatio:
+                                                                          1,
+                                                                      mainAxisExtent:
+                                                                          itemWidthOnlyReply,
+                                                                      maxCrossAxisExtent:
+                                                                          itemWidthOnlyReply),
+                                                              physics:
+                                                                  const NeverScrollableScrollPhysics(),
+                                                              padding: EdgeInsets
+                                                                  .zero, // 设置为零边距
+                                                              shrinkWrap: true,
+                                                              itemCount:
+                                                                  imagesReplyList
+                                                                      .length,
+                                                              itemBuilder:
+                                                                  (BuildContext
+                                                                          context,
+                                                                      int
+                                                                          index) {
+                                                                return GestureDetector(
+                                                                  onTap: () =>
+                                                                      openReply(
+                                                                          context,
+                                                                          index),
+                                                                  child: Hero(
+                                                                    tag: galleryReplyItems[
+                                                                            index]
+                                                                        .id,
+                                                                    child:
+                                                                        Container(
+                                                                      color: Colors
+                                                                          .white,
+                                                                      child:
+                                                                          CachedNetworkImage(
+                                                                        imageUrl:
+                                                                            '${globalController.cdnBaseUrl}/${imagesReplyList[index]}',
+                                                                        fit: BoxFit
+                                                                            .cover,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              })
+                                                          : const SizedBox
+                                                              .shrink(),
+                                                    ),
+                                                    Container(
+                                                      margin:
+                                                          const EdgeInsets.only(
+                                                              top: 12),
+                                                      child: Text(
+                                                          '${itemData.comment_num}回复',
+                                                          style: const TextStyle(
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      211,
+                                                                      66,
+                                                                      67,
+                                                                      1),
+                                                              fontSize: 15,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold)),
+                                                    ),
+                                                    Container(
+                                                      margin:
+                                                          const EdgeInsets.only(
+                                                              top: 12,
+                                                              bottom: 24),
+                                                      child: Row(
+                                                        children: [
+                                                          Container(
+                                                            width: 32,
+                                                            height: 32,
+                                                            margin:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    right: 12),
+                                                            child: painQuestionDetail
+                                                                        .avatar ==
+                                                                    null
+                                                                ? const CircleAvatar(
+                                                                    radius: 16,
+                                                                    backgroundImage:
+                                                                        AssetImage(
+                                                                            'assets/images/avatar.webp'),
+                                                                  )
+                                                                : CircleAvatar(
+                                                                    radius: 16,
+                                                                    backgroundImage:
+                                                                        CachedNetworkImageProvider(
+                                                                            '${globalController.cdnBaseUrl}/${painQuestionDetail.avatar}'),
+                                                                  ),
+                                                          ),
+                                                          GestureDetector(
+                                                            onTap: () =>
+                                                                showCommentBottomSheet(
+                                                                    itemData),
+                                                            child: Container(
+                                                              height: 32,
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .fromLTRB(
+                                                                      8,
+                                                                      0,
+                                                                      8,
+                                                                      0),
+                                                              decoration:
+                                                                  const BoxDecoration(
+                                                                color: Color
+                                                                    .fromRGBO(
+                                                                        242,
+                                                                        242,
+                                                                        242,
+                                                                        1),
+                                                              ),
+                                                              child: Row(
+                                                                children: [
+                                                                  Container(
+                                                                    margin: const EdgeInsets
+                                                                        .only(
+                                                                        right:
+                                                                            4),
+                                                                    width: 20,
+                                                                    height: 20,
+                                                                    child:
+                                                                        IconFont(
+                                                                      IconNames
+                                                                          .bianji,
+                                                                      size: 20,
+                                                                      color:
+                                                                          'rgb(102,102,102)',
+                                                                    ),
+                                                                  ),
+                                                                  const Text(
+                                                                    '回复这条答伤',
+                                                                    style: TextStyle(
+                                                                        color: Color.fromRGBO(
+                                                                            102,
+                                                                            102,
+                                                                            102,
+                                                                            1),
+                                                                        fontSize:
+                                                                            14),
+                                                                  )
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    itemData.comments != null
+                                                        ? Column(
+                                                            children: itemData
+                                                                .comments!
+                                                                .sublist(
+                                                                    0,
+                                                                    itemData.comments!.length >
+                                                                            itemData
+                                                                                .expand_num
+                                                                        ? itemData
+                                                                            .expand_num
+                                                                        : itemData
+                                                                            .comments!
+                                                                            .length)
+                                                                .map(
+                                                                    (itemDataIn) {
+                                                              final String
+                                                                  nameComment =
+                                                                  itemDataIn.name !=
+                                                                          null
+                                                                      ? itemDataIn
+                                                                          .name!
+                                                                      : '赴康云用户';
+                                                              final String
+                                                                  locationComment =
+                                                                  itemDataIn
+                                                                          .location ??
+                                                                      '未知地点';
+                                                              final String
+                                                                  showCommentTime =
+                                                                  getShowTime(
+                                                                      itemDataIn
+                                                                          .comment_time);
+
+                                                              final String
+                                                                  commentContent =
+                                                                  itemDataIn
+                                                                      .comment_content;
+
+                                                              List<String>
+                                                                  imagesCommentList =
+                                                                  [];
+                                                              if (itemDataIn
+                                                                      .image_data !=
+                                                                  null) {
+                                                                imagesCommentList =
+                                                                    itemDataIn
+                                                                        .image_data!
+                                                                        .split(
+                                                                            ',')
+                                                                        .toSet()
+                                                                        .toList();
+                                                              }
+                                                              final List<
+                                                                      GalleryExampleItem>
+                                                                  galleryCommentItems =
+                                                                  imagesCommentList
+                                                                      .map((e) {
+                                                                return GalleryExampleItem(
+                                                                    id: e,
+                                                                    resource:
+                                                                        '${globalController.cdnBaseUrl}/$e',
+                                                                    isSvg:
+                                                                        false);
+                                                              }).toList();
+
+                                                              final double
+                                                                  itemWidthOnlyComment =
+                                                                  (mediaQuerySizeInfo
+                                                                              .width -
+                                                                          24 -
+                                                                          44 -
+                                                                          12 -
+                                                                          32 -
+                                                                          12 -
+                                                                          8 -
+                                                                          8) /
+                                                                      3;
+
+                                                              void openComment(
+                                                                  BuildContext
+                                                                      context,
+                                                                  final int
+                                                                      index) {
+                                                                Navigator.push(
+                                                                  context,
+                                                                  PageRouteBuilder(
+                                                                      pageBuilder: (context,
+                                                                              animation,
+                                                                              secondaryAnimation) =>
+                                                                          GalleryPhotoViewWrapper(
+                                                                            galleryItems:
+                                                                                galleryCommentItems,
+                                                                            backgroundDecoration:
+                                                                                const BoxDecoration(
+                                                                              color: Colors.black,
+                                                                            ),
+                                                                            initialIndex:
+                                                                                index,
+                                                                            scrollDirection:
+                                                                                Axis.horizontal,
+                                                                          ),
+                                                                      transitionsBuilder: (context,
+                                                                          animation,
+                                                                          secondaryAnimation,
+                                                                          child) {
+                                                                        return FadeTransition(
+                                                                          opacity:
+                                                                              animation,
+                                                                          child:
+                                                                              child,
+                                                                        );
+                                                                      }),
+                                                                );
+                                                              }
+
+                                                              final List<String>
+                                                                  likeIdsListComment =
+                                                                  itemDataIn.like_user_ids !=
+                                                                          null
+                                                                      ? itemDataIn
+                                                                          .like_user_ids!
+                                                                          .split(
+                                                                              ',')
+                                                                          .toSet()
+                                                                          .toList()
+                                                                      : [];
+                                                              final bool
+                                                                  readyLikeComment =
+                                                                  likeIdsListComment.contains(
+                                                                      userController
+                                                                          .userInfo
+                                                                          .id);
+
+                                                              return Column(
+                                                                children: [
+                                                                  (itemDataIn.id !=
+                                                                          itemData
+                                                                              .comments![0]
+                                                                              .id
+                                                                      ? Container(
+                                                                          margin: const EdgeInsets
+                                                                              .only(
+                                                                              bottom: 12),
+                                                                          child:
+                                                                              const Divider(
+                                                                            height:
+                                                                                2,
+                                                                            color: Color.fromRGBO(
+                                                                                233,
+                                                                                234,
+                                                                                235,
+                                                                                1),
+                                                                          ),
+                                                                        )
+                                                                      : const SizedBox(
+                                                                          height:
+                                                                              0,
+                                                                        )),
+                                                                  Row(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      Stack(
+                                                                        children: [
+                                                                          Container(
+                                                                            width:
+                                                                                56,
+                                                                            height:
+                                                                                56,
+                                                                            padding:
+                                                                                const EdgeInsets.only(right: 12, top: 0),
+                                                                            child:
+                                                                                Align(
+                                                                              alignment: Alignment.topLeft,
+                                                                              child: SizedBox(
+                                                                                width: 44,
+                                                                                height: 44,
+                                                                                child: itemDataIn.avatar == null
+                                                                                    ? const CircleAvatar(
+                                                                                        radius: 22,
+                                                                                        backgroundImage: AssetImage('assets/images/avatar.webp'),
+                                                                                      )
+                                                                                    : CircleAvatar(
+                                                                                        radius: 22,
+                                                                                        backgroundImage: CachedNetworkImageProvider('${globalController.cdnBaseUrl}/${itemDataIn.avatar}'),
+                                                                                      ),
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                          (itemDataIn.authenticate == 2
+                                                                              ? Positioned(
+                                                                                  bottom: 4,
+                                                                                  right: 6,
+                                                                                  child: Container(
+                                                                                    width: 24,
+                                                                                    height: 24,
+                                                                                    margin: const EdgeInsets.only(left: 0),
+                                                                                    child: IconFont(IconNames.guanfangrenzheng, size: 24),
+                                                                                  ))
+                                                                              : const SizedBox.shrink())
+                                                                        ],
+                                                                      ),
+                                                                      Expanded(
+                                                                          child:
+                                                                              Column(
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment.start,
+                                                                        crossAxisAlignment:
+                                                                            CrossAxisAlignment.start,
+                                                                        children: [
+                                                                          Row(
+                                                                            children: [
+                                                                              Text(
+                                                                                nameComment,
+                                                                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color.fromRGBO(0, 0, 0, 1)),
+                                                                              ),
+                                                                              (itemDataIn.identity == 1
+                                                                                  ? Container(
+                                                                                      decoration: BoxDecoration(border: Border.all(color: const Color.fromRGBO(238, 123, 48, 1), width: 1), borderRadius: const BorderRadius.all(Radius.circular(2))),
+                                                                                      padding: const EdgeInsets.fromLTRB(2, 0, 2, 0),
+                                                                                      margin: const EdgeInsets.only(left: 12),
+                                                                                      child: const Text('已认证', style: TextStyle(color: Color.fromRGBO(238, 123, 48, 1), fontSize: 10)),
+                                                                                    )
+                                                                                  : const SizedBox.shrink())
+                                                                            ],
+                                                                          ),
+                                                                          Row(
+                                                                            children: [
+                                                                              Text(
+                                                                                showCommentTime,
+                                                                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Color.fromRGBO(102, 102, 102, 1)),
+                                                                              ),
+                                                                              const Padding(
+                                                                                padding: EdgeInsets.fromLTRB(6, 0, 6, 0),
+                                                                                child: Text(
+                                                                                  '·',
+                                                                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Color.fromRGBO(102, 102, 102, 1)),
+                                                                                ),
+                                                                              ),
+                                                                              Text(
+                                                                                locationComment,
+                                                                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Color.fromRGBO(102, 102, 102, 1)),
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                          Container(
+                                                                            margin:
+                                                                                const EdgeInsets.only(top: 12),
+                                                                            child: itemDataIn.comment_id == null
+                                                                                ? RichText(
+                                                                                    maxLines: 3,
+                                                                                    overflow: TextOverflow.ellipsis,
+                                                                                    textAlign: TextAlign.left,
+                                                                                    text: TextSpan(
+                                                                                      children: [
+                                                                                        TextSpan(
+                                                                                          text: commentContent,
+                                                                                          style: const TextStyle(color: Color.fromRGBO(0, 0, 0, 1), fontSize: 15, fontWeight: FontWeight.normal),
+                                                                                        )
+                                                                                      ],
+                                                                                    ))
+                                                                                : RichText(
+                                                                                    maxLines: 3,
+                                                                                    overflow: TextOverflow.ellipsis,
+                                                                                    textAlign: TextAlign.left,
+                                                                                    text: TextSpan(
+                                                                                      children: [
+                                                                                        const TextSpan(
+                                                                                          text: '回复',
+                                                                                          style: TextStyle(color: Color.fromRGBO(102, 102, 102, 1), fontSize: 15, fontWeight: FontWeight.normal),
+                                                                                        ),
+                                                                                        TextSpan(
+                                                                                          text: ' @${itemDataIn.to_name ?? '赴康云用户'} ',
+                                                                                          style: const TextStyle(color: Color.fromRGBO(0, 0, 0, 1), fontSize: 15, fontWeight: FontWeight.bold),
+                                                                                        ),
+                                                                                        const TextSpan(
+                                                                                          text: '说：',
+                                                                                          style: TextStyle(color: Color.fromRGBO(102, 102, 102, 1), fontSize: 15, fontWeight: FontWeight.normal),
+                                                                                        ),
+                                                                                        const WidgetSpan(
+                                                                                          child: SizedBox(width: 2), // 设置间距为10
+                                                                                        ),
+                                                                                        TextSpan(
+                                                                                          text: commentContent,
+                                                                                          style: const TextStyle(color: Color.fromRGBO(0, 0, 0, 1), fontSize: 15, fontWeight: FontWeight.normal),
+                                                                                        )
+                                                                                      ],
+                                                                                    )),
+                                                                          ),
+                                                                          Padding(
+                                                                            padding: (imagesCommentList.isNotEmpty && imagesCommentList[0].isNotEmpty)
+                                                                                ? const EdgeInsets.fromLTRB(0, 12, 0, 0)
+                                                                                : const EdgeInsets.all(0),
+                                                                            child: (imagesCommentList.isNotEmpty && imagesCommentList[0].isNotEmpty)
+                                                                                ? GridView.builder(
+                                                                                    gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                                                                                        // 交叉轴子项数量
+                                                                                        mainAxisSpacing: 8, // 主轴间距
+                                                                                        crossAxisSpacing: 8, // 交叉轴间距
+                                                                                        childAspectRatio: 1,
+                                                                                        mainAxisExtent: itemWidthOnlyComment,
+                                                                                        maxCrossAxisExtent: itemWidthOnlyComment),
+                                                                                    physics: const NeverScrollableScrollPhysics(),
+                                                                                    padding: EdgeInsets.zero, // 设置为零边距
+                                                                                    shrinkWrap: true,
+                                                                                    itemCount: imagesCommentList.length,
+                                                                                    itemBuilder: (BuildContext context, int index) {
+                                                                                      return GestureDetector(
+                                                                                        onTap: () => openComment(context, index),
+                                                                                        child: Hero(
+                                                                                          tag: galleryCommentItems[index].id,
+                                                                                          child: Container(
+                                                                                            color: Colors.white,
+                                                                                            child: CachedNetworkImage(
+                                                                                              imageUrl: '${globalController.cdnBaseUrl}/${imagesCommentList[index]}',
+                                                                                              fit: BoxFit.cover,
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                      );
+                                                                                    })
+                                                                                : const SizedBox.shrink(),
+                                                                          ),
+                                                                          Container(
+                                                                              margin: const EdgeInsets.only(top: 12, bottom: 12),
+                                                                              child: Row(
+                                                                                children: [
+                                                                                  GestureDetector(
+                                                                                    onTap: () => showCommentBottomSheet(itemData, commentItem: itemDataIn),
+                                                                                    child: const Text('回复', style: TextStyle(color: Color.fromRGBO(211, 66, 67, 1), fontSize: 15, fontWeight: FontWeight.bold)),
+                                                                                  ),
+                                                                                  Container(
+                                                                                    margin: const EdgeInsets.only(left: 24),
+                                                                                    child: Row(
+                                                                                      children: [
+                                                                                        InkWell(
+                                                                                          onTap: () => handleClickCommentReply(itemData, itemDataIn),
+                                                                                          child: Container(
+                                                                                            margin: const EdgeInsets.only(right: 4),
+                                                                                            width: 18,
+                                                                                            height: 18,
+                                                                                            child: readyLikeComment
+                                                                                                ? IconFont(
+                                                                                                    IconNames.dianzan_1,
+                                                                                                    size: 18,
+                                                                                                    color: 'rgb(211,66,67)',
+                                                                                                  )
+                                                                                                : IconFont(
+                                                                                                    IconNames.dianzan,
+                                                                                                    size: 18,
+                                                                                                    color: '#000',
+                                                                                                  ),
+                                                                                          ),
+                                                                                        ),
+                                                                                        Text(
+                                                                                          '${itemDataIn.like_num > 99 ? '99+' : itemDataIn.like_num}',
+                                                                                          style: const TextStyle(color: Color.fromRGBO(0, 0, 0, 1), fontSize: 14, fontWeight: FontWeight.normal),
+                                                                                        )
+                                                                                      ],
+                                                                                    ),
+                                                                                  )
+                                                                                ],
+                                                                              )),
+                                                                        ],
+                                                                      ))
+                                                                    ],
+                                                                  )
+                                                                ],
+                                                              );
+                                                            }).toList(),
+                                                          )
+                                                        : const SizedBox
+                                                            .shrink(),
+                                                    (itemData.comments !=
+                                                                null &&
+                                                            itemData.comments!
+                                                                    .length >
+                                                                itemData
+                                                                    .expand_num
+                                                        ? Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    bottom: 12),
+                                                            child:
+                                                                GestureDetector(
+                                                              onTap: () =>
+                                                                  handleExpandMore(
+                                                                      itemData),
+                                                              child: Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .center,
+                                                                children: [
+                                                                  Text(
+                                                                      '展开剩余${itemData.comments!.length - itemData.expand_num}条',
+                                                                      style: const TextStyle(
+                                                                          color: Color.fromRGBO(
+                                                                              211,
+                                                                              66,
+                                                                              67,
+                                                                              1),
+                                                                          fontSize:
+                                                                              15,
+                                                                          fontWeight:
+                                                                              FontWeight.bold)),
+                                                                  Container(
+                                                                    width: 18,
+                                                                    height: 18,
+                                                                    margin: const EdgeInsets
+                                                                        .only(
+                                                                        left:
+                                                                            4),
+                                                                    child:
+                                                                        IconFont(
+                                                                      IconNames
+                                                                          .xiala,
+                                                                      size: 14,
+                                                                      color:
+                                                                          'rgb(211,66,67)',
+                                                                    ),
+                                                                  )
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          )
+                                                        : const SizedBox
+                                                            .shrink())
+                                                  ],
+                                                ),
+                                                Positioned(
+                                                    right: 12,
+                                                    top: 0,
+                                                    child: Container(
+                                                      margin:
+                                                          const EdgeInsets.only(
+                                                              left: 0),
+                                                      child: Row(
+                                                        children: [
+                                                          InkWell(
+                                                            onTap: () =>
+                                                                handleClickLikeReply(
+                                                                    itemData),
+                                                            child: Container(
+                                                              margin:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      right: 4),
+                                                              width: 18,
+                                                              height: 18,
+                                                              child:
+                                                                  readyLikeReply
+                                                                      ? IconFont(
+                                                                          IconNames
+                                                                              .dianzan_1,
+                                                                          size:
+                                                                              18,
+                                                                          color:
+                                                                              'rgb(211,66,67)',
+                                                                        )
+                                                                      : IconFont(
+                                                                          IconNames
+                                                                              .dianzan,
+                                                                          size:
+                                                                              18,
+                                                                          color:
+                                                                              '#000',
+                                                                        ),
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            '${itemData.like_num > 99 ? '99+' : itemData.like_num}',
+                                                            style: const TextStyle(
+                                                                color: Color
+                                                                    .fromRGBO(
+                                                                        0,
+                                                                        0,
+                                                                        0,
+                                                                        1),
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ))
+                                              ],
+                                            ))
+                                          ],
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ))
                               ])))),
                 )
               : Expanded(
@@ -1198,48 +2526,55 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                           Row(
                             children: [
                               Expanded(
-                                  child: Container(
-                                height: 36,
-                                padding:
-                                    const EdgeInsets.fromLTRB(12, 0, 12, 0),
-                                decoration: const BoxDecoration(
-                                    color: Color.fromRGBO(242, 242, 242, 1)),
-                                child: const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    '我想说...',
-                                    style: TextStyle(
-                                        color: Color.fromRGBO(102, 102, 102, 1),
-                                        fontSize: 15),
+                                  child: GestureDetector(
+                                onTap: showReplyBottomSheet,
+                                child: Container(
+                                  height: 36,
+                                  padding:
+                                      const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                                  decoration: const BoxDecoration(
+                                      color: Color.fromRGBO(242, 242, 242, 1)),
+                                  child: const Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      '我想说...',
+                                      style: TextStyle(
+                                          color:
+                                              Color.fromRGBO(102, 102, 102, 1),
+                                          fontSize: 15),
+                                    ),
                                   ),
                                 ),
                               )),
                               Row(
                                 children: [
-                                  Container(
-                                    width: 36,
-                                    margin: const EdgeInsets.only(
-                                        right: 18, left: 18),
-                                    child: Column(
-                                      children: [
-                                        Container(
-                                          margin:
-                                              const EdgeInsets.only(bottom: 0),
-                                          child: IconFont(
-                                            IconNames.xiaoxi,
-                                            size: 24,
-                                            color: '#000',
+                                  InkWell(
+                                    onTap: scrollToReplyTitle,
+                                    child: Container(
+                                      width: 36,
+                                      margin: const EdgeInsets.only(
+                                          right: 18, left: 18),
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            margin: const EdgeInsets.only(
+                                                bottom: 0),
+                                            child: IconFont(
+                                              IconNames.xiaoxi,
+                                              size: 24,
+                                              color: '#000',
+                                            ),
                                           ),
-                                        ),
-                                        Text(
-                                          painQuestionDetail.reply_num > 99
-                                              ? '99+'
-                                              : '${painQuestionDetail.reply_num}',
-                                          style: const TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 14),
-                                        )
-                                      ],
+                                          Text(
+                                            painQuestionDetail.reply_num > 99
+                                                ? '99+'
+                                                : '${painQuestionDetail.reply_num}',
+                                            style: const TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 14),
+                                          )
+                                        ],
+                                      ),
                                     ),
                                   ),
                                   InkWell(
