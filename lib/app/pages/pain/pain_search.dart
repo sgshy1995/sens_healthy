@@ -151,12 +151,12 @@ class _PainSearchPageState extends State<PainSearchPage>
 
     if (ifSetToHistory &&
         searchContentValue != null &&
-        searchContentValue!.isNotEmpty) {
-      globalController.pushPainSearchHistory(searchContentValue!);
-      prefs.setStringList(
-          'pain_search_history', globalController.painSearchHistory);
+        searchContentValue!.isNotEmpty &&
+        !searchHistoryList.contains(searchContentValue)) {
       setState(() {
-        searchHistoryList = globalController.painSearchHistory;
+        searchHistoryList.insert(0, searchContentValue!);
+        globalController.pushPainSearchHistory(searchContentValue!);
+        prefs.setStringList('pain_search_history', searchHistoryList);
       });
     }
 
@@ -372,6 +372,7 @@ class _PainSearchPageState extends State<PainSearchPage>
                         child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Container(
+                        color: Colors.white,
                         width: double.infinity,
                         padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
                         child: Column(

@@ -11,6 +11,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import './app/pages/pain/pain_question_detail.dart';
 import './app/pages/pain/pain_question_publish.dart';
 import './app/pages/pain/pain_search.dart';
+import './app/pages/prescription/prescription_section.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 Future main() async {
@@ -46,6 +47,11 @@ Future main() async {
           GetPage(
             name: '/pain_search',
             page: () => const PainSearchPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/prescription_section',
+            page: () => PrescriptionSectionPage(),
             middlewares: [AuthMiddleware()],
           ),
         ],

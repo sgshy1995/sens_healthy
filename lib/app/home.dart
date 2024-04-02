@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../app/pages/pain/pain.dart';
-import '../app/pages/recovery/recovery.dart';
+import 'pages/prescription/prescription.dart';
 import '../app/pages/store/store.dart';
 import '../app/pages/mine/mine.dart';
 import '../components/keep_alive_wrapper.dart';
