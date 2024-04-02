@@ -9,9 +9,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import './app/bindings/home_binding.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import './app/pages/pain/pain_question_detail.dart';
+import './app/pages/pain/pain_question_publish.dart';
+import './app/pages/pain/pain_search.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 Future main() async {
-  await dotenv.load(fileName: ".env.prod"); // 加载开发环境配置
+  await dotenv.load(fileName: ".env.prod"); // 加载生产环境配置
   WidgetsFlutterBinding.ensureInitialized(); // 确保Flutter绑定初始化
   // Obtain shared preferences.
   final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -19,6 +22,7 @@ Future main() async {
   final String? token = prefs.getString('token');
   initializeDateFormatting('zh_CN', null).then((_) {
     runApp(GetMaterialApp(
+        builder: EasyLoading.init(),
         debugShowCheckedModeBanner: false,
         initialRoute: token is String ? '/' : '/login',
         getPages: [
@@ -32,6 +36,16 @@ Future main() async {
           GetPage(
             name: '/pain_question_detail',
             page: () => const PainQuestionDetailPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/pain_question_publish',
+            page: () => const PainQuestionPublishPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/pain_search',
+            page: () => const PainSearchPage(),
             middlewares: [AuthMiddleware()],
           ),
         ],

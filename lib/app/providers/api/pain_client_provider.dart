@@ -98,12 +98,23 @@ class PainClientProvider extends GlobalClientProvider {
   // 分页请求问题列表
   Future<DataPaginationFinalModel<List<PainQuestionTypeModel>>>
       getPainQuestionsByCustomAction(
-          {String? keyword, int? pageNo = 1, int? pageSize = 10}) async {
-    final jsonData = await get('/pain_question/custom', query: {
-      'keyword': keyword ?? '',
-      'pageNo': pageNo.toString(),
-      'pageSize': pageSize.toString()
-    });
+          {String? keyword,
+          int? pageNo = 1,
+          int? pageSize = 10,
+          bool hasMajor = false}) async {
+    final jsonData = await get('/pain_question/custom',
+        query: hasMajor
+            ? {
+                'keyword': keyword ?? '',
+                'pageNo': pageNo.toString(),
+                'pageSize': pageSize.toString(),
+                'has_major': '1',
+              }
+            : {
+                'keyword': keyword ?? '',
+                'pageNo': pageNo.toString(),
+                'pageSize': pageSize.toString()
+              });
     final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
 
     late List<PainQuestionTypeModel> list =

@@ -1218,7 +1218,7 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                                     body = const Text(
                                       "上拉加载",
                                       style: TextStyle(
-                                          color: Color.fromRGBO(33, 33, 33, 1),
+                                          color: Color.fromRGBO(73, 69, 79, 1),
                                           fontSize: 14),
                                     );
                                   } else if (mode == LoadStatus.loading) {
@@ -1236,23 +1236,24 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                                     body = const Text("加载失败，请重试",
                                         style: TextStyle(
                                             color:
-                                                Color.fromRGBO(33, 33, 33, 1),
+                                                Color.fromRGBO(73, 69, 79, 1),
                                             fontSize: 14));
                                   } else if (mode == LoadStatus.canLoading) {
                                     body = const Text("继续加载更多",
                                         style: TextStyle(
                                             color:
-                                                Color.fromRGBO(33, 33, 33, 1),
+                                                Color.fromRGBO(73, 69, 79, 1),
                                             fontSize: 14));
                                   } else {
                                     body = const Text("没有更多内容了~",
                                         style: TextStyle(
                                             color:
-                                                Color.fromRGBO(33, 33, 33, 1),
+                                                Color.fromRGBO(73, 69, 79, 1),
                                             fontSize: 14));
                                   }
-                                  return SizedBox(
-                                    height: 40.0,
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 24, bottom: 24),
                                     child: Center(child: body),
                                   );
                                 },

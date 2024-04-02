@@ -5,6 +5,7 @@ import './pain_consult.dart';
 import '../../../components/keep_alive_wrapper.dart';
 import 'package:get/get.dart';
 import './pain_question_publish.dart';
+import './pain_search.dart';
 
 class PainPage extends StatefulWidget {
   const PainPage({super.key});
@@ -56,6 +57,25 @@ class _PainPageState extends State<PainPage>
     // 在这里处理标签的点击事件
     print('Tab index: ${_tabController.index}');
     //scrollToTop();
+  }
+
+  void handleGoToSearch() {
+    // 切换时滚动到顶部
+    _painQuestionPageState.currentState?.scrollToTop();
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const PainSearchPage(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 200),
+      ),
+    );
   }
 
   void handleGoToPublish() async {
@@ -161,30 +181,33 @@ class _PainPageState extends State<PainPage>
                                       borderRadius:
                                           BorderRadius.all(Radius.circular(8)),
                                       color: Color.fromRGBO(233, 234, 235, 1)),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 18,
-                                        height: 18,
-                                        margin:
-                                            const EdgeInsets.only(right: 12),
-                                        child: Center(
-                                          child: IconFont(
-                                            IconNames.sousuo,
-                                            size: 18,
-                                            color: 'rgb(75,77,81)',
+                                  child: GestureDetector(
+                                    onTap: handleGoToSearch,
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 18,
+                                          height: 18,
+                                          margin:
+                                              const EdgeInsets.only(right: 12),
+                                          child: Center(
+                                            child: IconFont(
+                                              IconNames.sousuo,
+                                              size: 18,
+                                              color: 'rgb(75,77,81)',
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      const Expanded(
-                                          child: Text(
-                                        '搜索话题 / 问答 ...',
-                                        style: TextStyle(
-                                            color:
-                                                Color.fromRGBO(75, 77, 81, 1),
-                                            fontSize: 14),
-                                      ))
-                                    ],
+                                        const Expanded(
+                                            child: Text(
+                                          '搜索话题 / 问答 ...',
+                                          style: TextStyle(
+                                              color:
+                                                  Color.fromRGBO(75, 77, 81, 1),
+                                              fontSize: 14),
+                                        ))
+                                      ],
+                                    ),
                                   ),
                                 )),
                                 Row(

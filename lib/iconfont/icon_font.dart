@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
 
 enum IconNames {
-  yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, pingguohuawei, baojianqicai, yuangongfuli, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
+  cainixihuan, nan, nv, shanchu, shezhi, yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, pingguohuawei, baojianqicai, yuangongfuli, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
 }
 
 extension parseString on IconNames {
@@ -36,6 +36,21 @@ class IconFont extends StatelessWidget {
 
   static IconNames getIconNames(dynamic iconName) {
     switch (iconName) {
+      case 'cainixihuan':
+        iconName = IconNames.cainixihuan;
+        break;
+      case 'nan':
+        iconName = IconNames.nan;
+        break;
+      case 'nv':
+        iconName = IconNames.nv;
+        break;
+      case 'shanchu':
+        iconName = IconNames.shanchu;
+        break;
+      case 'shezhi':
+        iconName = IconNames.shezhi;
+        break;
       case 'yirenzheng':
         iconName = IconNames.yirenzheng;
         break;
@@ -169,6 +184,56 @@ class IconFont extends StatelessWidget {
     String svgXml;
 
     switch (this.name!) {
+      case IconNames.cainixihuan:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M294.144 568.864a13.6 13.6 0 0 0 1.344 1.664l154.56 164.928c33.952 39.968 90.72 39.968 125.12-0.48l153.6-164.864a140.16 140.16 0 0 0 3.776-4.032l2.272-2.432a13.536 13.536 0 0 0 1.792-2.368c20.48-25.6 31.392-57.696 31.392-92.832a148.448 148.448 0 0 0-256-102.304 148.448 148.448 0 0 0-256 102.304c0 37.12 14.08 73.408 38.144 100.416zM512 928C282.24 928 96 741.76 96 512S282.24 96 512 96s416 186.24 416 416-186.24 416-416 416z"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
+      case IconNames.nan:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M795.189333 176.917333H682.666667a32 32 0 1 1 0-64h192a32 32 0 0 1 32 32v192a32 32 0 1 1-64 0V219.946667l-105.866667 105.866666A350.613333 350.613333 0 0 1 821.333333 554.666667c0 194.4-157.6 352-352 352S117.333333 749.066667 117.333333 554.666667s157.6-352 352-352a350.538667 350.538667 0 0 1 221.6 78.506666l104.256-104.256zM469.333333 842.666667c159.061333 0 288-128.938667 288-288S628.394667 266.666667 469.333333 266.666667 181.333333 395.605333 181.333333 554.666667s128.938667 288 288 288z"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
+      case IconNames.nv:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M485.333333 768v-43.765333C321.077333 710.688 192 573.088 192 405.333333 192 228.597333 335.264 85.333333 512 85.333333c176.736 0 320 143.264 320 320 0 164.106667-123.52 299.349333-282.666667 317.845334V768H640a32 32 0 0 1 0 64h-90.666667v77.333333a32 32 0 0 1-64 0V832H384a32 32 0 0 1 0-64h101.333333zM512 661.333333c141.386667 0 256-114.613333 256-256S653.386667 149.333333 512 149.333333 256 263.946667 256 405.333333s114.613333 256 256 256z"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
+      case IconNames.shanchu:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M202.666667 256h-42.666667a32 32 0 0 1 0-64h704a32 32 0 0 1 0 64H266.666667v565.333333a53.333333 53.333333 0 0 0 53.333333 53.333334h384a53.333333 53.333333 0 0 0 53.333333-53.333334V352a32 32 0 0 1 64 0v469.333333c0 64.8-52.533333 117.333333-117.333333 117.333334H320c-64.8 0-117.333333-52.533333-117.333333-117.333334V256z m224-106.666667a32 32 0 0 1 0-64h170.666666a32 32 0 0 1 0 64H426.666667z m-32 288a32 32 0 0 1 64 0v256a32 32 0 0 1-64 0V437.333333z m170.666666 0a32 32 0 0 1 64 0v256a32 32 0 0 1-64 0V437.333333z"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
+      case IconNames.shezhi:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M944.48 552.458667l-182.357333 330.666666a73.792 73.792 0 0 1-64.565334 38.325334h-362.133333a73.792 73.792 0 0 1-64.565333-38.325334l-182.357334-330.666666a75.338667 75.338667 0 0 1 0-72.682667l182.357334-330.666667a73.792 73.792 0 0 1 64.565333-38.325333h362.133333a73.792 73.792 0 0 1 64.565334 38.325333l182.357333 330.666667a75.338667 75.338667 0 0 1 0 72.682667z m-55.989333-31.146667a10.773333 10.773333 0 0 0 0-10.378667l-182.037334-330.666666a10.517333 10.517333 0 0 0-9.205333-5.482667H335.733333a10.517333 10.517333 0 0 0-9.205333 5.482667l-182.037333 330.666666a10.773333 10.773333 0 0 0 0 10.378667l182.037333 330.666667a10.517333 10.517333 0 0 0 9.205333 5.472h361.514667a10.517333 10.517333 0 0 0 9.205333-5.472l182.037334-330.666667zM513.738667 682.666667c-94.261333 0-170.666667-76.405333-170.666667-170.666667s76.405333-170.666667 170.666667-170.666667c94.250667 0 170.666667 76.405333 170.666666 170.666667s-76.416 170.666667-170.666666 170.666667z m0-64c58.912 0 106.666667-47.754667 106.666666-106.666667s-47.754667-106.666667-106.666666-106.666667-106.666667 47.754667-106.666667 106.666667 47.754667 106.666667 106.666667 106.666667z"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
       case IconNames.yirenzheng:
         svgXml = '''
           <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">

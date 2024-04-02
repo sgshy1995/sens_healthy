@@ -19,26 +19,36 @@ import '../../../components/gallery_photo_view_wrapper.dart';
 import '../../../components/gallery_photo_view_item.dart';
 import 'dart:async';
 import 'package:shimmer/shimmer.dart';
+import 'dart:math';
 
 // 定义回调函数类型
-typedef ScrollCallback = void Function(double scrollDistance);
+typedef ShowDetailCallback = void Function();
+typedef SearchNumberCallback = void Function(int num);
 
-class PainQuestionPage extends StatefulWidget {
-  PainQuestionPage({super.key, required this.scrollCallBack});
+class PainSearchMajorPage extends StatefulWidget {
+  final String? keyword;
+  late ShowDetailCallback showDetailCallback;
+  late SearchNumberCallback searchNumberCallback;
 
-  late ScrollCallback scrollCallBack;
+  PainSearchMajorPage(
+      {super.key,
+      this.keyword,
+      required this.showDetailCallback,
+      required this.searchNumberCallback});
 
   @override
-  PainQuestionPageState createState() => PainQuestionPageState();
+  PainSearchMajorPageState createState() => PainSearchMajorPageState();
 }
 
-class PainQuestionPageState extends State<PainQuestionPage>
+class PainSearchMajorPageState extends State<PainSearchMajorPage>
     with TickerProviderStateMixin {
   final PainClientProvider painClientProvider =
       GetInstance().find<PainClientProvider>();
   final GlobalController globalController =
       GetInstance().find<GlobalController>();
   final UserController userController = GetInstance().find<UserController>();
+
+  late String keywordCanChange;
 
   void scrollToTop() {
     _scrollController.animateTo(
@@ -51,11 +61,16 @@ class PainQuestionPageState extends State<PainQuestionPage>
   List<String> items = ["1", "2", "3", "4", "5", "6", "7", "8"];
 
   /* 数据信息 */
-  bool _readyLoad = false;
+  bool readyLoad = false;
   int _currentPageNo = 1;
   DataPaginationInModel<List<PainQuestionTypeModel>>
       painQuestionDataPagination = DataPaginationInModel(
           data: [], pageNo: 1, pageSize: 10, totalPage: 0, totalCount: 0);
+
+  void initPagination() {
+    painQuestionDataPagination = DataPaginationInModel(
+        data: [], pageNo: 1, pageSize: 10, totalPage: 0, totalCount: 0);
+  }
 
   /* 点赞、收藏 状态 */
   bool _likeLoading = false;
@@ -230,13 +245,17 @@ class PainQuestionPageState extends State<PainQuestionPage>
   Future<String> getPainQuestions({int? page}) {
     Completer<String> completer = Completer();
     painClientProvider
-        .getPainQuestionsByCustomAction(pageNo: page ?? _currentPageNo + 1)
+        .getPainQuestionsByCustomAction(
+            keyword: widget.keyword,
+            pageNo: page ?? _currentPageNo + 1,
+            hasMajor: true)
         .then((value) {
       final valueGet = value.data.data;
       final pageNo = value.data.pageNo;
       final pageSize = value.data.pageSize;
       final totalPage = value.data.totalPage;
-      final totalCount = value.data.totalCount;
+      final totalCount = value.data.totalCount; // 生成 0 到 100 的随机数
+      widget.searchNumberCallback(totalCount);
       setState(() {
         _currentPageNo = pageNo;
         if (pageNo == 1) {
@@ -248,7 +267,7 @@ class PainQuestionPageState extends State<PainQuestionPage>
         painQuestionDataPagination.pageSize = pageSize;
         painQuestionDataPagination.totalPage = totalPage;
         painQuestionDataPagination.totalCount = totalCount;
-        _readyLoad = true;
+        readyLoad = true;
       });
       completer.complete(pageNo == totalPage ? 'no-data' : 'success');
     }).catchError((e) {
@@ -258,13 +277,26 @@ class PainQuestionPageState extends State<PainQuestionPage>
     return completer.future;
   }
 
+  void _scrollListener() {
+    setState(() {
+      _scrollDistance = _scrollController.offset;
+      if (_scrollDistance < 0) {
+        _rotationAngle = _scrollDistance > -_headerTriggerDistance
+            ? (0 - _scrollDistance) / _headerTriggerDistance * 360
+            : 360;
+      } else {
+        _rotationAngle = 0;
+      }
+    });
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    keywordCanChange = widget.keyword ?? '';
     _onRefresh();
     _scrollController.addListener(_scrollListener);
-
     _RotateController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
@@ -285,20 +317,6 @@ class PainQuestionPageState extends State<PainQuestionPage>
     // painClientProvider.dispose();
     // userController.dispose();
     // globalController.dispose();
-  }
-
-  void _scrollListener() {
-    setState(() {
-      _scrollDistance = _scrollController.offset;
-      widget.scrollCallBack(_scrollDistance);
-      if (_scrollDistance < 0) {
-        _rotationAngle = _scrollDistance > -_headerTriggerDistance
-            ? (0 - _scrollDistance) / _headerTriggerDistance * 360
-            : 360;
-      } else {
-        _rotationAngle = 0;
-      }
-    });
   }
 
   void onRefresh() {
@@ -343,12 +361,15 @@ class PainQuestionPageState extends State<PainQuestionPage>
   EdgeInsets safePadding = MediaQuery.of(Get.context!).padding;
 
   void handleGoToDetail(String questionId) {
-    Get.toNamed('/pain_question_detail', arguments: {'questionId': questionId});
+    Get.toNamed('/pain_question_detail', arguments: {'questionId': questionId})
+        ?.then((value) {
+      widget.showDetailCallback();
+    });
   }
 
   Widget buildHeader(BuildContext context, RefreshStatus? mode) {
     return Container(
-      color: Colors.white,
+      color: Colors.transparent,
       height: _headerTriggerDistance,
       child: Center(
           // child: Text(
@@ -395,316 +416,312 @@ class PainQuestionPageState extends State<PainQuestionPage>
         (mediaQuerySizeInfo.width - 24 - 8 - 8) / 3;
 
     Widget skeleton() {
-      return Container(
-        decoration: const BoxDecoration(color: Colors.transparent),
-        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-        margin: const EdgeInsets.only(bottom: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      return Column(
+        children: List.generate(10, (int index) {
+          return Container(
+            decoration: const BoxDecoration(color: Colors.transparent),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: const BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.all(Radius.circular(22))),
-                  margin: const EdgeInsets.only(right: 12),
-                  child: Shimmer.fromColors(
-                    baseColor: const Color.fromRGBO(229, 229, 229, 1),
-                    highlightColor: Colors.grey[100]!,
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+                const SizedBox(
+                  height: 12,
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      margin: const EdgeInsets.only(bottom: 6),
-                      child: Container(
-                        width: 44,
-                        height: 14,
-                        decoration: const BoxDecoration(
-                            borderRadius: BorderRadius.all(Radius.circular(6))),
-                        margin: const EdgeInsets.only(right: 12),
-                        child: Shimmer.fromColors(
-                          baseColor: const Color.fromRGBO(229, 229, 229, 1),
-                          highlightColor: Colors.grey[100]!,
-                          child: Container(
-                            width: 44,
-                            height: 14,
-                            decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(6)),
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 60,
-                      height: 14,
+                      width: 44,
+                      height: 44,
                       decoration: const BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(6))),
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.all(Radius.circular(22))),
                       margin: const EdgeInsets.only(right: 12),
                       child: Shimmer.fromColors(
                         baseColor: const Color.fromRGBO(229, 229, 229, 1),
                         highlightColor: Colors.grey[100]!,
                         child: Container(
-                          width: 60,
-                          height: 14,
+                          width: 44,
+                          height: 44,
                           decoration: const BoxDecoration(
-                            borderRadius: BorderRadius.all(Radius.circular(6)),
+                            shape: BoxShape.circle,
                             color: Colors.white,
                           ),
                         ),
                       ),
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 6),
+                          child: Container(
+                            width: 44,
+                            height: 14,
+                            decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(6))),
+                            margin: const EdgeInsets.only(right: 12),
+                            child: Shimmer.fromColors(
+                              baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                width: 44,
+                                height: 14,
+                                decoration: const BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(6)),
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: 60,
+                          height: 14,
+                          decoration: const BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(6))),
+                          margin: const EdgeInsets.only(right: 12),
+                          child: Shimmer.fromColors(
+                            baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: 60,
+                              height: 14,
+                              decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(6)),
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
                     )
                   ],
-                )
-              ],
-            ),
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              child: Container(
-                height: 60,
-                decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(6))),
-                margin: const EdgeInsets.only(right: 0),
-                child: Shimmer.fromColors(
-                  baseColor: const Color.fromRGBO(229, 229, 229, 1),
-                  highlightColor: Colors.grey[100]!,
+                ),
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
                   child: Container(
                     height: 60,
                     decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(6)),
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 18),
-              child: Stack(
-                children: [
-                  GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3, // 交叉轴子项数量
-                          mainAxisSpacing: 0, // 主轴间距
-                          crossAxisSpacing: 8, // 交叉轴间距
-                          childAspectRatio: 1,
-                          mainAxisExtent: itemWidthAndHeight),
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: EdgeInsets.zero, // 设置为零边距
-                      shrinkWrap: true,
-                      itemCount: 3,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Shimmer.fromColors(
-                          baseColor: const Color.fromRGBO(229, 229, 229, 1),
-                          highlightColor: Colors.grey[100]!,
-                          child: Container(
-                            decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(6)),
-                              color: Colors.white,
-                            ),
-                          ),
-                        );
-                      })
-                ],
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.only(top: 0, bottom: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.only(right: 24),
-                        child: Row(
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.only(right: 4),
-                              width: 24,
-                              height: 24,
-                              child: Shimmer.fromColors(
-                                baseColor:
-                                    const Color.fromRGBO(229, 229, 229, 1),
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  width: 24,
-                                  height: 24,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 24,
-                              height: 14,
-                              child: Shimmer.fromColors(
-                                baseColor:
-                                    const Color.fromRGBO(229, 229, 229, 1),
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  height: 14,
-                                  decoration: const BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(6)),
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(right: 24),
-                        child: Row(
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.only(right: 4),
-                              width: 24,
-                              height: 24,
-                              child: Shimmer.fromColors(
-                                baseColor:
-                                    const Color.fromRGBO(229, 229, 229, 1),
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  width: 24,
-                                  height: 24,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 24,
-                              height: 14,
-                              child: Shimmer.fromColors(
-                                baseColor:
-                                    const Color.fromRGBO(229, 229, 229, 1),
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  height: 14,
-                                  decoration: const BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(6)),
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(right: 24),
-                        child: Row(
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.only(right: 4),
-                              width: 24,
-                              height: 24,
-                              child: Shimmer.fromColors(
-                                baseColor:
-                                    const Color.fromRGBO(229, 229, 229, 1),
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  width: 24,
-                                  height: 24,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 24,
-                              height: 14,
-                              child: Shimmer.fromColors(
-                                baseColor:
-                                    const Color.fromRGBO(229, 229, 229, 1),
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  height: 14,
-                                  decoration: const BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(6)),
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                  Container(
+                        borderRadius: BorderRadius.all(Radius.circular(6))),
                     margin: const EdgeInsets.only(right: 0),
-                    width: 24,
-                    height: 24,
                     child: Shimmer.fromColors(
                       baseColor: const Color.fromRGBO(229, 229, 229, 1),
                       highlightColor: Colors.grey[100]!,
                       child: Container(
-                        width: 24,
-                        height: 24,
+                        height: 60,
                         decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.all(Radius.circular(6)),
                           color: Colors.white,
                         ),
                       ),
                     ),
-                  )
-                ],
-              ),
-            )
-          ],
-        ),
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 18),
+                  child: Stack(
+                    children: [
+                      GridView.builder(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3, // 交叉轴子项数量
+                                  mainAxisSpacing: 0, // 主轴间距
+                                  crossAxisSpacing: 8, // 交叉轴间距
+                                  childAspectRatio: 1,
+                                  mainAxisExtent: itemWidthAndHeight),
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: EdgeInsets.zero, // 设置为零边距
+                          shrinkWrap: true,
+                          itemCount: 3,
+                          itemBuilder: (BuildContext context, int index) {
+                            return Shimmer.fromColors(
+                              baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(6)),
+                                  color: Colors.white,
+                                ),
+                              ),
+                            );
+                          })
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(top: 0, bottom: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(right: 24),
+                            child: Row(
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(right: 4),
+                                  width: 24,
+                                  height: 24,
+                                  child: Shimmer.fromColors(
+                                    baseColor:
+                                        const Color.fromRGBO(229, 229, 229, 1),
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 24,
+                                  height: 14,
+                                  child: Shimmer.fromColors(
+                                    baseColor:
+                                        const Color.fromRGBO(229, 229, 229, 1),
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      height: 14,
+                                      decoration: const BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(6)),
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                          Container(
+                            margin: const EdgeInsets.only(right: 24),
+                            child: Row(
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(right: 4),
+                                  width: 24,
+                                  height: 24,
+                                  child: Shimmer.fromColors(
+                                    baseColor:
+                                        const Color.fromRGBO(229, 229, 229, 1),
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 24,
+                                  height: 14,
+                                  child: Shimmer.fromColors(
+                                    baseColor:
+                                        const Color.fromRGBO(229, 229, 229, 1),
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      height: 14,
+                                      decoration: const BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(6)),
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                          Container(
+                            margin: const EdgeInsets.only(right: 24),
+                            child: Row(
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(right: 4),
+                                  width: 24,
+                                  height: 24,
+                                  child: Shimmer.fromColors(
+                                    baseColor:
+                                        const Color.fromRGBO(229, 229, 229, 1),
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 24,
+                                  height: 14,
+                                  child: Shimmer.fromColors(
+                                    baseColor:
+                                        const Color.fromRGBO(229, 229, 229, 1),
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      height: 14,
+                                      decoration: const BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(6)),
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(right: 0),
+                        width: 24,
+                        height: 24,
+                        child: Shimmer.fromColors(
+                          baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                )
+              ],
+            ),
+          );
+        }),
       );
     }
 
     return Scaffold(
       body: Column(
         children: [
-          Container(
-            height: mediaQuerySafeInfo.top +
-                12 +
-                12 +
-                12 +
-                50 +
-                12 -
-                (_scrollDistance < 0
-                    ? 0
-                    : _scrollDistance < (36 + 12)
-                        ? _scrollDistance
-                        : (36 + 12)),
-            color: Colors.white,
-          ),
           Expanded(
               child: RefreshConfiguration(
             headerTriggerDistance: 60.0,
@@ -712,8 +729,8 @@ class PainQuestionPageState extends State<PainQuestionPage>
                 true, //这个属性不兼容PageView和TabBarView,如果你特别需要TabBarView左右滑动,你需要把它设置为true
             child: SmartRefresher(
                 physics: const ClampingScrollPhysics(), // 禁止回弹效果
-                enablePullDown: true,
-                enablePullUp: true,
+                enablePullDown: readyLoad,
+                enablePullUp: readyLoad,
                 header: CustomHeader(
                     builder: buildHeader,
                     onOffsetChange: (offset) {
@@ -781,249 +798,14 @@ class PainQuestionPageState extends State<PainQuestionPage>
                 child: CustomScrollView(
                   controller: _scrollController,
                   slivers: [
-                    SliverToBoxAdapter(
-                      child: Stack(
-                        children: [
-                          SizedBox(
-                            child: CarouselSlider(
-                                carouselController: _carouselController,
-                                items: [1, 2, 3, 4, 5].map((i) {
-                                  return Builder(
-                                    builder: (BuildContext context) {
-                                      return SizedBox(
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: CachedNetworkImage(
-                                            imageUrl:
-                                                '${globalController.cdnBaseUrl}/cdn/carousel/slider$i.jpg',
-                                            fit: BoxFit.fitWidth,
-                                          ));
-                                    },
-                                  );
-                                }).toList(),
-                                options: CarouselOptions(
-                                  aspectRatio: 16 / 9,
-                                  viewportFraction: 1,
-                                  initialPage: 0,
-                                  enableInfiniteScroll: true,
-                                  reverse: false,
-                                  autoPlay: true,
-                                  autoPlayInterval: Duration(seconds: 3),
-                                  autoPlayAnimationDuration:
-                                      Duration(milliseconds: 800),
-                                  autoPlayCurve: Curves.fastOutSlowIn,
-                                  enlargeCenterPage: false,
-                                  enlargeFactor: 0.3,
-                                  onPageChanged: carouselCallbackFunction,
-                                  scrollDirection: Axis.horizontal,
-                                )),
-                          ),
-                          Positioned(
-                              left: 0,
-                              right: 0,
-                              bottom: 12,
-                              child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      height: 14,
-                                      width: 120,
-                                      decoration: const BoxDecoration(
-                                          color: Color.fromRGBO(0, 0, 0, 0.5),
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(8))),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [1, 2, 3, 4, 5].map((i) {
-                                          return InkWell(
-                                            onTap: () =>
-                                                jumpToIndexCarouselPage(i - 1),
-                                            child: Container(
-                                              width: 12,
-                                              height:
-                                                  _carouselInitialIndex == i - 1
-                                                      ? 4
-                                                      : 3,
-                                              margin: EdgeInsets.only(
-                                                  right: i != 5 ? 8 : 0),
-                                              color:
-                                                  _carouselInitialIndex == i - 1
-                                                      ? const Color.fromRGBO(
-                                                          255, 255, 255, 1)
-                                                      : const Color.fromRGBO(
-                                                          255, 255, 255, 0.5),
-                                            ),
-                                          );
-                                        }).toList(),
-                                      ),
-                                    )
-                                  ]))
-                        ],
-                      ),
-                    ),
-                    SliverToBoxAdapter(
-                      child: Container(
-                        height: itemHeight,
-                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-                        margin: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-                        width: double.infinity,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              width: itemWidth,
-                              height: itemHeight,
-                              decoration: const BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8))),
-                              child: Stack(
-                                children: [
-                                  Center(
-                                    child: ClipRRect(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(8)),
-                                      child: Image.asset(
-                                        'assets/images/pain_item_1.png',
-                                        fit: BoxFit.fitWidth,
-                                        width: itemWidth,
-                                        height: itemHeight,
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                      child: Container(
-                                    decoration: const BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            Color.fromRGBO(0, 0, 0, 0.4),
-                                            Color.fromRGBO(0, 0, 0, 0.6),
-                                            Color.fromRGBO(0, 0, 0, 0.7)
-                                          ], // 渐变的起始和结束颜色
-                                        ),
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(8))),
-                                    width: itemWidth,
-                                    height: itemHeight,
-                                  )),
-                                  const Positioned(
-                                      left: 0,
-                                      right: 0,
-                                      bottom: 12,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            '我的课程',
-                                            style: TextStyle(
-                                                letterSpacing: 2,
-                                                color: Colors.white,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold),
-                                          )
-                                        ],
-                                      )),
-                                  Positioned(
-                                      top: 4,
-                                      right: 4,
-                                      child: Container(
-                                        decoration: const BoxDecoration(
-                                            color:
-                                                Color.fromRGBO(105, 79, 228, 1),
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(18))),
-                                        width: 36,
-                                        height: 36,
-                                        child: Center(
-                                          child: Text(
-                                              _myCourseNum > 99
-                                                  ? '99+'
-                                                  : '$_myCourseNum',
-                                              style: const TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      255, 255, 255, 1),
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.bold)),
-                                        ),
-                                      ))
-                                ],
-                              ),
-                            ),
-                            Container(
-                              width: itemWidth,
-                              height: itemHeight,
-                              decoration: const BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8))),
-                              child: Stack(
-                                children: [
-                                  Center(
-                                    child: ClipRRect(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(8)),
-                                      child: Image.asset(
-                                        'assets/images/pain_item_2.png',
-                                        fit: BoxFit.fitWidth,
-                                        width: itemWidth,
-                                        height: itemHeight,
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                      child: Container(
-                                    decoration: const BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            Color.fromRGBO(0, 0, 0, 0.4),
-                                            Color.fromRGBO(0, 0, 0, 0.6),
-                                            Color.fromRGBO(0, 0, 0, 0.7)
-                                          ], // 渐变的起始和结束颜色
-                                        ),
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(8))),
-                                    width: itemWidth,
-                                    height: itemHeight,
-                                  )),
-                                  const Positioned(
-                                      left: 0,
-                                      right: 0,
-                                      bottom: 12,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            '商城热门',
-                                            style: TextStyle(
-                                                letterSpacing: 2,
-                                                color: Colors.white,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold),
-                                          )
-                                        ],
-                                      ))
-                                ],
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                    (_readyLoad && painQuestionDataPagination.data.isNotEmpty
+                    (readyLoad && painQuestionDataPagination.data.isNotEmpty
                         ? const SliverToBoxAdapter()
                         : const SliverToBoxAdapter(
                             child: SizedBox.shrink(),
                           )),
                     SliverToBoxAdapter(
                       child: (painQuestionDataPagination.data.isEmpty &&
-                              _readyLoad)
+                              readyLoad)
                           ? Container(
                               width: double.infinity,
                               margin: const EdgeInsets.only(top: 48),
@@ -1054,7 +836,7 @@ class PainQuestionPageState extends State<PainQuestionPage>
                             ),
                     ),
                     SliverToBoxAdapter(
-                      child: !_readyLoad ? skeleton() : null,
+                      child: !readyLoad ? skeleton() : null,
                     ),
                     SliverList(
                         delegate: SliverChildBuilderDelegate((context, i) {
@@ -1158,14 +940,13 @@ class PainQuestionPageState extends State<PainQuestionPage>
                       return InkWell(
                         onTap: () => handleGoToDetail(itemData.id),
                         child: Container(
-                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               (i != 0
                                   ? Container(
-                                      margin: const EdgeInsets.only(bottom: 24),
+                                      margin: const EdgeInsets.only(bottom: 0),
                                       child: const Divider(
                                         height: 2,
                                         color: Color.fromRGBO(233, 234, 235, 1),
@@ -1174,6 +955,9 @@ class PainQuestionPageState extends State<PainQuestionPage>
                                   : const SizedBox(
                                       height: 0,
                                     )),
+                              const SizedBox(
+                                height: 12,
+                              ),
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -1367,7 +1151,7 @@ class PainQuestionPageState extends State<PainQuestionPage>
                               ),
                               Container(
                                 margin:
-                                    const EdgeInsets.only(top: 0, bottom: 12),
+                                    const EdgeInsets.only(top: 0, bottom: 0),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
