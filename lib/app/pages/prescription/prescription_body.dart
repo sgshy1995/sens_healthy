@@ -179,9 +179,9 @@ class PrescriptionBodyState extends State<PrescriptionBody>
 
   EdgeInsets safePadding = MediaQuery.of(Get.context!).padding;
 
-  void handleGoToDetail(String questionId) {
-    Get.toNamed('/pain_question_detail', arguments: {'questionId': questionId})
-        ?.then((value) {});
+  void handleGoToDetail(String prescriptionId) {
+    Get.toNamed('/prescription_detail',
+        arguments: {'prescriptionId': prescriptionId})?.then((value) {});
   }
 
   Widget buildHeader(BuildContext context, RefreshStatus? mode) {
@@ -386,7 +386,25 @@ class PrescriptionBodyState extends State<PrescriptionBody>
                         shrinkWrap: true,
                         itemCount: prescriptionDataPagination.data.length,
                         itemBuilder: (BuildContext context, int index) {
+                          final String watchNumShow = (prescriptionDataPagination
+                                          .data[index].watch_num >
+                                      1000 &&
+                                  prescriptionDataPagination
+                                          .data[index].watch_num <=
+                                      10000)
+                              ? '${(prescriptionDataPagination.data[index].watch_num / 1000).floor()}k+'
+                              : (prescriptionDataPagination
+                                              .data[index].watch_num >
+                                          10000 &&
+                                      prescriptionDataPagination
+                                              .data[index].watch_num <=
+                                          100000)
+                                  ? '${(prescriptionDataPagination.data[index].watch_num / 10000).floor()}k+'
+                                  : '${prescriptionDataPagination.data[index].watch_num}';
+
                           return GestureDetector(
+                            onTap: () => handleGoToDetail(
+                                prescriptionDataPagination.data[index].id),
                             child: Container(
                               width: itemWidthOrHeight,
                               height: itemWidthOrHeight,
@@ -492,17 +510,56 @@ class PrescriptionBodyState extends State<PrescriptionBody>
                                                           child: IconFont(
                                                               IconNames.nandu,
                                                               size: 18,
-                                                              color:
-                                                                  'rgb(209,80,54)'),
+                                                              color: prescriptionDataPagination
+                                                                          .data[
+                                                                              index]
+                                                                          .difficulty ==
+                                                                      5
+                                                                  ? 'rgb(217,75,22)'
+                                                                  : prescriptionDataPagination
+                                                                              .data[index]
+                                                                              .difficulty ==
+                                                                          4
+                                                                      ? 'rgb(237,114,31)'
+                                                                      : prescriptionDataPagination.data[index].difficulty == 3
+                                                                          ? 'rgb(255,177,47)'
+                                                                          : prescriptionDataPagination.data[index].difficulty == 2
+                                                                              ? 'rgb(255,204,54)'
+                                                                              : 'rgb(255,222,103)'),
                                                         ),
                                                       ),
                                                       Text(
                                                           '难度${prescriptionDataPagination.data[index].difficulty}',
-                                                          style:
-                                                              const TextStyle(
-                                                                  color: Colors
-                                                                      .white,
-                                                                  fontSize: 12))
+                                                          style: TextStyle(
+                                                              color: prescriptionDataPagination
+                                                                          .data[
+                                                                              index]
+                                                                          .difficulty ==
+                                                                      5
+                                                                  ? const Color
+                                                                      .fromRGBO(
+                                                                      217,
+                                                                      75,
+                                                                      22,
+                                                                      1)
+                                                                  : prescriptionDataPagination.data[index].difficulty ==
+                                                                          4
+                                                                      ? const Color.fromRGBO(
+                                                                          237,
+                                                                          114,
+                                                                          31,
+                                                                          1)
+                                                                      : prescriptionDataPagination.data[index].difficulty ==
+                                                                              3
+                                                                          ? const Color.fromRGBO(
+                                                                              255,
+                                                                              177,
+                                                                              47,
+                                                                              1)
+                                                                          : prescriptionDataPagination.data[index].difficulty == 2
+                                                                              ? const Color.fromRGBO(255, 204, 54, 1)
+                                                                              : const Color.fromRGBO(255, 222, 103, 1),
+                                                              fontSize: 12))
                                                     ],
                                                   ),
                                                 ),
@@ -534,8 +591,7 @@ class PrescriptionBodyState extends State<PrescriptionBody>
                                                                   'rgb(255,255,255)'),
                                                         ),
                                                       ),
-                                                      Text(
-                                                          '${prescriptionDataPagination.data[index].watch_num}',
+                                                      Text(watchNumShow,
                                                           style:
                                                               const TextStyle(
                                                                   color: Colors

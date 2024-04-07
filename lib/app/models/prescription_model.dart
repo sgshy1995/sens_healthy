@@ -3,7 +3,7 @@ class PrescriptionTypeModel {
   final String title; //处方标题
   final String cover; //处方封面
   final int prescription_type; //处方类型 0 文章 1 视频
-  final int watch_num; //观看人数
+  int watch_num; //观看人数
   final String? prescription_video; //处方视频地址
   final String? prescription_content; //处方内容
   final String description; //处方描述

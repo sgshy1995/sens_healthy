@@ -101,6 +101,30 @@ class PrescriptionClientProvider extends GlobalClientProvider {
     return dataFinalPrescriptionTypeModel;
   }
 
+  // 根据ID获取处方信息
+  Future<DataFinalModel<PrescriptionTypeModel>> getPrescriptionByIdAction(
+      String id) async {
+    final jsonData = await get('/prescription/id/$id');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel<PrescriptionTypeModel>
+        dataFinalPainPrescriptionTypeModel = DataFinalModel(
+            code: jsonMap['code'],
+            message: jsonMap['message'],
+            data: PrescriptionTypeModel.fromJson(jsonMap['data']));
+    return dataFinalPainPrescriptionTypeModel;
+  }
+
+  // 处方根据id增加观看人数
+  Future<DataFinalModel> addPrescriptionWatchNumAction(String id) async {
+    final jsonData = await post('/prescription/watch/$id', {});
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel dataFinalModel =
+        DataFinalModel(code: jsonMap['code'], message: jsonMap['message']);
+    return dataFinalModel;
+  }
+
   // Get request
   Future<String> captureAction(String deviceId) async {
     final jsonData = await get('/auth/capture', query: {"device_id": deviceId});
