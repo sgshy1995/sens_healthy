@@ -129,7 +129,7 @@ class _PrescriptionDetailPageState extends State<PrescriptionDetailPage>
           text: prescriptionDetail.description,
           style: const TextStyle(
               color: Color.fromRGBO(0, 0, 0, 1),
-              fontSize: 14,
+              fontSize: 15,
               fontWeight: FontWeight.normal),
         )
       ],
@@ -150,7 +150,7 @@ class _PrescriptionDetailPageState extends State<PrescriptionDetailPage>
           text: prescriptionDetail.gist,
           style: const TextStyle(
               color: Color.fromRGBO(0, 0, 0, 1),
-              fontSize: 14,
+              fontSize: 15,
               fontWeight: FontWeight.normal),
         )
       ],
@@ -202,7 +202,130 @@ class _PrescriptionDetailPageState extends State<PrescriptionDetailPage>
             : '${prescriptionDetail.watch_num}';
 
     Widget skeleton() {
-      return Container();
+      return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: mediaQuerySizeInfo.width / 16 * 9,
+              width: mediaQuerySizeInfo.width,
+              child: Shimmer.fromColors(
+                baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                highlightColor: Colors.grey[100]!,
+                child: Container(
+                  width: mediaQuerySizeInfo.width / 16 * 9,
+                  height: mediaQuerySizeInfo.width,
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(0)),
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 24,
+            ),
+            Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Shimmer.fromColors(
+                        baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          width: 200,
+                          height: 20,
+                          decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      Shimmer.fromColors(
+                        baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          width: 240,
+                          height: 26,
+                          decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      Shimmer.fromColors(
+                        baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          width: 180,
+                          height: 18,
+                          decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      Row(
+                        children: [
+                          Shimmer.fromColors(
+                            baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: 120,
+                              height: 36,
+                              decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 36,
+                            width: 12,
+                          ),
+                          Shimmer.fromColors(
+                            baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: 120,
+                              height: 36,
+                              decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 18,
+                      ),
+                      Shimmer.fromColors(
+                        baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          width: mediaQuerySizeInfo.width - 24,
+                          height: 800,
+                          decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                    ]))
+          ]);
     }
 
     return Scaffold(
@@ -536,7 +659,7 @@ class _PrescriptionDetailPageState extends State<PrescriptionDetailPage>
                                                             color:
                                                                 Color.fromRGBO(
                                                                     0, 0, 0, 1),
-                                                            fontSize: 14,
+                                                            fontSize: 15,
                                                             fontWeight:
                                                                 FontWeight
                                                                     .normal),
@@ -639,7 +762,7 @@ class _PrescriptionDetailPageState extends State<PrescriptionDetailPage>
                                                             color:
                                                                 Color.fromRGBO(
                                                                     0, 0, 0, 1),
-                                                            fontSize: 14,
+                                                            fontSize: 15,
                                                             fontWeight:
                                                                 FontWeight
                                                                     .normal),
@@ -728,7 +851,11 @@ class _PrescriptionDetailPageState extends State<PrescriptionDetailPage>
                     ),
                   ),
                 ]))
-          : const SizedBox.shrink())
+          : Expanded(
+              child: SingleChildScrollView(
+              physics: const NeverScrollableScrollPhysics(),
+              child: skeleton(),
+            )))
     ]));
   }
 }
