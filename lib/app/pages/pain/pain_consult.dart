@@ -31,7 +31,7 @@ class PainConsultPageState extends State<PainConsultPage> {
               ),
             ),
             const Text(
-              '暂无数据',
+              '暂无内容',
               style: TextStyle(
                   color: Color.fromRGBO(224, 222, 223, 1), fontSize: 14),
             )

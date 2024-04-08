@@ -821,7 +821,7 @@ class PainSearchMajorPageState extends State<PainSearchMajorPage>
                                       ),
                                     ),
                                     const Text(
-                                      '暂无数据',
+                                      '暂无内容',
                                       style: TextStyle(
                                           color:
                                               Color.fromRGBO(224, 222, 223, 1),
