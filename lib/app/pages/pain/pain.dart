@@ -263,6 +263,8 @@ class _PainPageState extends State<PainPage>
                               ),
                             ),
                           ),
+                          unselectedLabelColor:
+                              const Color.fromRGBO(0, 0, 0, 1),
                           labelColor: const Color.fromRGBO(211, 66, 67, 1),
                           indicatorColor: const Color.fromRGBO(211, 66, 67, 1),
                           controller: _tabController,

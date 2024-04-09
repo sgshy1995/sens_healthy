@@ -77,9 +77,6 @@ class PrescriptionClientProvider extends GlobalClientProvider {
       queryMap['hot_order'] = hotOrder.toString();
     }
 
-    print('queryMap');
-    print(queryMap);
-
     final jsonData = await get('/prescription/custom', query: queryMap);
     final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
 

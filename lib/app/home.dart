@@ -11,6 +11,7 @@ import './models/user_model.dart';
 import './controllers/user_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import './providers/api/user_client_provider.dart';
+import 'package:flutter/services.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -63,6 +64,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.red, // 强制状态栏颜色为红色
+    ));
     _animationHomeController = AnimationController(vsync: this)
       ..duration = const Duration(milliseconds: 700);
     _animationRecoveryController = AnimationController(vsync: this)
@@ -93,7 +97,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     setState(() {
       currentIndex = index;
     });
-    print('tab chage $index');
     switch (index) {
       case 0:
         _animationHomeController.reset();
@@ -241,10 +244,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               label: "我的")
         ],
       ),
-      body: IndexedStack(
-        index: currentIndex,
-        children: pages,
-      ),
+      body: AnnotatedRegion(
+          value: SystemUiOverlayStyle.dark,
+          child: IndexedStack(
+            index: currentIndex,
+            children: pages,
+          )),
     );
   }
 }

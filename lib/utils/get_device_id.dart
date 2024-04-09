@@ -13,7 +13,9 @@ class GetDeviceInfo {
     final String deviceIdFinal;
 
     if (deviceIdHistory == null) {
-      final String deviceIdNew = const Uuid().v4();
+      final String uuidNew = const Uuid().v4();
+      final int timeNew = DateTime.now().millisecondsSinceEpoch;
+      final String deviceIdNew = '$uuidNew-$timeNew';
       userController.setUUID(deviceIdNew);
       await prefs.setString('device_uuid', deviceIdNew);
       deviceIdFinal = deviceIdNew;
@@ -21,8 +23,6 @@ class GetDeviceInfo {
       userController.setUUID(deviceIdHistory);
       deviceIdFinal = deviceIdHistory;
     }
-
-    print('设备的UUID是: $deviceIdFinal');
 
     return deviceIdFinal;
   }

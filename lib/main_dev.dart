@@ -14,6 +14,7 @@ import './app/pages/pain/pain_question_publish.dart';
 import './app/pages/pain/pain_search.dart';
 import './app/pages/prescription/prescription_section.dart';
 import './app/pages/prescription/prescription_detail.dart';
+import './app/pages/store/store_course_live_detail.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 Future main() async {
@@ -70,6 +71,11 @@ Future main() async {
           GetPage(
             name: '/prescription_detail',
             page: () => const PrescriptionDetailPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/store_course_live_detail',
+            page: () => const StoreCourseLiveDetailPage(),
             middlewares: [AuthMiddleware()],
           ),
         ],

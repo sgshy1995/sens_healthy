@@ -41,15 +41,11 @@ class GlobalClientProvider extends GetConnect {
   void onInit() async {
     super.onInit();
 
-    print('dotenv.env -----: ${dotenv.env['API_BASE_URL']}');
-
     String? baseUrl = dotenv.env['API_BASE_URL'];
 
     if (baseUrl != null && Uri.parse(baseUrl).isAbsolute) {
       httpClient.baseUrl = baseUrl;
-      print('Right API_BASE_URL: $baseUrl');
     } else {
-      print('Invalid API_BASE_URL: $baseUrl');
       // 可以在这里设置一个默认的 baseUrl 或者执行其他处理逻辑
     }
 
@@ -59,7 +55,6 @@ class GlobalClientProvider extends GetConnect {
       if (userController.token.isNotEmpty) {
         final token = userController.token;
         request.headers['Authorization'] = "Bearer $token";
-        print("添加了一次头 $userController.token.toString()");
       }
 
       request.headers['Connection'] = 'close';
