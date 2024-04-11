@@ -3,6 +3,9 @@ import 'package:get/get.dart';
 import '../../../iconfont/icon_font.dart';
 import '../../../components/keep_alive_wrapper.dart';
 import './store_course.dart';
+import '../../controllers/store_controller.dart';
+import '../../providers/api/store_client_provider.dart';
+import './store_course_search.dart';
 
 class StorePage extends StatefulWidget {
   const StorePage({super.key});
@@ -12,6 +15,10 @@ class StorePage extends StatefulWidget {
 
 class _StorePageState extends State<StorePage>
     with SingleTickerProviderStateMixin {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final StoreClientProvider storeClientProvider =
+      GetInstance().find<StoreClientProvider>();
+  final StoreController storeController = GetInstance().find<StoreController>();
   final GlobalKey<StoreCoursePageState> _storeCoursePageState =
       GlobalKey<StoreCoursePageState>();
   late TabController _tabController;
@@ -53,9 +60,40 @@ class _StorePageState extends State<StorePage>
     }
   }
 
-  void handleGoToSearch() {}
-
   void handleGoToChart() {}
+
+  void loadChartsNum() {
+    storeClientProvider.getCourseChartListAction().then((value) {
+      storeController
+          .setStoreCourseChartNum(value.data != null ? value.data!.length : 0);
+    });
+  }
+
+  //课程类型 0 运动康复 1 神经康复 2 产后康复 3 术后康复
+  final List<String> courseTypeList = ['运动康复', '神经康复', '产后康复', '术后康复'];
+  int? courseTypeChoose;
+  void handleChooseCourseType(int index) {
+    Get.back();
+    Get.toNamed('/store_course_section',
+        arguments: {'courseTypeChoose': index});
+  }
+
+  void handleGoToSearch() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const StoreCourseSearchPage(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 200),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -63,6 +101,7 @@ class _StorePageState extends State<StorePage>
     _tabController = TabController(length: 2, vsync: this);
     _tabController.animation!.addListener(_handleTabViewScroll);
     _tabController.addListener(_handleTabSelection);
+    loadChartsNum();
   }
 
   @override
@@ -77,6 +116,93 @@ class _StorePageState extends State<StorePage>
     final Size mediaQuerySizeInfo = MediaQuery.of(context).size;
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: Drawer(
+        width: 240,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.zero, // 设置顶部边缘为直角
+          ),
+        ),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+          height: double.infinity,
+          color: const Color.fromRGBO(254, 251, 254, 1),
+          child: Column(
+            children: [
+              SizedBox(
+                height: mediaQuerySafeInfo.top + 24,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    margin: const EdgeInsets.only(right: 12, left: 6),
+                    child: Center(
+                      child: IconFont(
+                        IconNames.liebiaoxingshi,
+                        size: 20,
+                        color: 'rgb(0,0,0)',
+                      ),
+                    ),
+                  ),
+                  const Text('选择课程分类',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const SizedBox(
+                height: 24,
+              ),
+              Column(
+                children: List.generate(courseTypeList.length, (index) {
+                  return SizedBox(
+                    height: 64,
+                    child: GestureDetector(
+                      onTap: () => handleChooseCourseType(index),
+                      child: Center(
+                        child: (courseTypeChoose != index
+                            ? Text(
+                                courseTypeList[index],
+                                style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.normal),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 18,
+                                    height: 18,
+                                    margin: const EdgeInsets.only(right: 8),
+                                    child: Center(
+                                      child: IconFont(IconNames.duigou,
+                                          size: 18, color: 'rgb(209,80,54)'),
+                                    ),
+                                  ),
+                                  Text(
+                                    courseTypeList[index],
+                                    style: const TextStyle(
+                                        color: Color.fromRGBO(209, 80, 54, 1),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold),
+                                  )
+                                ],
+                              )),
+                      ),
+                    ),
+                  );
+                }),
+              )
+            ],
+          ),
+        ),
+      ),
       body: Stack(children: [
         Column(
           children: [
@@ -136,11 +262,18 @@ class _StorePageState extends State<StorePage>
                                       height: 24,
                                       margin: const EdgeInsets.only(
                                           right: 12, left: 6),
-                                      child: Center(
-                                        child: IconFont(
-                                          IconNames.liebiaoxingshi,
-                                          size: 20,
-                                          color: 'rgb(0,0,0)',
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          // 打开抽屉
+                                          _scaffoldKey.currentState
+                                              ?.openDrawer();
+                                        },
+                                        child: Center(
+                                          child: IconFont(
+                                            IconNames.liebiaoxingshi,
+                                            size: 20,
+                                            color: 'rgb(0,0,0)',
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -148,11 +281,14 @@ class _StorePageState extends State<StorePage>
                                       width: 24,
                                       height: 24,
                                       margin: const EdgeInsets.only(right: 0),
-                                      child: Center(
-                                        child: IconFont(
-                                          IconNames.sousuo,
-                                          size: 20,
-                                          color: 'rgb(0,0,0)',
+                                      child: GestureDetector(
+                                        onTap: handleGoToSearch,
+                                        child: Center(
+                                          child: IconFont(
+                                            IconNames.sousuo,
+                                            size: 20,
+                                            color: 'rgb(0,0,0)',
+                                          ),
                                         ),
                                       ),
                                     )
@@ -204,13 +340,13 @@ class _StorePageState extends State<StorePage>
                                     height: 24,
                                     margin: const EdgeInsets.only(
                                         right: 12, left: 0),
-                                    child: Center(
-                                      child: IconFont(
-                                        IconNames.dingdan,
-                                        size: 20,
-                                        color: 'rgb(0,0,0)',
-                                      ),
-                                    ),
+                                    // child: Center(
+                                    //   child: IconFont(
+                                    //     IconNames.dingdan,
+                                    //     size: 20,
+                                    //     color: 'rgb(0,0,0)',
+                                    //   ),
+                                    // ),
                                   ),
                                   Container(
                                     width: 24,
@@ -261,7 +397,7 @@ class _StorePageState extends State<StorePage>
                 ),
               ),
             )),
-        (chartNum > 0
+        (Obx(() => storeController.storeCourseChartNum > 0
             ? Positioned(
                 bottom: 56,
                 right: 18,
@@ -273,7 +409,7 @@ class _StorePageState extends State<StorePage>
                       borderRadius: BorderRadius.all(Radius.circular(24))),
                   child: Center(
                     child: Text(
-                      '$chartNum',
+                      '${storeController.storeCourseChartNum.value}',
                       style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -281,7 +417,7 @@ class _StorePageState extends State<StorePage>
                     ),
                   ),
                 ))
-            : const SizedBox.shrink())
+            : const SizedBox.shrink()))
       ]),
     );
   }

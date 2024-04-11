@@ -13,23 +13,23 @@ import '../../controllers/global_controller.dart';
 import '../../controllers/user_controller.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
-import '../../providers/api/store_client_provider.dart';
 import '../../../components/scale_button.dart';
+import '../../providers/api/store_client_provider.dart';
 import '../../controllers/store_controller.dart';
 
 // 定义回调函数类型
 typedef ScrollCallback = void Function(double scrollDistance);
 
-class StoreCourseLivePage extends StatefulWidget {
-  StoreCourseLivePage({super.key, required this.scrollCallBack});
+class StoreCourseVideoPage extends StatefulWidget {
+  StoreCourseVideoPage({super.key, required this.scrollCallBack});
 
   late ScrollCallback scrollCallBack;
 
   @override
-  State<StoreCourseLivePage> createState() => StoreCourseLivePageState();
+  State<StoreCourseVideoPage> createState() => StoreCourseVideoPageState();
 }
 
-class StoreCourseLivePageState extends State<StoreCourseLivePage>
+class StoreCourseVideoPageState extends State<StoreCourseVideoPage>
     with SingleTickerProviderStateMixin {
   final StoreController storeController = GetInstance().find<StoreController>();
   final StoreClientProvider storeClientProvider =
@@ -41,11 +41,11 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
   /* 数据信息 */
   bool _readyLoad = false;
   int _currentPageNo = 1;
-  DataPaginationInModel<List<StoreLiveCourseTypeModel>>
-      liveCourseDataPagination = DataPaginationInModel(
+  DataPaginationInModel<List<StoreVideoCourseTypeModel>>
+      videoCourseDataPagination = DataPaginationInModel(
           data: [], pageNo: 1, pageSize: 10, totalPage: 0, totalCount: 0);
 
-  List<StoreLiveCourseTypeModel> carouselData = [];
+  List<StoreVideoCourseTypeModel> carouselData = [];
 
   //课程类型 0 运动康复 1 神经康复 2 产后康复 3 术后康复
   final List<String> courseTypeList = ['运动康复', '神经康复', '产后康复', '术后康复'];
@@ -86,10 +86,10 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
 
   int _myCourseNum = 0;
 
-  Future<String> getLiveCourses({int? page}) {
+  Future<String> getVideoCourses({int? page}) {
     Completer<String> completer = Completer();
     storeClientProvider
-        .getLiveCoursesByCustomAction(pageNo: page ?? _currentPageNo + 1)
+        .getVideoCoursesByCustomAction(pageNo: page ?? _currentPageNo + 1)
         .then((value) {
       final valueGet = value.data.data;
       final pageNo = value.data.pageNo;
@@ -99,14 +99,14 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
       setState(() {
         _currentPageNo = pageNo;
         if (pageNo == 1) {
-          liveCourseDataPagination.data = valueGet;
+          videoCourseDataPagination.data = valueGet;
         } else {
-          liveCourseDataPagination.data.addAll(valueGet);
+          videoCourseDataPagination.data.addAll(valueGet);
         }
-        liveCourseDataPagination.pageNo = pageNo;
-        liveCourseDataPagination.pageSize = pageSize;
-        liveCourseDataPagination.totalPage = totalPage;
-        liveCourseDataPagination.totalCount = totalCount;
+        videoCourseDataPagination.pageNo = pageNo;
+        videoCourseDataPagination.pageSize = pageSize;
+        videoCourseDataPagination.totalPage = totalPage;
+        videoCourseDataPagination.totalCount = totalCount;
         _readyLoad = true;
       });
       completer.complete(pageNo == totalPage ? 'no-data' : 'success');
@@ -117,9 +117,9 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
     return completer.future;
   }
 
-  Future<String> getLiveCoursesCarouse({int? page}) {
+  Future<String> getVideoCoursesCarouse({int? page}) {
     Completer<String> completer = Completer();
-    storeClientProvider.getCarouselLiveCoursesAction().then((value) {
+    storeClientProvider.getCarouselVideoCoursesAction().then((value) {
       final carouselDataGet = value.data!;
       setState(() {
         carouselData = [...carouselDataGet];
@@ -155,7 +155,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
     // monitor network fetch
     String result;
     try {
-      result = await getLiveCourses(page: 1);
+      result = await getVideoCourses(page: 1);
       _refreshController.refreshCompleted();
       if (result == 'success') {
         _refreshController.loadComplete();
@@ -172,7 +172,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
     // monitor network fetch
     String result;
     try {
-      result = await getLiveCourses();
+      result = await getVideoCourses();
       print('最终的加载结果是: $result');
       if (result == 'success') {
         _refreshController.loadComplete();
@@ -184,10 +184,6 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
     }
   }
 
-  void handleGoToDetail(String courseId) {
-    Get.toNamed('/store_course_live_detail', arguments: {'courseId': courseId});
-  }
-
   bool addChartDisabled = false;
 
   void loadChartsNum() {
@@ -197,11 +193,11 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
     });
   }
 
-  void handleAddToChart(StoreLiveCourseTypeModel item) {
+  void handleAddToChart(StoreVideoCourseTypeModel item) {
     setState(() {
       addChartDisabled = true;
     });
-    storeClientProvider.createCourseChartAction(item.id, 1).then((value) {
+    storeClientProvider.createCourseChartAction(item.id, 0).then((value) {
       loadChartsNum();
       setState(() {
         addChartDisabled = false;
@@ -214,10 +210,15 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
     });
   }
 
+  void handleGoToDetail(String courseId) {
+    Get.toNamed('/store_course_video_detail',
+        arguments: {'courseId': courseId});
+  }
+
   @override
   void initState() {
     super.initState();
-    getLiveCoursesCarouse();
+    getVideoCoursesCarouse();
     _onRefresh();
     _scrollController.addListener(_scrollListener);
 
@@ -311,7 +312,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                   footer: CustomFooter(
                     builder: (BuildContext context, LoadStatus? mode) {
                       Widget? body;
-                      if (liveCourseDataPagination.data.isEmpty) {
+                      if (videoCourseDataPagination.data.isEmpty) {
                         body = null;
                       } else if (mode == LoadStatus.idle) {
                         body = const Text(
@@ -528,7 +529,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                       ),
                     ),
                     SliverToBoxAdapter(
-                      child: (liveCourseDataPagination.data.isEmpty &&
+                      child: (videoCourseDataPagination.data.isEmpty &&
                               _readyLoad)
                           ? Container(
                               width: double.infinity,
@@ -572,7 +573,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                               height: 12,
                             ),
                             Text(
-                              '全部课程 · ${liveCourseDataPagination.data.length}',
+                              '全部课程 · ${videoCourseDataPagination.data.length}',
                               style: const TextStyle(
                                   color: Colors.black,
                                   fontSize: 15,
@@ -598,34 +599,34 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                             physics: const NeverScrollableScrollPhysics(),
                             padding: EdgeInsets.zero, // 设置为零边距
                             shrinkWrap: true,
-                            itemCount: liveCourseDataPagination.data.length,
+                            itemCount: videoCourseDataPagination.data.length,
                             itemBuilder: (BuildContext context, int index) {
-                              final String frequencyNumShow = (liveCourseDataPagination
+                              final String frequencyNumShow = (videoCourseDataPagination
                                               .data[index].frequency_num >
                                           1000 &&
-                                      liveCourseDataPagination
+                                      videoCourseDataPagination
                                               .data[index].frequency_num <=
                                           10000)
-                                  ? '${(liveCourseDataPagination.data[index].frequency_num / 1000).floor()}k+'
-                                  : (liveCourseDataPagination
+                                  ? '${(videoCourseDataPagination.data[index].frequency_num / 1000).floor()}k+'
+                                  : (videoCourseDataPagination
                                                   .data[index].frequency_num >
                                               10000 &&
-                                          liveCourseDataPagination
+                                          videoCourseDataPagination
                                                   .data[index].frequency_num <=
                                               100000)
-                                      ? '${(liveCourseDataPagination.data[index].frequency_num / 10000).floor()}k+'
-                                      : '${liveCourseDataPagination.data[index].frequency_num}';
+                                      ? '${(videoCourseDataPagination.data[index].frequency_num / 10000).floor()}k+'
+                                      : '${videoCourseDataPagination.data[index].frequency_num}';
 
                               final String discountPercentItem =
-                                  liveCourseDataPagination
+                                  videoCourseDataPagination
                                               .data[index].is_discount ==
                                           1
-                                      ? '-${(((double.parse(liveCourseDataPagination.data[index].price) - double.parse(liveCourseDataPagination.data[index].discount!)) / double.parse(liveCourseDataPagination.data[index].price)) * 100).round()}%'
+                                      ? '-${(((double.parse(videoCourseDataPagination.data[index].price) - double.parse(videoCourseDataPagination.data[index].discount!)) / double.parse(videoCourseDataPagination.data[index].price)) * 100).round()}%'
                                       : "";
 
                               return GestureDetector(
                                 onTap: () => handleGoToDetail(
-                                    liveCourseDataPagination.data[index].id),
+                                    videoCourseDataPagination.data[index].id),
                                 child: Container(
                                   width: itemWidthOrHeight,
                                   decoration: const BoxDecoration(
@@ -653,7 +654,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                                             width: itemWidthOrHeight,
                                             height: itemWidthOrHeight / 4 * 3,
                                             imageUrl:
-                                                '${globalController.cdnBaseUrl}/${liveCourseDataPagination.data[index].cover}',
+                                                '${globalController.cdnBaseUrl}/${videoCourseDataPagination.data[index].cover}',
                                             fit: BoxFit.cover,
                                           )),
                                       Positioned(
@@ -661,7 +662,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                                           right: 8,
                                           child: Row(
                                             children: [
-                                              (liveCourseDataPagination
+                                              (videoCourseDataPagination
                                                           .data[index]
                                                           .is_discount ==
                                                       1
@@ -781,7 +782,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                                                     children: [
                                                       TextSpan(
                                                         text:
-                                                            liveCourseDataPagination
+                                                            videoCourseDataPagination
                                                                 .data[index]
                                                                 .title,
                                                         style: const TextStyle(
@@ -806,7 +807,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                                                   text: TextSpan(
                                                     children: [
                                                       const TextSpan(
-                                                        text: '面对面康复 · ',
+                                                        text: '专业能力提升 · ',
                                                         style: TextStyle(
                                                             color:
                                                                 Color.fromRGBO(
@@ -821,7 +822,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                                                       ),
                                                       TextSpan(
                                                         text: courseTypeList[
-                                                            liveCourseDataPagination
+                                                            videoCourseDataPagination
                                                                 .data[index]
                                                                 .course_type],
                                                         style: const TextStyle(
@@ -850,7 +851,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                                                     children: [
                                                       TextSpan(
                                                         text:
-                                                            '直播次数: ${liveCourseDataPagination.data[index].live_num}',
+                                                            '视频数: ${videoCourseDataPagination.data[index].video_num}',
                                                         style: const TextStyle(
                                                             color:
                                                                 Color.fromRGBO(
@@ -868,7 +869,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                                               const SizedBox(
                                                 height: 4,
                                               ),
-                                              (liveCourseDataPagination
+                                              (videoCourseDataPagination
                                                           .data[index]
                                                           .is_discount ==
                                                       0
@@ -881,7 +882,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                                                         children: [
                                                           TextSpan(
                                                             text:
-                                                                '¥ ${liveCourseDataPagination.data[index].price}',
+                                                                '¥ ${videoCourseDataPagination.data[index].price}',
                                                             style: const TextStyle(
                                                                 color: Color
                                                                     .fromRGBO(
@@ -905,7 +906,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                                                         children: [
                                                           TextSpan(
                                                             text:
-                                                                '¥ ${liveCourseDataPagination.data[index].price}',
+                                                                '¥ ${videoCourseDataPagination.data[index].price}',
                                                             style: const TextStyle(
                                                                 decoration:
                                                                     TextDecoration
@@ -928,7 +929,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                                                           ),
                                                           TextSpan(
                                                             text:
-                                                                '¥ ${liveCourseDataPagination.data[index].discount}',
+                                                                '¥ ${videoCourseDataPagination.data[index].discount}',
                                                             style: const TextStyle(
                                                                 color: Color
                                                                     .fromRGBO(
@@ -953,7 +954,7 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                                           child: ScaleButton(
                                             disabled: addChartDisabled,
                                             onTab: () => handleAddToChart(
-                                                liveCourseDataPagination
+                                                videoCourseDataPagination
                                                     .data[index]),
                                             child: Container(
                                               width: 24,

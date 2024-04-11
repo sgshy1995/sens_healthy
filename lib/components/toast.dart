@@ -8,7 +8,7 @@ void showToast(String msg, {Color? backgroundColor, Color? textColor}) {
       toastLength: Toast.LENGTH_LONG,
       gravity: ToastGravity.CENTER,
       timeInSecForIosWeb: 1,
-      backgroundColor: backgroundColor ?? const Color.fromRGBO(0, 0, 0, 0.8),
+      backgroundColor: backgroundColor ?? const Color.fromRGBO(0, 0, 0, 0.9),
       textColor: textColor ?? Colors.white,
-      fontSize: 14.0);
+      fontSize: 13.0);
 }

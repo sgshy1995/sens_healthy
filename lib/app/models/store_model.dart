@@ -118,7 +118,7 @@ class StoreVideoCourseTypeModel {
       }
 
       final List<StoreCourseInVideoTypeModel> list =
-          fromJsonList(json['videos']);
+          json['videos'] != null ? fromJsonList(json['videos']) : [];
 
       return StoreVideoCourseTypeModel(
           id: json['id'],
@@ -215,5 +215,71 @@ class StoreCourseInVideoTypeModel {
             status: 0,
             created_at: '',
             updated_at: '');
+  }
+}
+
+class StoreCourseChartTypeModel {
+  final String id; //商品id
+  final String user_id; //用户id
+  final String course_id; //课程id
+  final int add_course_type; //课程类型 1 直播课 0 视频课
+  final int add_num; //添加数量
+  final int status; //课程状态 1 正常 0 下架
+  final String created_at;
+  final String updated_at;
+  late StoreLiveCourseTypeModel? course_live_info;
+  late StoreVideoCourseTypeModel? course_video_info;
+  StoreCourseChartTypeModel(
+      {required this.id,
+      required this.user_id,
+      required this.course_id,
+      required this.add_course_type,
+      required this.add_num,
+      required this.status,
+      required this.created_at,
+      required this.updated_at,
+      this.course_live_info,
+      this.course_video_info});
+
+  factory StoreCourseChartTypeModel.fromJson(Map<String, dynamic>? json) {
+    if (json != null) {
+      List<StoreCourseInVideoTypeModel> fromJsonList(List<dynamic> jsonList) {
+        return jsonList
+            .map((json) => StoreCourseInVideoTypeModel.fromJson(json))
+            .toList();
+      }
+
+      final StoreLiveCourseTypeModel? modelLive =
+          json['course_live_info'] != null
+              ? StoreLiveCourseTypeModel.fromJson(json['course_live_info'])
+              : null;
+      final StoreVideoCourseTypeModel? modelVideo =
+          json['course_video_info'] != null
+              ? StoreVideoCourseTypeModel.fromJson(json['course_video_info'])
+              : null;
+
+      return StoreCourseChartTypeModel(
+          id: json['id'],
+          user_id: json['user_id'],
+          course_id: json['course_id'],
+          add_course_type: json['add_course_type'],
+          add_num: json['add_num'],
+          status: json['status'],
+          created_at: json['created_at'],
+          updated_at: json['updated_at'],
+          course_live_info: modelLive,
+          course_video_info: modelVideo);
+    }
+    return StoreCourseChartTypeModel(
+        id: '',
+        user_id: '',
+        course_id: '',
+        add_course_type: 0,
+        add_num: 0,
+        status: 0,
+        created_at: '',
+        updated_at: '',
+        course_live_info: null,
+        course_video_info: null);
   }
 }

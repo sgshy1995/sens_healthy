@@ -8,7 +8,6 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:sens_healthy/app/models/data_model.dart';
 import 'package:sens_healthy/app/models/store_model.dart';
 import 'package:sens_healthy/components/toast.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import '../../controllers/global_controller.dart';
 import '../../controllers/user_controller.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -20,16 +19,21 @@ import '../../controllers/store_controller.dart';
 // 定义回调函数类型
 typedef ScrollCallback = void Function(double scrollDistance);
 
-class StoreCourseLivePage extends StatefulWidget {
-  StoreCourseLivePage({super.key, required this.scrollCallBack});
+class StoreCourseSearchLivePage extends StatefulWidget {
+  StoreCourseSearchLivePage(
+      {super.key, required this.scrollCallBack, this.courseType, this.keyword});
+
+  late int? courseType;
+  late String? keyword;
 
   late ScrollCallback scrollCallBack;
 
   @override
-  State<StoreCourseLivePage> createState() => StoreCourseLivePageState();
+  State<StoreCourseSearchLivePage> createState() =>
+      StoreCourseSearchLivePageState();
 }
 
-class StoreCourseLivePageState extends State<StoreCourseLivePage>
+class StoreCourseSearchLivePageState extends State<StoreCourseSearchLivePage>
     with SingleTickerProviderStateMixin {
   final StoreController storeController = GetInstance().find<StoreController>();
   final StoreClientProvider storeClientProvider =
@@ -38,14 +42,20 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
       GetInstance().find<GlobalController>();
   final UserController userController = GetInstance().find<UserController>();
 
+  late int? courseTypeGet;
+  late String? keywordGet;
+
   /* 数据信息 */
-  bool _readyLoad = false;
+  bool readyLoad = false;
   int _currentPageNo = 1;
   DataPaginationInModel<List<StoreLiveCourseTypeModel>>
       liveCourseDataPagination = DataPaginationInModel(
           data: [], pageNo: 1, pageSize: 10, totalPage: 0, totalCount: 0);
 
-  List<StoreLiveCourseTypeModel> carouselData = [];
+  void initPagination() {
+    liveCourseDataPagination = DataPaginationInModel(
+        data: [], pageNo: 1, pageSize: 10, totalPage: 0, totalCount: 0);
+  }
 
   //课程类型 0 运动康复 1 神经康复 2 产后康复 3 术后康复
   final List<String> courseTypeList = ['运动康复', '神经康复', '产后康复', '术后康复'];
@@ -64,20 +74,6 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
   final ScrollController _scrollController = ScrollController();
   double _scrollDistance = 0.0;
 
-  final CarouselController _carouselController = CarouselController();
-  int _carouselInitialIndex = 0;
-  void jumpToIndexCarouselPage(int index) {
-    _carouselController.animateToPage(index);
-  }
-
-  dynamic Function(int, CarouselPageChangedReason)? carouselCallbackFunction(
-      index, reason) {
-    setState(() {
-      _carouselInitialIndex = index;
-    });
-    return null;
-  }
-
   late AnimationController _RotateController;
   late Animation<double> _animation;
 
@@ -86,10 +82,15 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
 
   int _myCourseNum = 0;
 
-  Future<String> getLiveCourses({int? page}) {
+  Future<String> getLiveCourses({
+    int? page,
+  }) {
     Completer<String> completer = Completer();
     storeClientProvider
-        .getLiveCoursesByCustomAction(pageNo: page ?? _currentPageNo + 1)
+        .getLiveCoursesByCustomAction(
+            pageNo: page ?? _currentPageNo + 1,
+            keyword: keywordGet,
+            courseType: courseTypeGet)
         .then((value) {
       final valueGet = value.data.data;
       final pageNo = value.data.pageNo;
@@ -107,25 +108,9 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
         liveCourseDataPagination.pageSize = pageSize;
         liveCourseDataPagination.totalPage = totalPage;
         liveCourseDataPagination.totalCount = totalCount;
-        _readyLoad = true;
+        readyLoad = true;
       });
       completer.complete(pageNo == totalPage ? 'no-data' : 'success');
-    }).catchError((e) {
-      completer.completeError(e);
-    });
-
-    return completer.future;
-  }
-
-  Future<String> getLiveCoursesCarouse({int? page}) {
-    Completer<String> completer = Completer();
-    storeClientProvider.getCarouselLiveCoursesAction().then((value) {
-      final carouselDataGet = value.data!;
-      setState(() {
-        carouselData = [...carouselDataGet];
-        _readyLoad = true;
-      });
-      completer.complete('success');
     }).catchError((e) {
       completer.completeError(e);
     });
@@ -217,7 +202,10 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
   @override
   void initState() {
     super.initState();
-    getLiveCoursesCarouse();
+
+    courseTypeGet = widget.courseType;
+    keywordGet = widget.keyword;
+
     _onRefresh();
     _scrollController.addListener(_scrollListener);
 
@@ -358,178 +346,8 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                   child:
                       CustomScrollView(controller: _scrollController, slivers: [
                     SliverToBoxAdapter(
-                      child: Stack(
-                        children: [
-                          SizedBox(
-                            child: CarouselSlider(
-                                carouselController: _carouselController,
-                                items: carouselData.map((i) {
-                                  final String coverGet =
-                                      '${globalController.cdnBaseUrl}/${i.cover}';
-                                  final String discountPercent = i
-                                              .is_discount ==
-                                          1
-                                      ? '-${(((double.parse(i.price) - double.parse(i.discount!)) / double.parse(i.price)) * 100).round()}%'
-                                      : "";
-                                  return Builder(
-                                    builder: (BuildContext context) {
-                                      return SizedBox(
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: GestureDetector(
-                                            onTap: () => handleGoToDetail(i.id),
-                                            child: Stack(
-                                              children: [
-                                                SizedBox(
-                                                  width: MediaQuery.of(context)
-                                                      .size
-                                                      .width,
-                                                  child: CachedNetworkImage(
-                                                    imageUrl: coverGet,
-                                                    fit: BoxFit.fitWidth,
-                                                  ),
-                                                ),
-                                                Positioned(
-                                                    left: 0,
-                                                    right: 0,
-                                                    bottom: 36,
-                                                    child: Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Container(
-                                                              height: 32,
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .fromLTRB(24,
-                                                                      0, 24, 0),
-                                                              decoration: const BoxDecoration(
-                                                                  color: Color
-                                                                      .fromRGBO(
-                                                                          0,
-                                                                          0,
-                                                                          0,
-                                                                          0.5),
-                                                                  borderRadius:
-                                                                      BorderRadius.all(
-                                                                          Radius.circular(
-                                                                              8))),
-                                                              child: Row(
-                                                                children: [
-                                                                  Text(
-                                                                    i.title,
-                                                                    style: const TextStyle(
-                                                                        color: Colors
-                                                                            .white,
-                                                                        fontSize:
-                                                                            14,
-                                                                        fontWeight:
-                                                                            FontWeight.bold),
-                                                                  ),
-                                                                  (i.is_discount ==
-                                                                          1
-                                                                      ? Row(
-                                                                          children: [
-                                                                            Container(
-                                                                              width: 18,
-                                                                              height: 18,
-                                                                              margin: const EdgeInsets.only(right: 4, left: 12),
-                                                                              child: Center(
-                                                                                child: IconFont(IconNames.pic_discount, size: 18),
-                                                                              ),
-                                                                            ),
-                                                                            Text(
-                                                                              discountPercent,
-                                                                              style: const TextStyle(color: Color.fromRGBO(209, 120, 47, 1), fontSize: 14, fontWeight: FontWeight.bold),
-                                                                            )
-                                                                          ],
-                                                                        )
-                                                                      : const SizedBox
-                                                                          .shrink())
-                                                                ],
-                                                              ))
-                                                        ]))
-                                              ],
-                                            ),
-                                          ));
-                                    },
-                                  );
-                                }).toList(),
-                                options: CarouselOptions(
-                                  aspectRatio: 16 / 9,
-                                  viewportFraction: 1,
-                                  initialPage: 0,
-                                  enableInfiniteScroll: true,
-                                  reverse: false,
-                                  autoPlay: true,
-                                  autoPlayInterval: const Duration(seconds: 3),
-                                  autoPlayAnimationDuration:
-                                      const Duration(milliseconds: 800),
-                                  autoPlayCurve: Curves.fastOutSlowIn,
-                                  enlargeCenterPage: false,
-                                  enlargeFactor: 0.3,
-                                  onPageChanged: carouselCallbackFunction,
-                                  scrollDirection: Axis.horizontal,
-                                )),
-                          ),
-                          Positioned(
-                              left: 0,
-                              right: 0,
-                              bottom: 12,
-                              child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      height: 14,
-                                      width: 24 +
-                                          carouselData.length * 12 +
-                                          (carouselData.length - 1) * 8,
-                                      decoration: const BoxDecoration(
-                                          color: Color.fromRGBO(0, 0, 0, 0.5),
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(8))),
-                                      child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: List.generate(
-                                              carouselData.length, (index) {
-                                            return InkWell(
-                                              onTap: () =>
-                                                  jumpToIndexCarouselPage(
-                                                      index),
-                                              child: Container(
-                                                width: 12,
-                                                height: _carouselInitialIndex ==
-                                                        index
-                                                    ? 4
-                                                    : 3,
-                                                margin: EdgeInsets.only(
-                                                    right: index !=
-                                                            carouselData
-                                                                    .length -
-                                                                1
-                                                        ? 8
-                                                        : 0),
-                                                color: _carouselInitialIndex ==
-                                                        index
-                                                    ? const Color.fromRGBO(
-                                                        255, 255, 255, 1)
-                                                    : const Color.fromRGBO(
-                                                        255, 255, 255, 0.5),
-                                              ),
-                                            );
-                                          })),
-                                    )
-                                  ]))
-                        ],
-                      ),
-                    ),
-                    SliverToBoxAdapter(
                       child: (liveCourseDataPagination.data.isEmpty &&
-                              _readyLoad)
+                              readyLoad)
                           ? Container(
                               width: double.infinity,
                               margin: const EdgeInsets.only(top: 48),
@@ -560,27 +378,29 @@ class StoreCourseLivePageState extends State<StoreCourseLivePage>
                             ),
                     ),
                     SliverToBoxAdapter(
-                      child: !_readyLoad ? skeleton() : null,
+                      child: !readyLoad ? skeleton() : null,
                     ),
                     SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(
-                              height: 12,
-                            ),
-                            Text(
-                              '全部课程 · ${liveCourseDataPagination.data.length}',
-                              style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold),
+                      child: (liveCourseDataPagination.data.isNotEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.only(left: 12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(
+                                    height: 12,
+                                  ),
+                                  Text(
+                                    '搜索结果 · ${liveCourseDataPagination.data.length}',
+                                    style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold),
+                                  )
+                                ],
+                              ),
                             )
-                          ],
-                        ),
-                      ),
+                          : null),
                     ),
                     SliverToBoxAdapter(
                       child: Container(

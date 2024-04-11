@@ -14,15 +14,15 @@ import '../../../components/scale_button.dart';
 import '../../controllers/store_controller.dart';
 import '../../../components/toast.dart';
 
-class StoreCourseLiveDetailPage extends StatefulWidget {
-  const StoreCourseLiveDetailPage({super.key});
+class StoreCourseVideoDetailPage extends StatefulWidget {
+  const StoreCourseVideoDetailPage({super.key});
 
   @override
-  State<StoreCourseLiveDetailPage> createState() =>
-      _StoreCourseLiveDetailPageState();
+  State<StoreCourseVideoDetailPage> createState() =>
+      _StoreCourseVideoDetailPageState();
 }
 
-class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
+class _StoreCourseVideoDetailPageState extends State<StoreCourseVideoDetailPage>
     with SingleTickerProviderStateMixin {
   final StoreController storeController = GetInstance().find<StoreController>();
   late TabController _tabController;
@@ -48,13 +48,13 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
 
   late final String dataId;
 
-  StoreLiveCourseTypeModel storeLiveCourseDetail = StoreLiveCourseTypeModel(
+  StoreVideoCourseTypeModel storeVideoCourseDetail = StoreVideoCourseTypeModel(
       id: '',
       title: '',
       cover: '',
       description: '',
       course_type: 0,
-      live_num: 0,
+      video_num: 0,
       frequency_num: 0,
       price: '',
       is_discount: 0,
@@ -64,20 +64,24 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
       publish_time: '',
       status: 0,
       created_at: '',
-      updated_at: '');
+      updated_at: '',
+      videos: []);
+
+  List<bool> expandList = [];
 
   //课程类型 0 运动康复 1 神经康复 2 产后康复 3 术后康复
   final List<String> courseTypeList = ['运动康复', '神经康复', '产后康复', '术后康复'];
 
   void getDetailData() {
-    storeClientProvider.getCourseLiveByIdAction(dataId).then((result) {
+    storeClientProvider.getCourseVideoByIdAction(dataId).then((result) {
       if (result.code == 200) {
-        final painQuestionNew = result.data!;
+        final detailNew = result.data!;
+        final List<bool> expandListGet =
+            List.generate(detailNew.videos!.length, (index) => false);
         setState(() {
-          storeLiveCourseDetail = painQuestionNew;
-          setState(() {
-            _readyLoad = true;
-          });
+          expandList.addAll(expandListGet);
+          storeVideoCourseDetail = detailNew;
+          _readyLoad = true;
         });
       }
     });
@@ -99,7 +103,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
     final TextSpan richTextIn = TextSpan(
       children: [
         TextSpan(
-          text: storeLiveCourseDetail.description,
+          text: storeVideoCourseDetail.description,
           style: const TextStyle(
               color: Color.fromRGBO(0, 0, 0, 1),
               fontSize: 15,
@@ -130,7 +134,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
       addChartDisabled = true;
     });
     storeClientProvider
-        .createCourseChartAction(storeLiveCourseDetail.id, 1)
+        .createCourseChartAction(storeVideoCourseDetail.id, 0)
         .then((value) {
       loadChartsNum();
       setState(() {
@@ -348,7 +352,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
           value: SystemUiOverlayStyle.light,
           child: Stack(
             children: [
-              (_readyLoad && storeLiveCourseDetail.id.isEmpty
+              (_readyLoad && storeVideoCourseDetail.id.isEmpty
                   ? Container(
                       width: mediaQuerySizeInfo.width,
                       margin: const EdgeInsets.only(top: 200),
@@ -380,7 +384,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                       child: skeleton(),
                     )
                   : const SizedBox.shrink()),
-              (storeLiveCourseDetail.id.isNotEmpty
+              (storeVideoCourseDetail.id.isNotEmpty
                   ? CustomScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       slivers: [
@@ -401,7 +405,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                                               3,
                                       child: CachedNetworkImage(
                                         imageUrl:
-                                            '${globalController.cdnBaseUrl}/${storeLiveCourseDetail.cover}',
+                                            '${globalController.cdnBaseUrl}/${storeVideoCourseDetail.cover}',
                                         fit: BoxFit.fill,
                                       ),
                                     ),
@@ -442,7 +446,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                                           height: 26,
                                           decoration: const BoxDecoration(
                                               color: Color.fromRGBO(
-                                                  203, 174, 241, 1),
+                                                  172, 202, 239, 1),
                                               borderRadius: BorderRadius.all(
                                                   Radius.circular(8))),
                                           padding: const EdgeInsets.fromLTRB(
@@ -458,23 +462,23 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                                                     right: 4),
                                                 child: Center(
                                                   child: IconFont(
-                                                    IconNames.live_fill,
+                                                    IconNames.video_fill,
                                                     size: 20,
-                                                    color: 'rgb(151,63,247)',
+                                                    color: 'rgb(69,141,229)',
                                                   ),
                                                 ),
                                               ),
-                                              const Text('面对面康复指导',
+                                              const Text('专业能力提升',
                                                   style: TextStyle(
                                                       color: Color.fromRGBO(
-                                                          151, 63, 247, 1),
+                                                          69, 141, 229, 1),
                                                       fontSize: 13,
                                                       fontWeight:
                                                           FontWeight.bold))
                                             ],
                                           ),
                                         ),
-                                        (storeLiveCourseDetail.is_discount == 1
+                                        (storeVideoCourseDetail.is_discount == 1
                                             ? Container(
                                                 height: 26,
                                                 decoration: const BoxDecoration(
@@ -504,7 +508,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                                       height: 12,
                                     ),
                                     Text(
-                                      storeLiveCourseDetail.title,
+                                      storeVideoCourseDetail.title,
                                       style: const TextStyle(
                                           color: Colors.black,
                                           fontSize: 15,
@@ -520,7 +524,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                                         text: TextSpan(
                                           children: [
                                             const TextSpan(
-                                              text: '直播课 · ',
+                                              text: '视频课 · ',
                                               style: TextStyle(
                                                   color: Color.fromRGBO(
                                                       0, 0, 0, 1),
@@ -530,7 +534,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                                             ),
                                             TextSpan(
                                               text: courseTypeList[
-                                                  storeLiveCourseDetail
+                                                  storeVideoCourseDetail
                                                       .course_type],
                                               style: const TextStyle(
                                                   color: Color.fromRGBO(
@@ -567,7 +571,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                                               ),
                                             ),
                                             Text(
-                                                '${storeLiveCourseDetail.live_num}次直播',
+                                                '${storeVideoCourseDetail.video_num}个视频',
                                                 style: const TextStyle(
                                                     color: Color.fromRGBO(
                                                         0, 0, 0, 1),
@@ -601,7 +605,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                                               ),
                                             ),
                                             Text(
-                                                '${storeLiveCourseDetail.frequency_num}已购买',
+                                                '${storeVideoCourseDetail.frequency_num}已购买',
                                                 style: const TextStyle(
                                                     color: Color.fromRGBO(
                                                         0, 0, 0, 1),
@@ -649,7 +653,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                                               child: Text('课程信息'),
                                             ),
                                             Tab(
-                                              child: Text('直播信息'),
+                                              child: Text('视频概览'),
                                             )
                                           ]),
                                     ),
@@ -700,7 +704,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                                                     children: [
                                                       TextSpan(
                                                         text:
-                                                            storeLiveCourseDetail
+                                                            storeVideoCourseDetail
                                                                 .description,
                                                         style: const TextStyle(
                                                             height:
@@ -769,191 +773,168 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
-                                            children: [
-                                              RichText(
-                                                  textAlign: TextAlign.left,
-                                                  text: TextSpan(
-                                                    children: [
-                                                      const TextSpan(
-                                                        text: '直播次数: ',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal),
-                                                      ),
-                                                      const WidgetSpan(
-                                                        child: SizedBox(
-                                                            width:
-                                                                6), // 设置间距为10
-                                                      ),
-                                                      TextSpan(
-                                                        text:
-                                                            '${storeLiveCourseDetail.live_num}次。',
-                                                        style: const TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      )
-                                                    ],
-                                                  )),
-                                              const SizedBox(
-                                                height: 12,
-                                              ),
-                                              RichText(
-                                                  textAlign: TextAlign.left,
-                                                  text: const TextSpan(
-                                                    children: [
-                                                      TextSpan(
-                                                        text: '直播授课时间: ',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal),
-                                                      ),
-                                                      WidgetSpan(
-                                                        child: SizedBox(
-                                                            width:
-                                                                6), // 设置间距为10
-                                                      ),
-                                                      TextSpan(
-                                                        text: '1小时/次。',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      )
-                                                    ],
-                                                  )),
-                                              const SizedBox(
-                                                height: 12,
-                                              ),
-                                              RichText(
-                                                  textAlign: TextAlign.left,
-                                                  text: const TextSpan(
-                                                    children: [
-                                                      TextSpan(
-                                                        text: '课程有效期: ',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal),
-                                                      ),
-                                                      WidgetSpan(
-                                                        child: SizedBox(
-                                                            width:
-                                                                6), // 设置间距为10
-                                                      ),
-                                                      TextSpan(
-                                                        text: '自购买之日起，一年内有效。',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      )
-                                                    ],
-                                                  )),
-                                              const SizedBox(
-                                                height: 12,
-                                              ),
-                                              RichText(
-                                                  textAlign: TextAlign.left,
-                                                  text: const TextSpan(
-                                                    children: [
-                                                      TextSpan(
-                                                        text: '直播方式: ',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal),
-                                                      ),
-                                                      WidgetSpan(
-                                                        child: SizedBox(
-                                                            width:
-                                                                6), // 设置间距为10
-                                                      ),
-                                                      TextSpan(
-                                                        text:
-                                                            '面对面直播指导，由康复专家现场连线教学；全面、专业地解答您的问题！',
-                                                        style: TextStyle(
-                                                            height:
-                                                                1.5, // 设置行高为字体大小的1.5倍
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      )
-                                                    ],
-                                                  )),
-                                              const SizedBox(
-                                                height: 12,
-                                              ),
-                                              RichText(
-                                                  textAlign: TextAlign.left,
-                                                  text: const TextSpan(
-                                                    children: [
-                                                      TextSpan(
-                                                        text: '预约: ',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal),
-                                                      ),
-                                                      WidgetSpan(
-                                                        child: SizedBox(
-                                                            width:
-                                                                6), // 设置间距为10
-                                                      ),
-                                                      TextSpan(
-                                                        text: '需提前预约时间。',
-                                                        style: TextStyle(
-                                                            height:
-                                                                1.5, // 设置行高为字体大小的1.5倍
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      )
-                                                    ],
-                                                  )),
-                                            ],
+                                            children: List.generate(
+                                                storeVideoCourseDetail
+                                                    .videos!.length, (index) {
+                                              return Container(
+                                                padding:
+                                                    const EdgeInsets.all(12),
+                                                margin: EdgeInsets.only(
+                                                    bottom: index ==
+                                                            storeVideoCourseDetail
+                                                                    .videos!
+                                                                    .length -
+                                                                1
+                                                        ? 0
+                                                        : 12),
+                                                decoration: const BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.all(
+                                                            Radius.circular(8)),
+                                                    color: Colors.white),
+                                                child: Column(
+                                                  children: [
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            SizedBox(
+                                                              width: 120,
+                                                              height:
+                                                                  120 / 4 * 3,
+                                                              child: ClipRRect(
+                                                                borderRadius:
+                                                                    const BorderRadius
+                                                                        .all(
+                                                                        Radius.circular(
+                                                                            8)),
+                                                                child:
+                                                                    CachedNetworkImage(
+                                                                  imageUrl:
+                                                                      '${globalController.cdnBaseUrl}/${storeVideoCourseDetail.videos![index].cover}',
+                                                                  fit: BoxFit
+                                                                      .cover,
+                                                                  width: 120,
+                                                                  height: 120 /
+                                                                      4 *
+                                                                      3,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                              height: 12,
+                                                              width: 12,
+                                                            ),
+                                                            Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Text(
+                                                                  storeVideoCourseDetail
+                                                                      .videos![
+                                                                          index]
+                                                                      .title,
+                                                                  style: const TextStyle(
+                                                                      color: Colors
+                                                                          .black,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      fontSize:
+                                                                          14),
+                                                                ),
+                                                                const SizedBox(
+                                                                  height: 6,
+                                                                ),
+                                                                Text(
+                                                                  storeVideoCourseDetail
+                                                                      .videos![
+                                                                          index]
+                                                                      .time_length,
+                                                                  style: const TextStyle(
+                                                                      color: Colors
+                                                                          .black,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .normal,
+                                                                      fontSize:
+                                                                          14),
+                                                                ),
+                                                              ],
+                                                            )
+                                                          ],
+                                                        ),
+                                                        SizedBox(
+                                                          width: 48,
+                                                          height: 48,
+                                                          child:
+                                                              GestureDetector(
+                                                            onTap: () {
+                                                              setState(() {
+                                                                expandList[
+                                                                        index] =
+                                                                    !expandList[
+                                                                        index];
+                                                              });
+                                                            },
+                                                            child: (!expandList[
+                                                                    index]
+                                                                ? Center(
+                                                                    child: IconFont(
+                                                                        IconNames
+                                                                            .xiala,
+                                                                        size:
+                                                                            18,
+                                                                        color:
+                                                                            '#000'),
+                                                                  )
+                                                                : Center(
+                                                                    child: IconFont(
+                                                                        IconNames
+                                                                            .shouqi,
+                                                                        size:
+                                                                            18,
+                                                                        color:
+                                                                            '#000'),
+                                                                  )),
+                                                          ),
+                                                        )
+                                                      ],
+                                                    ),
+                                                    (expandList[index]
+                                                        ? Column(
+                                                            children: [
+                                                              const SizedBox(
+                                                                height: 12,
+                                                              ),
+                                                              Text(
+                                                                storeVideoCourseDetail
+                                                                    .videos![
+                                                                        index]
+                                                                    .description,
+                                                                style: const TextStyle(
+                                                                    color: Colors
+                                                                        .black,
+                                                                    fontSize:
+                                                                        14,
+                                                                    height:
+                                                                        1.5),
+                                                              )
+                                                            ],
+                                                          )
+                                                        : const SizedBox
+                                                            .shrink())
+                                                  ],
+                                                ),
+                                              );
+                                            }),
                                           ),
                                         ),
                                       ]),
@@ -963,7 +944,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                       ],
                     )
                   : const SizedBox.shrink()),
-              (!_readyLoad || storeLiveCourseDetail.id.isEmpty
+              (!_readyLoad || storeVideoCourseDetail.id.isEmpty
                   ? Positioned(
                       top: mediaQuerySafeInfo.top + 16,
                       left: 16,
@@ -986,7 +967,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                         ),
                       ))
                   : const SizedBox.shrink()),
-              (storeLiveCourseDetail.id.isNotEmpty
+              (storeVideoCourseDetail.id.isNotEmpty
                   ? Positioned(
                       left: 0,
                       right: 0,
@@ -1057,16 +1038,16 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                                         width: 12,
                                         height: 12,
                                       ),
-                                      (storeLiveCourseDetail.is_discount == 0
+                                      (storeVideoCourseDetail.is_discount == 0
                                           ? Text(
-                                              '¥${storeLiveCourseDetail.price}',
+                                              '¥${storeVideoCourseDetail.price}',
                                               style: const TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.bold),
                                             )
                                           : Text(
-                                              '¥${storeLiveCourseDetail.price}',
+                                              '¥${storeVideoCourseDetail.price}',
                                               style: const TextStyle(
                                                   decoration: TextDecoration
                                                       .lineThrough,
@@ -1079,7 +1060,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.bold),
                                             )),
-                                      (storeLiveCourseDetail.is_discount == 1
+                                      (storeVideoCourseDetail.is_discount == 1
                                           ? Row(
                                               children: [
                                                 const SizedBox(
@@ -1087,7 +1068,7 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                                                   height: 12,
                                                 ),
                                                 Text(
-                                                  '¥${storeLiveCourseDetail.discount}',
+                                                  '¥${storeVideoCourseDetail.discount}',
                                                   style: const TextStyle(
                                                       color: Colors.white,
                                                       fontSize: 14,

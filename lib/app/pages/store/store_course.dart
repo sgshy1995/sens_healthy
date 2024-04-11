@@ -15,6 +15,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import '../../providers/api/store_client_provider.dart';
 import './store_course_live.dart';
+import './store_course_video.dart';
 
 // 定义回调函数类型
 typedef ScrollCallback = void Function(double scrollDistance);
@@ -32,6 +33,8 @@ class StoreCoursePageState extends State<StoreCoursePage>
     with SingleTickerProviderStateMixin {
   final GlobalKey<StoreCourseLivePageState> _storeCourseLivePageState =
       GlobalKey<StoreCourseLivePageState>();
+  final GlobalKey<StoreCourseVideoPageState> _storeCourseVideoPageState =
+      GlobalKey<StoreCourseVideoPageState>();
   final GlobalController globalController =
       GetInstance().find<GlobalController>();
   final UserController userController = GetInstance().find<UserController>();
@@ -55,10 +58,8 @@ class StoreCoursePageState extends State<StoreCoursePage>
 
   void _handleTabSelection() {
     // 在这里处理标签的点击事件
-    if (_tabController.index == 1) {
-      // 切换时滚动到顶部
-      _storeCourseLivePageState.currentState?.scrollToTop();
-    }
+    _storeCourseLivePageState.currentState?.scrollToTop();
+    _storeCourseVideoPageState.currentState?.scrollToTop();
     setState(() {
       tabSelectionIndex = _tabController.index;
     });
@@ -141,7 +142,10 @@ class StoreCoursePageState extends State<StoreCoursePage>
                     child: StoreCourseLivePage(
                         key: _storeCourseLivePageState,
                         scrollCallBack: scrollCallBack)),
-                KeepAliveWrapper(child: Container()),
+                KeepAliveWrapper(
+                    child: StoreCourseVideoPage(
+                        key: _storeCourseVideoPageState,
+                        scrollCallBack: scrollCallBack)),
               ],
             ),
           )
@@ -170,11 +174,11 @@ class StoreCoursePageState extends State<StoreCoursePage>
                           isScrollable: true, // 设置为true以启用横向滚动
                           indicatorPadding: EdgeInsets.zero, // 设置指示器的内边距为零
                           onTap: (index) {
-                            if (index == 1) {
-                              // 切换时滚动到顶部
-                              _storeCourseLivePageState.currentState
-                                  ?.scrollToTop();
-                            }
+                            // 切换时滚动到顶部
+                            _storeCourseLivePageState.currentState
+                                ?.scrollToTop();
+                            _storeCourseVideoPageState.currentState
+                                ?.scrollToTop();
                           },
                           indicator: const BoxDecoration(
                             border: Border(

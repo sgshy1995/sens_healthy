@@ -6,6 +6,7 @@ import '../providers/api/prescription_client_provider.dart';
 import '../providers/api/store_client_provider.dart';
 import '../controllers/user_controller.dart';
 import '../controllers/global_controller.dart';
+import '../controllers/store_controller.dart';
 
 class HomeBinding extends Bindings {
   @override
@@ -17,5 +18,6 @@ class HomeBinding extends Bindings {
     Get.lazyPut(() => StoreClientProvider());
     Get.lazyPut(() => UserController());
     Get.lazyPut(() => GlobalController());
+    Get.lazyPut(() => StoreController());
   }
 }

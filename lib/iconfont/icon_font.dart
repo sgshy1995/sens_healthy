@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
 
 enum IconNames {
-  zuixingengxin, live_fill, live, video_fill, video, dingdan, kangfushigongju, kecheng, gouwuche, liebiaoxingshi, duigou, hot, nandu, yanjing, yanjing_fill, fenlei, cainixihuan, nan, nv, shanchu, shezhi, yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, pingguohuawei, baojianqicai, yuangongfuli, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
+  shouqi, zuixingengxin, live_fill, live, video_fill, video, dingdan, kangfushigongju, kecheng, gouwuche, liebiaoxingshi, duigou, hot, nandu, yanjing, yanjing_fill, fenlei, cainixihuan, nan, nv, shanchu, shezhi, yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, pingguohuawei, baojianqicai, yuangongfuli, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
 }
 
 extension parseString on IconNames {
@@ -36,6 +36,9 @@ class IconFont extends StatelessWidget {
 
   static IconNames getIconNames(dynamic iconName) {
     switch (iconName) {
+      case 'shouqi':
+        iconName = IconNames.shouqi;
+        break;
       case 'zuixingengxin':
         iconName = IconNames.zuixingengxin;
         break;
@@ -232,6 +235,16 @@ class IconFont extends StatelessWidget {
     String svgXml;
 
     switch (this.name!) {
+      case IconNames.shouqi:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M917.284001 726.276225c-5.406127 5.437849-13.06762 8.396227-21.479197 8.396227-9.611915 0-18.953677-3.843538-25.713638-10.543124L511.980046 364.006388 153.873018 724.08328c-6.729262 6.745634-16.072047 10.619872-25.654286 10.619872-8.470929 0-16.131399-2.989077-21.598924-8.457626-12.301164-12.435217-11.32493-33.69031 2.192945-47.312562l376.764969-378.821815c6.758937-6.788613 15.860223-10.723226 25.052582-10.8143l3.425006 0c8.981559 0.301875 17.814738 4.205788 24.423249 10.8143l376.733247 378.853537C928.728658 692.616614 929.690566 713.88501 917.284001 726.276225"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
       case IconNames.zuixingengxin:
         svgXml = '''
           <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">

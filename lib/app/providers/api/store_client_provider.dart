@@ -100,6 +100,13 @@ class StoreClientProvider extends GlobalClientProvider {
         .toList();
   }
 
+  static List<StoreCourseChartTypeModel> fromJsonListCourseChart(
+      List<dynamic> jsonList) {
+    return jsonList
+        .map((json) => StoreCourseChartTypeModel.fromJson(json))
+        .toList();
+  }
+
   static List<PainReplyTypeModel> fromJsonListReply(List<dynamic> jsonList) {
     return jsonList.map((json) => PainReplyTypeModel.fromJson(json)).toList();
   }
@@ -110,20 +117,19 @@ class StoreClientProvider extends GlobalClientProvider {
           {String? keyword,
           int? pageNo = 1,
           int? pageSize = 10,
-          bool hasMajor = false}) async {
-    final jsonData = await get('/live_course/custom',
-        query: hasMajor
-            ? {
-                'keyword': keyword ?? '',
-                'pageNo': pageNo.toString(),
-                'pageSize': pageSize.toString(),
-                'has_major': '1',
-              }
-            : {
-                'keyword': keyword ?? '',
-                'pageNo': pageNo.toString(),
-                'pageSize': pageSize.toString()
-              });
+          int? courseType}) async {
+    final Map<String, dynamic> queryMap = {
+      'pageNo': pageNo.toString(),
+      'pageSize': pageSize.toString()
+    };
+    if (keyword != null) {
+      queryMap['keyword'] = keyword.toString();
+    }
+    if (courseType != null) {
+      queryMap['course_type'] = courseType.toString();
+    }
+
+    final jsonData = await get('/live_course/custom', query: queryMap);
     final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
 
     late List<StoreLiveCourseTypeModel> list =
@@ -159,26 +165,40 @@ class StoreClientProvider extends GlobalClientProvider {
     return dataFinalCarouselLiveCoursesModel;
   }
 
+  // 根据视频课程轮播
+  Future<DataFinalModel<List<StoreVideoCourseTypeModel>>>
+      getCarouselVideoCoursesAction() async {
+    final jsonData = await get('/video_course/carousel');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    late List<StoreVideoCourseTypeModel> list =
+        fromJsonListVideoCourse(jsonMap['data']);
+
+    final DataFinalModel<List<StoreVideoCourseTypeModel>>
+        dataFinalCarouselVideoCoursesModel = DataFinalModel(
+            code: jsonMap['code'], message: jsonMap['message'], data: list);
+    return dataFinalCarouselVideoCoursesModel;
+  }
+
   // 分页请求视频课程列表
   Future<DataPaginationFinalModel<List<StoreVideoCourseTypeModel>>>
       getVideoCoursesByCustomAction(
           {String? keyword,
           int? pageNo = 1,
           int? pageSize = 10,
-          bool hasMajor = false}) async {
-    final jsonData = await get('/video_course/custom',
-        query: hasMajor
-            ? {
-                'keyword': keyword ?? '',
-                'pageNo': pageNo.toString(),
-                'pageSize': pageSize.toString(),
-                'has_major': '1',
-              }
-            : {
-                'keyword': keyword ?? '',
-                'pageNo': pageNo.toString(),
-                'pageSize': pageSize.toString()
-              });
+          int? courseType}) async {
+    final Map<String, dynamic> queryMap = {
+      'pageNo': pageNo.toString(),
+      'pageSize': pageSize.toString()
+    };
+    if (keyword != null) {
+      queryMap['keyword'] = keyword.toString();
+    }
+    if (courseType != null) {
+      queryMap['course_type'] = courseType.toString();
+    }
+
+    final jsonData = await get('/video_course/custom', query: queryMap);
     final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
 
     late List<StoreVideoCourseTypeModel> list =
@@ -211,6 +231,47 @@ class StoreClientProvider extends GlobalClientProvider {
             message: jsonMap['message'],
             data: StoreLiveCourseTypeModel.fromJson(jsonMap['data']));
     return dataFinalCourseLiveTypeModel;
+  }
+
+  // 根据课程购物车信息
+  Future<DataFinalModel<List<StoreCourseChartTypeModel>>>
+      getCourseChartListAction() async {
+    final jsonData = await get('/course_chart');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    late List<StoreCourseChartTypeModel> list =
+        fromJsonListCourseChart(jsonMap['data']);
+
+    final DataFinalModel<List<StoreCourseChartTypeModel>>
+        dataFinalCourseChartsModel = DataFinalModel(
+            code: jsonMap['code'], message: jsonMap['message'], data: list);
+    return dataFinalCourseChartsModel;
+  }
+
+  // 添加课程至购物车
+  Future<DataFinalModel> createCourseChartAction(
+      String courseId, int addCourseType) async {
+    final jsonData = await post('/course_chart',
+        {'course_id': courseId, 'add_course_type': addCourseType});
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel dataFinalModel =
+        DataFinalModel(code: jsonMap['code'], message: jsonMap['message']);
+    return dataFinalModel;
+  }
+
+  // 根据ID获取视频课程信息
+  Future<DataFinalModel<StoreVideoCourseTypeModel>> getCourseVideoByIdAction(
+      String id) async {
+    final jsonData = await get('/video_course/id/$id');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel<StoreVideoCourseTypeModel>
+        dataFinalCourseVideoTypeModel = DataFinalModel(
+            code: jsonMap['code'],
+            message: jsonMap['message'],
+            data: StoreVideoCourseTypeModel.fromJson(jsonMap['data']));
+    return dataFinalCourseVideoTypeModel;
   }
 
   // 更新问题点赞
