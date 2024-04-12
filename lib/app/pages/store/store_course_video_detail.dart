@@ -87,6 +87,14 @@ class _StoreCourseVideoDetailPageState extends State<StoreCourseVideoDetailPage>
     });
   }
 
+  void handleGoToOrder() {
+    List<Map<String, dynamic>> courseIdsList = [
+      {'id': storeVideoCourseDetail.id, 'type': 0}
+    ];
+    Get.toNamed('store_course_order',
+        arguments: {'course': courseIdsList, 'chart': null});
+  }
+
   void handleGoBack() {
     Get.back();
   }
@@ -1009,76 +1017,81 @@ class _StoreCourseVideoDetailPageState extends State<StoreCourseVideoDetailPage>
                                   width: 36,
                                   height: 36,
                                 ),
-                                Container(
-                                  height: 36,
-                                  padding:
-                                      const EdgeInsets.fromLTRB(12, 0, 12, 0),
-                                  decoration: const BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: Alignment.centerLeft,
-                                        end: Alignment.centerRight,
-                                        colors: [
-                                          Color.fromRGBO(211, 66, 67, 1),
-                                          Color.fromRGBO(211, 66, 67, 0.8),
-                                          Color.fromRGBO(211, 66, 67, 0.6)
-                                        ], // 渐变的起始和结束颜色
-                                      ),
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(18))),
-                                  child: Row(
-                                    children: [
-                                      const Text(
-                                        '立即购买',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(
-                                        width: 12,
-                                        height: 12,
-                                      ),
-                                      (storeVideoCourseDetail.is_discount == 0
-                                          ? Text(
-                                              '¥${storeVideoCourseDetail.price}',
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.bold),
-                                            )
-                                          : Text(
-                                              '¥${storeVideoCourseDetail.price}',
-                                              style: const TextStyle(
-                                                  decoration: TextDecoration
-                                                      .lineThrough,
-                                                  decorationThickness: 2,
-                                                  decorationColor:
-                                                      Color.fromRGBO(
-                                                          200, 200, 200, 1),
-                                                  color: Color.fromRGBO(
-                                                      200, 200, 200, 1),
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.bold),
-                                            )),
-                                      (storeVideoCourseDetail.is_discount == 1
-                                          ? Row(
-                                              children: [
-                                                const SizedBox(
-                                                  width: 12,
-                                                  height: 12,
-                                                ),
-                                                Text(
-                                                  '¥${storeVideoCourseDetail.discount}',
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                )
-                                              ],
-                                            )
-                                          : const SizedBox.shrink())
-                                    ],
+                                GestureDetector(
+                                  onTap: handleGoToOrder,
+                                  child: Container(
+                                    height: 36,
+                                    padding:
+                                        const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                                    decoration: const BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.centerLeft,
+                                          end: Alignment.centerRight,
+                                          colors: [
+                                            Color.fromRGBO(211, 66, 67, 1),
+                                            Color.fromRGBO(211, 66, 67, 0.8),
+                                            Color.fromRGBO(211, 66, 67, 0.6)
+                                          ], // 渐变的起始和结束颜色
+                                        ),
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(18))),
+                                    child: Row(
+                                      children: [
+                                        const Text(
+                                          '立即购买',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(
+                                          width: 12,
+                                          height: 12,
+                                        ),
+                                        (storeVideoCourseDetail.is_discount == 0
+                                            ? Text(
+                                                '¥${storeVideoCourseDetail.price}',
+                                                style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              )
+                                            : Text(
+                                                '¥${storeVideoCourseDetail.price}',
+                                                style: const TextStyle(
+                                                    decoration: TextDecoration
+                                                        .lineThrough,
+                                                    decorationThickness: 2,
+                                                    decorationColor:
+                                                        Color.fromRGBO(
+                                                            200, 200, 200, 1),
+                                                    color: Color.fromRGBO(
+                                                        200, 200, 200, 1),
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              )),
+                                        (storeVideoCourseDetail.is_discount == 1
+                                            ? Row(
+                                                children: [
+                                                  const SizedBox(
+                                                    width: 12,
+                                                    height: 12,
+                                                  ),
+                                                  Text(
+                                                    '¥${storeVideoCourseDetail.discount}',
+                                                    style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  )
+                                                ],
+                                              )
+                                            : const SizedBox.shrink())
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ],

@@ -77,6 +77,7 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
   //课程类型 0 运动康复 1 神经康复 2 产后康复 3 术后康复
   final List<String> courseTypeList = ['运动康复', '神经康复', '产后康复', '术后康复'];
 
+  List<String> chartInIdsList = [];
   List<Map<String, dynamic>> courseInOrderIdsList = [];
   List<dynamic> courseInOrderList = [];
 
@@ -210,7 +211,8 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
   @override
   void initState() {
     super.initState();
-    courseInOrderIdsList = Get.arguments;
+    courseInOrderIdsList = Get.arguments['course'];
+    chartInIdsList = Get.arguments['chart'] ?? [];
     loadCharts();
   }
 

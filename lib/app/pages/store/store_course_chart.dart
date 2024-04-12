@@ -321,6 +321,7 @@ class _StoreCourseChartPageState extends State<StoreCourseChartPage> {
     if (totalCount == 0) {
       return;
     }
+    List<String> chartIdsList = [];
     List<Map<String, dynamic>> courseIdsList = [];
     List.generate(courseChartCheckList.length, (index) {
       if (courseChartCheckList[index]) {
@@ -328,9 +329,12 @@ class _StoreCourseChartPageState extends State<StoreCourseChartPage> {
           'id': courseChartList[index].course_id,
           'type': courseChartList[index].add_course_type
         });
+        chartIdsList.add(courseChartList[index].id);
       }
     });
-    Get.toNamed('store_course_order', arguments: courseIdsList)!.then((value) {
+    Get.toNamed('store_course_order',
+            arguments: {'course': courseIdsList, 'chart': chartIdsList})!
+        .then((value) {
       if (value == 'success') {
         loadCharts(ifNeedCheck: true);
       }
