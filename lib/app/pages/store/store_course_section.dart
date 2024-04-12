@@ -66,7 +66,9 @@ class _StoreCourseSectionPageState extends State<StoreCourseSectionPage>
 
   void handleGoToSearch() {}
 
-  void handleGoToChart() {}
+  void handleGoToChart() {
+    Get.toNamed('store_course_chart');
+  }
 
   void loadChartsNum() {
     storeClientProvider.getCourseChartListAction().then((value) {

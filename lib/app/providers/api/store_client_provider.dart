@@ -274,6 +274,27 @@ class StoreClientProvider extends GlobalClientProvider {
     return dataFinalCourseVideoTypeModel;
   }
 
+  // 根据课程购物车id删除
+  Future<DataFinalModel> deleteCourseChartByIdAction(
+      String courseChartId) async {
+    final jsonData = await delete('/course_chart/$courseChartId');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel dataFinalModel =
+        DataFinalModel(code: jsonMap['code'], message: jsonMap['message']);
+    return dataFinalModel;
+  }
+
+  // 清空用户的课程购物车
+  Future<DataFinalModel> deleteCourseChartsByUserAction() async {
+    final jsonData = await delete('/course_chart');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel dataFinalModel =
+        DataFinalModel(code: jsonMap['code'], message: jsonMap['message']);
+    return dataFinalModel;
+  }
+
   // 更新问题点赞
   Future<DataFinalModel> updateQuestionLikeAction(String id, int status) async {
     final jsonData =

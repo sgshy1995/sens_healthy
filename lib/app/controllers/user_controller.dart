@@ -58,6 +58,11 @@ class UserController extends GetxController {
     update();
   }
 
+  void updateInfoBalance(String balanceNew) {
+    info.balance = balanceNew;
+    update();
+  }
+
   void setInfo(UserInfoTypeModel infoNew) {
     info = infoNew;
     update();

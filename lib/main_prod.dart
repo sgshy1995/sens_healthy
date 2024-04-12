@@ -18,6 +18,9 @@ import './app/pages/store/store_course_live_detail.dart';
 import './app/pages/store/store_course_video_detail.dart';
 import 'app/pages/store/store_course_section.dart';
 import 'app/pages/store/store_course_search.dart';
+import './app/pages/store/store_course_chart.dart';
+import './app/pages/store/store_course_order.dart';
+import './app/pages/store/store_course_order_result.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 Future main() async {
@@ -94,6 +97,21 @@ Future main() async {
           GetPage(
             name: '/store_course_search',
             page: () => const StoreCourseSearchPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/store_course_chart',
+            page: () => const StoreCourseChartPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/store_course_order',
+            page: () => const StoreCourseOrderPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/store_course_order_result',
+            page: () => const StoreCourseOrderResultPage(),
             middlewares: [AuthMiddleware()],
           ),
         ],

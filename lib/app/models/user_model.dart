@@ -71,7 +71,7 @@ class UserInfoTypeModel {
   final String id; //id
   final String user_id; //用户id
   final int integral; //积分
-  final String balance; //余额
+  late String balance; //余额
   final int? age; //年龄
   final String? injury_history; //既往伤病史
   final String? injury_recent; //近期伤病描述
