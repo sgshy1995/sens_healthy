@@ -20,6 +20,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../models/data_model.dart';
+import '../../../components/long_press_menu.dart';
 
 class StoreCourseOrderResultPage extends StatefulWidget {
   const StoreCourseOrderResultPage({super.key});
@@ -46,6 +47,11 @@ class _StoreCourseOrderResultPageState
     orderNo = Get.arguments['orderNo'];
     total = Get.arguments['total'];
     paymentType = Get.arguments['paymentType'];
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -419,12 +425,15 @@ class _StoreCourseOrderResultPageState
                                     fontSize: 14,
                                     fontWeight: FontWeight.normal),
                               ),
-                              Text(
-                                orderNo,
-                                style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.normal),
+                              LongPressMenu(
+                                copyContent: orderNo,
+                                child: Text(
+                                  orderNo,
+                                  style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.normal),
+                                ),
                               )
                             ],
                           ),
