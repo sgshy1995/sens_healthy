@@ -48,7 +48,8 @@ class LoginPhone extends StatelessWidget {
             children: [
               Visibility(
                 visible: controller.step.value == 0,
-                child: LoginPhoneFirst(callback: controller._handleChangeStep),
+                child:
+                    LoginPhoneFirstPage(callback: controller._handleChangeStep),
               ),
               Visibility(
                 visible: controller.step.value == 1,

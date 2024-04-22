@@ -16,77 +16,95 @@ import '../../../utils/validate.dart';
 typedef StepCallback = void Function(
     int step, bool ifExist, String phone, String code);
 
-class LoginPhoneFirst extends StatelessWidget {
-  final RxString phone = ''.obs;
-  final RxString code = ''.obs;
-  final RxBool sendLoaing = false.obs;
+class LoginPhoneFirstPage extends StatefulWidget {
+  const LoginPhoneFirstPage({super.key, required this.callback});
+  final StepCallback callback;
+
+  @override
+  State<LoginPhoneFirstPage> createState() => _LoginPhoneFirstPageState();
+}
+
+class _LoginPhoneFirstPageState extends State<LoginPhoneFirstPage> {
+  String phone = '';
+  String code = '';
+  bool sendLoaing = false;
 
   void updatePhone(String newText) {
-    phone.value = newText;
+    setState(() {
+      phone = newText;
+    });
   }
 
   void updateCode(String newText) {
-    code.value = newText;
+    setState(() {
+      code = newText;
+    });
   }
 
   void submit() {
-    if (phone.value.isEmpty || !validatePhoneRegExp(phone.value)) {
+    if (phone.isEmpty || !validatePhoneRegExp(phone)) {
       showToast('请输入正确的手机号');
-    } else if (code.value.isEmpty) {
+    } else if (code.isEmpty) {
       showToast('请输入验证码');
     } else {
       authPhoneAndCapture();
     }
   }
 
-  final StepCallback callback;
-
-  LoginPhoneFirst({super.key, required this.callback});
   final UserController userController = GetInstance().find<UserController>();
 
-  final Rx<Uint8List> bytes = Rx<Uint8List>(Uint8List(0));
+  Uint8List bytes = Uint8List(0);
 
   final UserClientProvider userClientProvider =
       GetInstance().find<UserClientProvider>();
 
   void getCapture() {
-    bytes.value = Uint8List(0);
+    setState(() {
+      bytes = Uint8List(0);
+    });
     userClientProvider.captureAction(userController.uuid).then((value) {
       // 移除Base64字符串的前缀
       final String base64Str = value.split(',').last;
       // 解码
-      bytes.value = base64.decode(base64Str);
+      setState(() {
+        bytes = base64.decode(base64Str);
+      });
     });
   }
 
   void authPhoneAndCapture() {
-    if (sendLoaing.value) {
+    if (sendLoaing) {
       return;
     }
-    sendLoaing.value = true;
+    setState(() {
+      sendLoaing = true;
+    });
     userClientProvider
-        .capturePhoneAction(userController.uuid, phone.value, code.value,
-            ifReSend: '0')
+        .capturePhoneAction(userController.uuid, phone, code, ifReSend: '0')
         .then((result) {
       print('校验手机和验证码结果: ${result.code}');
       // 移除Base64字符串的前缀
       if (result.code == 201) {
-        callback(1, false, phone.value, code.value);
+        widget.callback(1, false, phone, code);
       } else if (result.code == 409) {
-        callback(1, true, phone.value, code.value);
+        widget.callback(1, true, phone, code);
       } else {
         showToast(result.message);
       }
-      sendLoaing.value = false;
+      setState(() {
+        sendLoaing = false;
+      });
     });
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (bytes.value.isEmpty) {
-      getCapture();
-    }
+  void initState() {
+    super.initState();
+    getCapture();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     final EdgeInsets mediaQuerySafeInfo = MediaQuery.of(context).padding;
 
     return Container(
@@ -205,7 +223,7 @@ class LoginPhoneFirst extends StatelessWidget {
                   decoration: const BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                       color: Color.fromRGBO(239, 239, 239, 1)),
-                  child: Obx(() => bytes.value.isEmpty
+                  child: bytes.isEmpty
                       ? const Center(
                           child: SizedBox(
                             width: 24,
@@ -219,11 +237,11 @@ class LoginPhoneFirst extends StatelessWidget {
                           onTap: getCapture,
                           child: Center(
                             child: Image.memory(
-                              bytes.value,
+                              bytes,
                               fit: BoxFit.contain,
                             ),
                           ),
-                        )),
+                        ),
                 )
               ],
             ),
@@ -255,7 +273,7 @@ class LoginPhoneFirst extends StatelessWidget {
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                       side: BorderSide(color: Colors.transparent, width: 2)))),
               child: Center(
-                child: Obx(() => sendLoaing.value
+                child: sendLoaing
                     ? const SizedBox(
                         width: 24,
                         height: 24,
@@ -269,7 +287,7 @@ class LoginPhoneFirst extends StatelessWidget {
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 14),
-                      )),
+                      ),
               ),
             ),
           )
