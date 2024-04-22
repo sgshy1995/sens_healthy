@@ -63,6 +63,11 @@ class LoginDataModel {
 class UserClientProvider extends GlobalClientProvider {
   UserClientProvider() : super(); // 调用 GlobalClientProvider 的构造函数
 
+  static List<AddressInfoTypeModel> fromJsonListAddress(
+      List<dynamic> jsonList) {
+    return jsonList.map((json) => AddressInfoTypeModel.fromJson(json)).toList();
+  }
+
   Future<List<UserModel>> getUsers() async {
     final response = await get('users/path');
     if (response.status.hasError) {
@@ -136,6 +141,64 @@ class UserClientProvider extends GlobalClientProvider {
             message: jsonMap['message'],
             data: UserInfoTypeModel.fromJson(jsonMap['data']));
     return dataFinalUserInfoTypeModel;
+  }
+
+  // 根据 jwt 更新个人信息
+  Future<DataFinalModel> updateInfoByJwtAction(
+      Map<String, dynamic> json) async {
+    final jsonData = await put('/user_info/jwt', json);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel dataFinal = DataFinalModel(
+      code: jsonMap['code'],
+      message: jsonMap['message'],
+    );
+    return dataFinal;
+  }
+
+  // 创建地址
+  Future<DataFinalModel> createAddressAction(Map<String, dynamic> json) async {
+    final jsonData = await post('/address', json);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel dataFinal = DataFinalModel(
+      code: jsonMap['code'],
+      message: jsonMap['message'],
+    );
+    return dataFinal;
+  }
+
+  // 更新地址
+  Future<DataFinalModel> updateAddressAction(Map<String, dynamic> json) async {
+    final jsonData = await put('/address', json);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel dataFinal = DataFinalModel(
+      code: jsonMap['code'],
+      message: jsonMap['message'],
+    );
+    return dataFinal;
+  }
+
+  // 根据id地址删除
+  Future<DataFinalModel> deleteAddressByIdAction(String addressId) async {
+    final jsonData = await delete('/address/$addressId');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel dataFinalModel =
+        DataFinalModel(code: jsonMap['code'], message: jsonMap['message']);
+    return dataFinalModel;
+  }
+
+  // 获取用户的地址列表
+  Future<DataFinalModel<List<AddressInfoTypeModel>>>
+      getAddressListByJWTAction() async {
+    final jsonData = await get('/address');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    late List<AddressInfoTypeModel> list = fromJsonListAddress(jsonMap['data']);
+
+    final DataFinalModel<List<AddressInfoTypeModel>> dataFinalListModel =
+        DataFinalModel(
+            code: jsonMap['code'], message: jsonMap['message'], data: list);
+    return dataFinalListModel;
   }
 
   // Post request

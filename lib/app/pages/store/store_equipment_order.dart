@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:sens_healthy/app/models/user_model.dart';
 import 'package:sens_healthy/components/loading.dart';
 import 'package:sens_healthy/components/toast.dart';
 import '../../../iconfont/icon_font.dart';
@@ -20,17 +22,15 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../models/data_model.dart';
 
-abstract class StoreAnyCourseTypeModel
-    implements StoreLiveCourseTypeModel, StoreVideoCourseTypeModel {}
-
-class StoreCourseOrderPage extends StatefulWidget {
-  const StoreCourseOrderPage({super.key});
+class StoreEquipmentOrderPage extends StatefulWidget {
+  const StoreEquipmentOrderPage({super.key});
 
   @override
-  State<StoreCourseOrderPage> createState() => _StoreCourseOrderPageState();
+  State<StoreEquipmentOrderPage> createState() =>
+      _StoreEquipmentOrderPageState();
 }
 
-class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
+class _StoreEquipmentOrderPageState extends State<StoreEquipmentOrderPage> {
   // 创建一个滚动控制器
   final ScrollController _scrollController = ScrollController();
   final GlobalController globalController =
@@ -46,6 +46,8 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
   bool checkWeixin = true;
   bool checkZhifubao = false;
   bool checkBalance = false;
+
+  AddressInfoTypeModel? selectAddressInfo;
 
   void handleCheckWeixin(bool? newValue) {
     setState(() {
@@ -74,76 +76,169 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
     });
   }
 
-  //课程类型 0 运动康复 1 神经康复 2 产后康复 3 术后康复
-  final List<String> courseTypeList = ['运动康复', '神经康复', '产后康复', '术后康复'];
+  //器材类型 0 康复训练器材 1 康复理疗设备 2 康复治疗师工具
+  final List<String> equipmentTypeList = ['康复训练器材', '康复理疗设备', '康复治疗师工具'];
 
+  List<int> addNumsList = [];
   List<String> chartInIdsList = [];
-  List<Map<String, dynamic>> courseInOrderIdsList = [];
-  List<dynamic> courseInOrderList = [];
+  List<String> modelsIdsList = [];
+  List<String> userIdsList = [];
+  List<StoreEquipmentTypeModel> equipmentsList = [];
+
+  //待定单拟购物车聚合列表
+  List<StoreEquipmentChartPolymerizationTypeModel>
+      equipmentChartPolymerizationList = [];
 
   double totalCount = 0;
-
   double totalDiscount = 0;
+  int totalAddNum = 0;
 
   bool checkAll = false;
+
+  int handleCalculateTotalAddNum() {
+    int totalAddNumGet = 0;
+
+    List.generate(equipmentChartPolymerizationList.length, (index) {
+      List.generate(
+          equipmentChartPolymerizationList[index].equipment_model_infos.length,
+          (indexIn) {
+        totalAddNumGet +=
+            equipmentChartPolymerizationList[index].add_nums[indexIn];
+      });
+    });
+
+    return totalAddNumGet;
+  }
 
   List<double> handleCalculateCounts() {
     double totalCountGet = 0;
     double totalDiscountGet = 0;
 
-    List.generate(courseInOrderList.length, (index) {
-      totalCountGet += double.parse(courseInOrderList[index].price);
-      totalDiscountGet += double.parse(courseInOrderList[index].is_discount == 1
-          ? courseInOrderList[index].discount!
-          : courseInOrderList[index].price);
+    List.generate(equipmentChartPolymerizationList.length, (index) {
+      List.generate(
+          equipmentChartPolymerizationList[index].equipment_model_infos.length,
+          (indexIn) {
+        totalDiscountGet += (equipmentChartPolymerizationList[index]
+                    .equipment_model_infos[indexIn]
+                    .inventory <=
+                0
+            ? 0
+            : equipmentChartPolymerizationList[index]
+                        .equipment_model_infos[indexIn]
+                        .is_discount ==
+                    1
+                ? (double.parse(equipmentChartPolymerizationList[index]
+                        .equipment_model_infos[indexIn]
+                        .discount!) *
+                    equipmentChartPolymerizationList[index].add_nums[indexIn])
+                : (double.parse(equipmentChartPolymerizationList[index]
+                        .equipment_model_infos[indexIn]
+                        .price) *
+                    equipmentChartPolymerizationList[index].add_nums[indexIn]));
+        totalCountGet += (equipmentChartPolymerizationList[index]
+                    .equipment_model_infos[indexIn]
+                    .inventory <=
+                0
+            ? 0
+            : (double.parse(equipmentChartPolymerizationList[index]
+                    .equipment_model_infos[indexIn]
+                    .price) *
+                equipmentChartPolymerizationList[index].add_nums[indexIn]));
+      });
     });
 
     return [totalCountGet, totalDiscountGet];
   }
 
   void loadCharts() async {
+    List<StoreEquipmentChartPolymerizationTypeModel>
+        equipmentChartPolymerizationListGet = [];
+
     // 同时执行多个异步任务
-    List<Future<DataFinalModel<dynamic>>> futures =
-        courseInOrderIdsList.map((item) {
-      return item['type'] == 1
-          ? storeClientProvider.getCourseLiveByIdAction(item['id'])
-          : storeClientProvider.getCourseVideoByIdAction(item['id']);
+    List<Future<DataFinalModel<StoreEquipmentInModelTypeModel>>> futures =
+        modelsIdsList.map((id) {
+      return storeClientProvider.getModelByIdAction(id);
     }).toList();
     // 等待所有异步任务完成
     final List<DataFinalModel<dynamic>?> results = await Future.wait(futures);
     bool rejectCheck = false;
-    final List<dynamic> courseInOrderListGet = [];
+    final List<StoreEquipmentInModelTypeModel> modelsListGet = [];
     results.asMap().forEach((index, result) {
-      // 注意：这里将上传失败的图片也作为违规图片处理
       if (result == null) {
         rejectCheck = true;
       } else if (result.code == 200) {
-        courseInOrderListGet.add(result.data);
+        modelsListGet.add(result.data);
       } else {
         rejectCheck = true;
       }
     });
+
     if (!rejectCheck) {
+      //遍历生成聚合数组
+      List.generate(modelsListGet.length, (index) {
+        if (equipmentChartPolymerizationListGet.firstWhereOrNull(
+                (polymerization) =>
+                    polymerization.equipment_id ==
+                    modelsListGet[index].equipment_id) ==
+            null) {
+          equipmentChartPolymerizationListGet.add(
+              StoreEquipmentChartPolymerizationTypeModel(
+                  equipment_id: modelsListGet[index].equipment_id,
+                  chart_ids: [''],
+                  user_id: userIdsList[index],
+                  equipment_model_ids: [modelsListGet[index].id],
+                  add_nums: [addNumsList[index]],
+                  status_list: [modelsListGet[index].status],
+                  equipment_info: equipmentsList[index],
+                  equipment_model_infos: [modelsListGet[index]]));
+        } else {
+          final int indexFind = equipmentChartPolymerizationListGet.indexWhere(
+              (polymerization) =>
+                  polymerization.equipment_id ==
+                  modelsListGet[index].equipment_id);
+          equipmentChartPolymerizationListGet[indexFind].chart_ids.add('');
+          equipmentChartPolymerizationListGet[indexFind]
+              .equipment_model_ids
+              .add(modelsListGet[index].id);
+          equipmentChartPolymerizationListGet[indexFind]
+              .add_nums
+              .add(addNumsList[index]);
+          equipmentChartPolymerizationListGet[indexFind]
+              .status_list
+              .add(modelsListGet[index].status);
+          equipmentChartPolymerizationListGet[indexFind]
+              .equipment_model_infos
+              .add(modelsListGet[index]);
+        }
+      });
+
       setState(() {
-        courseInOrderList = [...courseInOrderListGet];
+        equipmentChartPolymerizationList = [
+          ...equipmentChartPolymerizationListGet
+        ];
         _readyLoad = true;
       });
+
       final double totalCountGet = handleCalculateCounts()[0];
       final double totalDiscountGet = handleCalculateCounts()[1];
+      final int totalAddNumGet = handleCalculateTotalAddNum();
 
       setState(() {
         totalCount = totalCountGet;
         totalDiscount = totalDiscountGet;
+        totalAddNum = totalAddNumGet;
       });
 
-      Future.delayed(const Duration(milliseconds: 300), () {
-        // 滚动到最底部
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
-      });
+      if (userController.info.default_address_id != null) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          // 滚动到最底部
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        });
+      }
     }
   }
 
@@ -153,6 +248,16 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
 
   void handleBuy() {
     if (totalCount == 0) {
+      return;
+    }
+    if (userController.info.default_address_id == null) {
+      showToast('请选择配送地址');
+      // 滚动到最顶部
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
       return;
     }
     showLoading(checkWeixin
@@ -208,11 +313,28 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
     });
   }
 
+  void handleGotoAddress() {
+    Get.toNamed('/mine_address', arguments: {
+      'ifCanSelect': true,
+      'selectId': selectAddressInfo?.id
+    })!
+        .then((value) {
+      if (value is AddressInfoTypeModel) {
+        setState(() {
+          selectAddressInfo = value;
+        });
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    courseInOrderIdsList = Get.arguments['course'];
-    chartInIdsList = Get.arguments['chart'] ?? [];
+    modelsIdsList = Get.arguments['models'];
+    chartInIdsList = Get.arguments['charts'] ?? [];
+    addNumsList = Get.arguments['addNums'];
+    userIdsList = Get.arguments['userIds'];
+    equipmentsList = Get.arguments['equipments'];
     loadCharts();
   }
 
@@ -331,7 +453,7 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
         height: 2,
         color: Color.fromRGBO(233, 234, 235, 1),
       ),
-      (courseInOrderList.isNotEmpty
+      (equipmentChartPolymerizationList.isNotEmpty
           ? Container(
               height: 36,
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
@@ -349,28 +471,247 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
             )
           : const SizedBox.shrink()),
       Expanded(
-          child: (courseInOrderList.isNotEmpty
+          child: (equipmentChartPolymerizationList.isNotEmpty
               ? Padding(
                   padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                   child: ListView.builder(
                       controller: _scrollController,
                       padding: EdgeInsets.zero,
                       physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: courseInOrderList.length + 2,
+                      itemCount: equipmentChartPolymerizationList.length + 2,
                       itemBuilder: (BuildContext context, int indexOuter) {
                         final int index = indexOuter - 1;
+                        int itemTotalAddNum = 0;
+                        if (equipmentChartPolymerizationList.length > index &&
+                            index > -1) {
+                          List.generate(
+                              equipmentChartPolymerizationList[index]
+                                  .add_nums
+                                  .length, (indexIn) {
+                            itemTotalAddNum +=
+                                equipmentChartPolymerizationList[index]
+                                    .add_nums[indexIn];
+                          });
+                        }
                         return indexOuter == 0
-                            ? const Padding(
-                                padding: EdgeInsets.all(12),
-                                child: Text(
-                                  '商品清单',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold),
+                            ? Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 12),
+                                    const Text(
+                                      '配送地址',
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: const BoxDecoration(
+                                          color:
+                                              Color.fromRGBO(255, 255, 255, 1),
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(10))),
+                                      child:
+                                          userController.info
+                                                      .default_address_id ==
+                                                  null
+                                              ? GestureDetector(
+                                                  onTap: handleGotoAddress,
+                                                  child: Container(
+                                                    height: 48,
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 12),
+                                                    child: Row(
+                                                      children: [
+                                                        const Text(
+                                                          '请选择地址',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.black,
+                                                              fontSize: 15,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 12,
+                                                          height: 12,
+                                                        ),
+                                                        SizedBox(
+                                                          width: 16,
+                                                          height: 16,
+                                                          child: Center(
+                                                            child: IconFont(
+                                                              IconNames.qianjin,
+                                                              size: 16,
+                                                              color: '#000',
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                )
+                                              : GestureDetector(
+                                                  onTap: handleGotoAddress,
+                                                  child: Row(
+                                                    children: [
+                                                      Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          SizedBox(
+                                                              width:
+                                                                  mediaQuerySizeInfo
+                                                                          .width -
+                                                                      48 -
+                                                                      12 -
+                                                                      24 -
+                                                                      12 -
+                                                                      16,
+                                                              child: RichText(
+                                                                  maxLines: 99,
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .left,
+                                                                  text: TextSpan(
+                                                                      text: selectAddressInfo !=
+                                                                              null
+                                                                          ? selectAddressInfo!
+                                                                              .all_text
+                                                                          : userController
+                                                                              .info
+                                                                              .default_address_info
+                                                                              .all_text,
+                                                                      style: const TextStyle(
+                                                                          color: Colors
+                                                                              .black,
+                                                                          fontWeight: FontWeight
+                                                                              .normal,
+                                                                          fontSize:
+                                                                              14)))),
+                                                          const SizedBox(
+                                                            height: 12,
+                                                          ),
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                selectAddressInfo != null
+                                                                    ? selectAddressInfo!
+                                                                        .name
+                                                                    : userController
+                                                                        .info
+                                                                        .default_address_info
+                                                                        .name,
+                                                                style: const TextStyle(
+                                                                    color: Colors
+                                                                        .black,
+                                                                    fontSize:
+                                                                        14),
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 12,
+                                                                width: 12,
+                                                              ),
+                                                              Text(
+                                                                  selectAddressInfo !=
+                                                                          null
+                                                                      ? selectAddressInfo!
+                                                                          .phone
+                                                                      : userController
+                                                                          .info
+                                                                          .default_address_info
+                                                                          .phone,
+                                                                  style: const TextStyle(
+                                                                      color: Colors
+                                                                          .black,
+                                                                      fontSize:
+                                                                          14,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .normal)),
+                                                              const SizedBox(
+                                                                height: 12,
+                                                                width: 12,
+                                                              ),
+                                                              ((selectAddressInfo ==
+                                                                              null &&
+                                                                          userController.info.default_address_info.tag !=
+                                                                              null) ||
+                                                                      (selectAddressInfo !=
+                                                                              null &&
+                                                                          selectAddressInfo!.tag !=
+                                                                              null)
+                                                                  ? Container(
+                                                                      padding: const EdgeInsets
+                                                                          .fromLTRB(
+                                                                          6,
+                                                                          0,
+                                                                          6,
+                                                                          0),
+                                                                      decoration: BoxDecoration(
+                                                                          borderRadius: const BorderRadius.all(Radius.circular(
+                                                                              8)),
+                                                                          border: Border.all(
+                                                                              width: 1,
+                                                                              color: Colors.black)),
+                                                                      child:
+                                                                          Text(
+                                                                        selectAddressInfo !=
+                                                                                null
+                                                                            ? selectAddressInfo!.tag!
+                                                                            : userController.info.default_address_info.tag!,
+                                                                        style: const TextStyle(
+                                                                            color:
+                                                                                Colors.black,
+                                                                            fontSize: 13),
+                                                                      ),
+                                                                    )
+                                                                  : const SizedBox
+                                                                      .shrink())
+                                                            ],
+                                                          )
+                                                        ],
+                                                      ),
+                                                      const SizedBox(
+                                                        width: 24,
+                                                        height: 12,
+                                                      ),
+                                                      SizedBox(
+                                                        width: 16,
+                                                        height: 16,
+                                                        child: Center(
+                                                          child: IconFont(
+                                                            IconNames.qianjin,
+                                                            size: 16,
+                                                            color: '#000',
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    const Text(
+                                      '商品清单',
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold),
+                                    )
+                                  ],
                                 ),
                               )
-                            : indexOuter == courseInOrderList.length + 1
+                            : indexOuter ==
+                                    equipmentChartPolymerizationList.length + 1
                                 ? Padding(
                                     padding: const EdgeInsets.all(12),
                                     child: Column(
@@ -721,6 +1062,10 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
                                                 borderRadius: BorderRadius.all(
                                                     Radius.circular(8))),
                                             child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Row(
                                                   crossAxisAlignment:
@@ -746,7 +1091,7 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
                                                         width: 120,
                                                         height: 120 / 4 * 3,
                                                         imageUrl:
-                                                            '${globalController.cdnBaseUrl}/${courseInOrderList[index].cover}',
+                                                            '${globalController.cdnBaseUrl}/${equipmentChartPolymerizationList[index].equipment_info!.cover}',
                                                         fit: BoxFit.cover,
                                                       ),
                                                     ),
@@ -763,152 +1108,16 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
                                                           CrossAxisAlignment
                                                               .start,
                                                       children: [
-                                                        (courseInOrderList[
-                                                                    index]
-                                                                is StoreLiveCourseTypeModel
-                                                            ? Container(
-                                                                height: 20,
-                                                                decoration: const BoxDecoration(
-                                                                    color: Color
-                                                                        .fromRGBO(
-                                                                            203,
-                                                                            174,
-                                                                            241,
-                                                                            1),
-                                                                    borderRadius:
-                                                                        BorderRadius.all(
-                                                                            Radius.circular(8))),
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .fromLTRB(
-                                                                        6,
-                                                                        0,
-                                                                        6,
-                                                                        0),
-                                                                margin:
-                                                                    const EdgeInsets
-                                                                        .only(
-                                                                        right:
-                                                                            12),
-                                                                child: Row(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .min,
-                                                                  children: [
-                                                                    Container(
-                                                                      width: 18,
-                                                                      height:
-                                                                          18,
-                                                                      margin: const EdgeInsets
-                                                                          .only(
-                                                                          right:
-                                                                              4),
-                                                                      child:
-                                                                          Center(
-                                                                        child:
-                                                                            IconFont(
-                                                                          IconNames
-                                                                              .live_fill,
-                                                                          size:
-                                                                              16,
-                                                                          color:
-                                                                              'rgb(151,63,247)',
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    const Text(
-                                                                        '直播课',
-                                                                        style: TextStyle(
-                                                                            color: Color.fromRGBO(
-                                                                                151,
-                                                                                63,
-                                                                                247,
-                                                                                1),
-                                                                            fontSize:
-                                                                                12,
-                                                                            fontWeight:
-                                                                                FontWeight.bold))
-                                                                  ],
-                                                                ),
-                                                              )
-                                                            : Container(
-                                                                height: 20,
-                                                                decoration: const BoxDecoration(
-                                                                    color: Color
-                                                                        .fromRGBO(
-                                                                            172,
-                                                                            202,
-                                                                            239,
-                                                                            1),
-                                                                    borderRadius:
-                                                                        BorderRadius.all(
-                                                                            Radius.circular(8))),
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .fromLTRB(
-                                                                        6,
-                                                                        0,
-                                                                        6,
-                                                                        0),
-                                                                margin:
-                                                                    const EdgeInsets
-                                                                        .only(
-                                                                        right:
-                                                                            12),
-                                                                child: Row(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .min,
-                                                                  children: [
-                                                                    Container(
-                                                                      width: 18,
-                                                                      height:
-                                                                          18,
-                                                                      margin: const EdgeInsets
-                                                                          .only(
-                                                                          right:
-                                                                              4),
-                                                                      child:
-                                                                          Center(
-                                                                        child:
-                                                                            IconFont(
-                                                                          IconNames
-                                                                              .live_fill,
-                                                                          size:
-                                                                              16,
-                                                                          color:
-                                                                              'rgb(69,141,229)',
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    const Text(
-                                                                        '视频课',
-                                                                        style: TextStyle(
-                                                                            color: Color.fromRGBO(
-                                                                                69,
-                                                                                141,
-                                                                                229,
-                                                                                1),
-                                                                            fontSize:
-                                                                                12,
-                                                                            fontWeight:
-                                                                                FontWeight.bold))
-                                                                  ],
-                                                                ),
-                                                              )),
-                                                        const SizedBox(
-                                                          height: 4,
-                                                        ),
                                                         RichText(
                                                             maxLines: 1,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
+                                                            overflow: TextOverflow
+                                                                .ellipsis,
                                                             textAlign:
                                                                 TextAlign.left,
                                                             text: TextSpan(
-                                                                text: courseInOrderList[
+                                                                text: equipmentChartPolymerizationList[
                                                                         index]
+                                                                    .equipment_info!
                                                                     .title,
                                                                 style: const TextStyle(
                                                                     color: Colors
@@ -931,26 +1140,10 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
                                                             text: TextSpan(
                                                               children: [
                                                                 TextSpan(
-                                                                  text:
-                                                                      '${courseInOrderList[index] is StoreLiveCourseTypeModel ? '面对面康复指导' : '专业能力提升'} · ',
-                                                                  style: const TextStyle(
-                                                                      color: Color
-                                                                          .fromRGBO(
-                                                                              0,
-                                                                              0,
-                                                                              0,
-                                                                              1),
-                                                                      fontSize:
-                                                                          13,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .normal),
-                                                                ),
-                                                                TextSpan(
-                                                                  text: courseTypeList[
-                                                                      courseInOrderList[
-                                                                              index]
-                                                                          .course_type],
+                                                                  text: equipmentTypeList[equipmentChartPolymerizationList[
+                                                                          index]
+                                                                      .equipment_info!
+                                                                      .equipment_type],
                                                                   style: const TextStyle(
                                                                       color: Color
                                                                           .fromRGBO(
@@ -967,51 +1160,18 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
                                                               ],
                                                             )),
                                                         const SizedBox(
-                                                          height: 4,
+                                                          height: 8,
                                                         ),
-                                                        RichText(
-                                                            maxLines: 1,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            textAlign:
-                                                                TextAlign.left,
-                                                            text: TextSpan(
-                                                              children: [
-                                                                TextSpan(
-                                                                  text:
-                                                                      '${courseInOrderList[index] is StoreLiveCourseTypeModel ? '直播次数' : '视频数'}: ',
-                                                                  style: const TextStyle(
-                                                                      color: Color
-                                                                          .fromRGBO(
-                                                                              0,
-                                                                              0,
-                                                                              0,
-                                                                              1),
-                                                                      fontSize:
-                                                                          13,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .normal),
-                                                                ),
-                                                                TextSpan(
-                                                                  text:
-                                                                      '${courseInOrderList[index] is StoreLiveCourseTypeModel ? courseInOrderList[index].live_num : courseInOrderList[index].video_num}',
-                                                                  style: const TextStyle(
-                                                                      color: Color
-                                                                          .fromRGBO(
-                                                                              0,
-                                                                              0,
-                                                                              0,
-                                                                              1),
-                                                                      fontSize:
-                                                                          13,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .normal),
-                                                                )
-                                                              ],
-                                                            )),
+                                                        Text(
+                                                          '共 $itemTotalAddNum 件',
+                                                          style: const TextStyle(
+                                                              color:
+                                                                  Colors.black,
+                                                              fontSize: 14,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        )
                                                       ],
                                                     ))
                                                   ],
@@ -1019,74 +1179,149 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
                                                 const SizedBox(
                                                   height: 12,
                                                 ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    ((courseInOrderList[index]
-                                                                    is StoreLiveCourseTypeModel &&
-                                                                courseInOrderList[
-                                                                            index]
-                                                                        .is_discount ==
-                                                                    1) ||
-                                                            (courseInOrderList[
-                                                                        index]
-                                                                    is StoreVideoCourseTypeModel &&
-                                                                courseInOrderList[
-                                                                            index]
-                                                                        .is_discount ==
-                                                                    1)
-                                                        ? Container(
-                                                            height: 24,
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .fromLTRB(
-                                                                    4, 0, 4, 0),
-                                                            decoration: const BoxDecoration(
-                                                                borderRadius: BorderRadius
-                                                                    .all(Radius
-                                                                        .circular(
-                                                                            8)),
-                                                                color: Color
-                                                                    .fromRGBO(
-                                                                        255,
-                                                                        255,
-                                                                        255,
-                                                                        1)),
-                                                            child: Row(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .min,
-                                                              children: [
-                                                                Container(
-                                                                  width: 18,
-                                                                  height: 18,
-                                                                  margin:
-                                                                      const EdgeInsets
-                                                                          .only(
-                                                                          right:
-                                                                              4),
-                                                                  child: Center(
-                                                                    child: IconFont(
-                                                                        IconNames
-                                                                            .pic_discount,
-                                                                        size:
-                                                                            18),
+                                                Text(
+                                                    '已选择型号 · ${equipmentChartPolymerizationList[index].equipment_model_infos.length}',
+                                                    style: const TextStyle(
+                                                        color: Colors.black,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        fontSize: 14)),
+                                                const SizedBox(
+                                                  height: 12,
+                                                ),
+                                                Column(
+                                                  children: List.generate(
+                                                      equipmentChartPolymerizationList[
+                                                              index]
+                                                          .equipment_model_infos
+                                                          .length, (indexIn) {
+                                                    final List<String>
+                                                        multiFigureList =
+                                                        equipmentChartPolymerizationList[
+                                                                index]
+                                                            .equipment_model_infos[
+                                                                indexIn]
+                                                            .multi_figure
+                                                            .split(',');
+                                                    return Column(
+                                                      children: [
+                                                        Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            SizedBox(
+                                                              width: 70,
+                                                              height: 70,
+                                                              child:
+                                                                  CachedNetworkImage(
+                                                                imageBuilder:
+                                                                    (context,
+                                                                            imageProvider) =>
+                                                                        ClipRRect(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              8), // 设置圆角
+                                                                  child: Image(
+                                                                    image:
+                                                                        imageProvider,
+                                                                    fit: BoxFit
+                                                                        .cover,
                                                                   ),
                                                                 ),
+                                                                width: 70,
+                                                                height: 70,
+                                                                imageUrl:
+                                                                    '${globalController.cdnBaseUrl}/${multiFigureList[0]}',
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                              height: 12,
+                                                              width: 12,
+                                                            ),
+                                                            Expanded(
+                                                                child: Column(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .start,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                RichText(
+                                                                    maxLines: 1,
+                                                                    overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis,
+                                                                    textAlign:
+                                                                        TextAlign
+                                                                            .left,
+                                                                    text: TextSpan(
+                                                                        text: equipmentChartPolymerizationList[index]
+                                                                            .equipment_model_infos[
+                                                                                indexIn]
+                                                                            .title,
+                                                                        style: const TextStyle(
+                                                                            color:
+                                                                                Colors.black,
+                                                                            fontWeight: FontWeight.bold,
+                                                                            fontSize: 13))),
+                                                                const SizedBox(
+                                                                  height: 4,
+                                                                ),
+                                                                Row(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    (equipmentChartPolymerizationList[index].equipment_model_infos[indexIn].is_discount ==
+                                                                            0
+                                                                        ? Text(
+                                                                            '¥${equipmentChartPolymerizationList[index].equipment_model_infos[indexIn].price}',
+                                                                            style: const TextStyle(
+                                                                                color: Colors.black,
+                                                                                fontSize: 13,
+                                                                                fontWeight: FontWeight.bold),
+                                                                          )
+                                                                        : Text(
+                                                                            '¥${equipmentChartPolymerizationList[index].equipment_model_infos[indexIn].price}',
+                                                                            style: const TextStyle(
+                                                                                decoration: TextDecoration.lineThrough,
+                                                                                decorationThickness: 2,
+                                                                                decorationColor: Color.fromRGBO(200, 200, 200, 1),
+                                                                                color: Color.fromRGBO(200, 200, 200, 1),
+                                                                                fontSize: 13,
+                                                                                fontWeight: FontWeight.bold),
+                                                                          )),
+                                                                    (equipmentChartPolymerizationList[index].equipment_model_infos[indexIn].is_discount ==
+                                                                            1
+                                                                        ? Row(
+                                                                            children: [
+                                                                              const SizedBox(
+                                                                                width: 12,
+                                                                                height: 12,
+                                                                              ),
+                                                                              Text(
+                                                                                '¥${equipmentChartPolymerizationList[index].equipment_model_infos[indexIn].discount}',
+                                                                                style: const TextStyle(color: Color.fromRGBO(197, 124, 63, 1), fontSize: 13, fontWeight: FontWeight.bold),
+                                                                              )
+                                                                            ],
+                                                                          )
+                                                                        : const SizedBox
+                                                                            .shrink())
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(
+                                                                  height: 8,
+                                                                ),
                                                                 Text(
-                                                                  courseInOrderList[index]
-                                                                              .is_discount ==
-                                                                          1
-                                                                      ? '折扣 -${(((double.parse(courseInOrderList[index].price) - double.parse(courseInOrderList[index].discount!)) / double.parse(courseInOrderList[index].price)) * 100).round()}%'
-                                                                      : "",
+                                                                  'x ${equipmentChartPolymerizationList[index].add_nums[indexIn]} 件',
                                                                   style: const TextStyle(
-                                                                      color: Color.fromRGBO(
-                                                                          209,
-                                                                          120,
-                                                                          47,
-                                                                          1),
+                                                                      color: Colors
+                                                                          .black,
                                                                       fontSize:
                                                                           14,
                                                                       fontWeight:
@@ -1094,89 +1329,23 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
                                                                               .bold),
                                                                 )
                                                               ],
-                                                            ),
-                                                          )
-                                                        : const SizedBox(
-                                                            height: 12,
-                                                            width: 12,
-                                                          )),
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        (courseInOrderList[
-                                                                        index]
-                                                                    .is_discount ==
-                                                                0
-                                                            ? Text(
-                                                                '¥${courseInOrderList[index].price}',
-                                                                style: const TextStyle(
-                                                                    color: Colors
-                                                                        .black,
-                                                                    fontSize:
-                                                                        14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                              )
-                                                            : Text(
-                                                                '¥${courseInOrderList[index].price}',
-                                                                style: const TextStyle(
-                                                                    decoration:
-                                                                        TextDecoration
-                                                                            .lineThrough,
-                                                                    decorationThickness:
-                                                                        2,
-                                                                    decorationColor:
-                                                                        Color.fromRGBO(
-                                                                            200,
-                                                                            200,
-                                                                            200,
-                                                                            1),
-                                                                    color: Color
-                                                                        .fromRGBO(
-                                                                            200,
-                                                                            200,
-                                                                            200,
-                                                                            1),
-                                                                    fontSize:
-                                                                        14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                              )),
-                                                        (courseInOrderList[
-                                                                        index]
-                                                                    .is_discount ==
-                                                                1
-                                                            ? Row(
-                                                                children: [
-                                                                  const SizedBox(
-                                                                    width: 12,
-                                                                    height: 12,
-                                                                  ),
-                                                                  Text(
-                                                                    '¥${courseInOrderList[index].discount}',
-                                                                    style: const TextStyle(
-                                                                        color: Color.fromRGBO(
-                                                                            197,
-                                                                            124,
-                                                                            63,
-                                                                            1),
-                                                                        fontSize:
-                                                                            14,
-                                                                        fontWeight:
-                                                                            FontWeight.bold),
-                                                                  )
-                                                                ],
-                                                              )
-                                                            : const SizedBox
-                                                                .shrink())
+                                                            ))
+                                                          ],
+                                                        ),
+                                                        SizedBox(
+                                                          height: indexIn !=
+                                                                  equipmentChartPolymerizationList[
+                                                                              index]
+                                                                          .equipment_model_infos
+                                                                          .length -
+                                                                      1
+                                                              ? 12
+                                                              : 0,
+                                                        )
                                                       ],
-                                                    )
-                                                  ],
-                                                ),
+                                                    );
+                                                  }),
+                                                )
                                               ],
                                             ),
                                           ))
@@ -1185,7 +1354,10 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
                                       const SizedBox(
                                         height: 12,
                                       ),
-                                      (index != courseInOrderList.length - 1
+                                      (index !=
+                                              equipmentChartPolymerizationList
+                                                      .length -
+                                                  1
                                           ? const Divider(
                                               height: 2,
                                               color: Color.fromRGBO(
@@ -1219,7 +1391,7 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
                       ],
                     ))
                   : skeleton())),
-      (courseInOrderList.isNotEmpty
+      (equipmentChartPolymerizationList.isNotEmpty
           ? Column(
               children: [
                 const Divider(
@@ -1240,7 +1412,7 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
                           Row(
                             children: [
                               Text(
-                                '共${courseInOrderList.length}件',
+                                '共$totalAddNum件',
                                 style: const TextStyle(
                                     color: Colors.black,
                                     fontSize: 14,

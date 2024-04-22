@@ -704,7 +704,7 @@ class _StoreCourseChartPageState extends State<StoreCourseChartPage> {
                                                                   child:
                                                                       IconFont(
                                                                     IconNames
-                                                                        .live_fill,
+                                                                        .video_fill,
                                                                     size: 16,
                                                                     color:
                                                                         'rgb(69,141,229)',

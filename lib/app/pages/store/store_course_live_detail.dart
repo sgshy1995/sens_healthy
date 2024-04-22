@@ -685,285 +685,328 @@ class _StoreCourseLiveDetailPageState extends State<StoreCourseLiveDetailPage>
                                           tabIndex), // add this line
                                       index: tabIndex,
                                       children: [
-                                        Padding(
-                                          padding: EdgeInsets.fromLTRB(
-                                              12,
-                                              12,
-                                              12,
-                                              24 +
-                                                  16 +
-                                                  16 +
-                                                  mediaQuerySafeInfo.bottom +
-                                                  36),
-                                          child: Column(
-                                            children: [
-                                              RichText(
-                                                  maxLines: descriptionReadMore
-                                                      ? 9999
-                                                      : 12,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  textAlign: TextAlign.left,
-                                                  text: TextSpan(
-                                                    children: [
-                                                      TextSpan(
-                                                        text:
-                                                            storeLiveCourseDetail
-                                                                .description,
-                                                        style: const TextStyle(
-                                                            height:
-                                                                1.5, // 设置行高为字体大小的1.5倍
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal),
-                                                      )
-                                                    ],
-                                                  )),
-                                              const SizedBox(
-                                                height: 12,
-                                              ),
-                                              (isRichTextGreaterThan12LinesDescription(
-                                                      12,
-                                                      mediaQuerySizeInfo.width -
-                                                          24)
-                                                  ? GestureDetector(
-                                                      onTap:
-                                                          handleChangeDescriptionReadMore,
-                                                      child:
-                                                          (!descriptionReadMore
-                                                              ? const Text(
-                                                                  '阅读更多...',
-                                                                  style: TextStyle(
-                                                                      color: Color
-                                                                          .fromRGBO(
+                                        Visibility(
+                                            visible: tabIndex == 0,
+                                            child: Padding(
+                                              padding: EdgeInsets.fromLTRB(
+                                                  12,
+                                                  12,
+                                                  12,
+                                                  24 +
+                                                      16 +
+                                                      16 +
+                                                      mediaQuerySafeInfo
+                                                          .bottom +
+                                                      36),
+                                              child: Column(
+                                                children: [
+                                                  RichText(
+                                                      maxLines:
+                                                          descriptionReadMore
+                                                              ? 9999
+                                                              : 12,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      textAlign: TextAlign.left,
+                                                      text: TextSpan(
+                                                        children: [
+                                                          TextSpan(
+                                                            text:
+                                                                storeLiveCourseDetail
+                                                                    .description,
+                                                            style:
+                                                                const TextStyle(
+                                                                    height:
+                                                                        1.5, // 设置行高为字体大小的1.5倍
+                                                                    color: Color
+                                                                        .fromRGBO(
+                                                                            0,
+                                                                            0,
+                                                                            0,
+                                                                            1),
+                                                                    fontSize:
+                                                                        14,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .normal),
+                                                          )
+                                                        ],
+                                                      )),
+                                                  const SizedBox(
+                                                    height: 12,
+                                                  ),
+                                                  (isRichTextGreaterThan12LinesDescription(
+                                                          12,
+                                                          mediaQuerySizeInfo
+                                                                  .width -
+                                                              24)
+                                                      ? GestureDetector(
+                                                          onTap:
+                                                              handleChangeDescriptionReadMore,
+                                                          child:
+                                                              (!descriptionReadMore
+                                                                  ? const Text(
+                                                                      '阅读更多...',
+                                                                      style: TextStyle(
+                                                                          color: Color.fromRGBO(
                                                                               211,
                                                                               66,
                                                                               67,
                                                                               1),
-                                                                      fontSize:
-                                                                          14),
-                                                                )
-                                                              : const Text(
-                                                                  '收起',
-                                                                  style: TextStyle(
-                                                                      color: Color
-                                                                          .fromRGBO(
+                                                                          fontSize:
+                                                                              14),
+                                                                    )
+                                                                  : const Text(
+                                                                      '收起',
+                                                                      style: TextStyle(
+                                                                          color: Color.fromRGBO(
                                                                               211,
                                                                               66,
                                                                               67,
                                                                               1),
-                                                                      fontSize:
-                                                                          14),
-                                                                )),
-                                                    )
-                                                  : const SizedBox.shrink()),
-                                            ],
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.fromLTRB(
-                                              12,
-                                              12,
-                                              12,
-                                              24 +
-                                                  16 +
-                                                  16 +
-                                                  mediaQuerySafeInfo.bottom +
-                                                  36),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              RichText(
-                                                  textAlign: TextAlign.left,
-                                                  text: TextSpan(
-                                                    children: [
-                                                      const TextSpan(
-                                                        text: '直播次数: ',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal),
-                                                      ),
-                                                      const WidgetSpan(
-                                                        child: SizedBox(
-                                                            width:
-                                                                6), // 设置间距为10
-                                                      ),
-                                                      TextSpan(
-                                                        text:
-                                                            '${storeLiveCourseDetail.live_num}次。',
-                                                        style: const TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      )
-                                                    ],
-                                                  )),
-                                              const SizedBox(
-                                                height: 12,
+                                                                          fontSize:
+                                                                              14),
+                                                                    )),
+                                                        )
+                                                      : const SizedBox
+                                                          .shrink()),
+                                                ],
                                               ),
-                                              RichText(
-                                                  textAlign: TextAlign.left,
-                                                  text: const TextSpan(
-                                                    children: [
-                                                      TextSpan(
-                                                        text: '直播授课时间: ',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal),
-                                                      ),
-                                                      WidgetSpan(
-                                                        child: SizedBox(
-                                                            width:
-                                                                6), // 设置间距为10
-                                                      ),
-                                                      TextSpan(
-                                                        text: '1小时/次。',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      )
-                                                    ],
-                                                  )),
-                                              const SizedBox(
-                                                height: 12,
+                                            )),
+                                        Visibility(
+                                            visible: tabIndex == 1,
+                                            child: Padding(
+                                              padding: EdgeInsets.fromLTRB(
+                                                  12,
+                                                  12,
+                                                  12,
+                                                  24 +
+                                                      16 +
+                                                      16 +
+                                                      mediaQuerySafeInfo
+                                                          .bottom +
+                                                      36),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  RichText(
+                                                      textAlign: TextAlign.left,
+                                                      text: TextSpan(
+                                                        children: [
+                                                          const TextSpan(
+                                                            text: '直播次数: ',
+                                                            style: TextStyle(
+                                                                color: Color
+                                                                    .fromRGBO(
+                                                                        0,
+                                                                        0,
+                                                                        0,
+                                                                        1),
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal),
+                                                          ),
+                                                          const WidgetSpan(
+                                                            child: SizedBox(
+                                                                width:
+                                                                    6), // 设置间距为10
+                                                          ),
+                                                          TextSpan(
+                                                            text:
+                                                                '${storeLiveCourseDetail.live_num}次。',
+                                                            style: const TextStyle(
+                                                                color: Color
+                                                                    .fromRGBO(
+                                                                        0,
+                                                                        0,
+                                                                        0,
+                                                                        1),
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          )
+                                                        ],
+                                                      )),
+                                                  const SizedBox(
+                                                    height: 12,
+                                                  ),
+                                                  RichText(
+                                                      textAlign: TextAlign.left,
+                                                      text: const TextSpan(
+                                                        children: [
+                                                          TextSpan(
+                                                            text: '直播授课时间: ',
+                                                            style: TextStyle(
+                                                                color: Color
+                                                                    .fromRGBO(
+                                                                        0,
+                                                                        0,
+                                                                        0,
+                                                                        1),
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal),
+                                                          ),
+                                                          WidgetSpan(
+                                                            child: SizedBox(
+                                                                width:
+                                                                    6), // 设置间距为10
+                                                          ),
+                                                          TextSpan(
+                                                            text: '1小时/次。',
+                                                            style: TextStyle(
+                                                                color: Color
+                                                                    .fromRGBO(
+                                                                        0,
+                                                                        0,
+                                                                        0,
+                                                                        1),
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          )
+                                                        ],
+                                                      )),
+                                                  const SizedBox(
+                                                    height: 12,
+                                                  ),
+                                                  RichText(
+                                                      textAlign: TextAlign.left,
+                                                      text: const TextSpan(
+                                                        children: [
+                                                          TextSpan(
+                                                            text: '课程有效期: ',
+                                                            style: TextStyle(
+                                                                color: Color
+                                                                    .fromRGBO(
+                                                                        0,
+                                                                        0,
+                                                                        0,
+                                                                        1),
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal),
+                                                          ),
+                                                          WidgetSpan(
+                                                            child: SizedBox(
+                                                                width:
+                                                                    6), // 设置间距为10
+                                                          ),
+                                                          TextSpan(
+                                                            text:
+                                                                '自购买之日起，一年内有效。',
+                                                            style: TextStyle(
+                                                                color: Color
+                                                                    .fromRGBO(
+                                                                        0,
+                                                                        0,
+                                                                        0,
+                                                                        1),
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          )
+                                                        ],
+                                                      )),
+                                                  const SizedBox(
+                                                    height: 12,
+                                                  ),
+                                                  RichText(
+                                                      textAlign: TextAlign.left,
+                                                      text: const TextSpan(
+                                                        children: [
+                                                          TextSpan(
+                                                            text: '直播方式: ',
+                                                            style: TextStyle(
+                                                                color: Color
+                                                                    .fromRGBO(
+                                                                        0,
+                                                                        0,
+                                                                        0,
+                                                                        1),
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal),
+                                                          ),
+                                                          WidgetSpan(
+                                                            child: SizedBox(
+                                                                width:
+                                                                    6), // 设置间距为10
+                                                          ),
+                                                          TextSpan(
+                                                            text:
+                                                                '面对面直播指导，由康复专家现场连线教学；全面、专业地解答您的问题！',
+                                                            style: TextStyle(
+                                                                height:
+                                                                    1.5, // 设置行高为字体大小的1.5倍
+                                                                color: Color
+                                                                    .fromRGBO(
+                                                                        0,
+                                                                        0,
+                                                                        0,
+                                                                        1),
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          )
+                                                        ],
+                                                      )),
+                                                  const SizedBox(
+                                                    height: 12,
+                                                  ),
+                                                  RichText(
+                                                      textAlign: TextAlign.left,
+                                                      text: const TextSpan(
+                                                        children: [
+                                                          TextSpan(
+                                                            text: '预约: ',
+                                                            style: TextStyle(
+                                                                color: Color
+                                                                    .fromRGBO(
+                                                                        0,
+                                                                        0,
+                                                                        0,
+                                                                        1),
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal),
+                                                          ),
+                                                          WidgetSpan(
+                                                            child: SizedBox(
+                                                                width:
+                                                                    6), // 设置间距为10
+                                                          ),
+                                                          TextSpan(
+                                                            text: '需提前预约时间。',
+                                                            style: TextStyle(
+                                                                height:
+                                                                    1.5, // 设置行高为字体大小的1.5倍
+                                                                color: Color
+                                                                    .fromRGBO(
+                                                                        0,
+                                                                        0,
+                                                                        0,
+                                                                        1),
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          )
+                                                        ],
+                                                      )),
+                                                ],
                                               ),
-                                              RichText(
-                                                  textAlign: TextAlign.left,
-                                                  text: const TextSpan(
-                                                    children: [
-                                                      TextSpan(
-                                                        text: '课程有效期: ',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal),
-                                                      ),
-                                                      WidgetSpan(
-                                                        child: SizedBox(
-                                                            width:
-                                                                6), // 设置间距为10
-                                                      ),
-                                                      TextSpan(
-                                                        text: '自购买之日起，一年内有效。',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      )
-                                                    ],
-                                                  )),
-                                              const SizedBox(
-                                                height: 12,
-                                              ),
-                                              RichText(
-                                                  textAlign: TextAlign.left,
-                                                  text: const TextSpan(
-                                                    children: [
-                                                      TextSpan(
-                                                        text: '直播方式: ',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal),
-                                                      ),
-                                                      WidgetSpan(
-                                                        child: SizedBox(
-                                                            width:
-                                                                6), // 设置间距为10
-                                                      ),
-                                                      TextSpan(
-                                                        text:
-                                                            '面对面直播指导，由康复专家现场连线教学；全面、专业地解答您的问题！',
-                                                        style: TextStyle(
-                                                            height:
-                                                                1.5, // 设置行高为字体大小的1.5倍
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      )
-                                                    ],
-                                                  )),
-                                              const SizedBox(
-                                                height: 12,
-                                              ),
-                                              RichText(
-                                                  textAlign: TextAlign.left,
-                                                  text: const TextSpan(
-                                                    children: [
-                                                      TextSpan(
-                                                        text: '预约: ',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal),
-                                                      ),
-                                                      WidgetSpan(
-                                                        child: SizedBox(
-                                                            width:
-                                                                6), // 设置间距为10
-                                                      ),
-                                                      TextSpan(
-                                                        text: '需提前预约时间。',
-                                                        style: TextStyle(
-                                                            height:
-                                                                1.5, // 设置行高为字体大小的1.5倍
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      )
-                                                    ],
-                                                  )),
-                                            ],
-                                          ),
-                                        ),
+                                            )),
                                       ]),
                                 ),
                               )

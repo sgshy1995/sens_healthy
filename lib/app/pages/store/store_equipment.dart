@@ -16,28 +16,34 @@ import 'package:intl/intl.dart';
 import '../../providers/api/store_client_provider.dart';
 import './store_course_live.dart';
 import './store_course_video.dart';
+import './store_equipment_in.dart';
 
 // 定义回调函数类型
 typedef ScrollCallback = void Function(double scrollDistance);
 
-class StoreCoursePage extends StatefulWidget {
-  StoreCoursePage({super.key, required this.scrollCallBack});
+class StoreEquipmentPage extends StatefulWidget {
+  const StoreEquipmentPage({super.key, required this.scrollCallBack});
 
-  late ScrollCallback scrollCallBack;
+  final ScrollCallback scrollCallBack;
 
   @override
-  State<StoreCoursePage> createState() => StoreCoursePageState();
+  State<StoreEquipmentPage> createState() => StoreEquipmentPageState();
 }
 
-class StoreCoursePageState extends State<StoreCoursePage>
+class StoreEquipmentPageState extends State<StoreEquipmentPage>
     with SingleTickerProviderStateMixin {
-  final GlobalKey<StoreCourseLivePageState> _storeCourseLivePageState =
-      GlobalKey<StoreCourseLivePageState>();
-  final GlobalKey<StoreCourseVideoPageState> _storeCourseVideoPageState =
-      GlobalKey<StoreCourseVideoPageState>();
+  final GlobalKey<StoreEquipmentInPageState> _storeEquipmentInPageHotState =
+      GlobalKey<StoreEquipmentInPageState>();
+  final GlobalKey<StoreEquipmentInPageState>
+      _storeEquipmentInPageDiscountState =
+      GlobalKey<StoreEquipmentInPageState>();
+  final GlobalKey<StoreEquipmentInPageState> _storeEquipmentInPageAllState =
+      GlobalKey<StoreEquipmentInPageState>();
   final GlobalController globalController =
       GetInstance().find<GlobalController>();
   final UserController userController = GetInstance().find<UserController>();
+  final StoreClientProvider storeClientProvider =
+      GetInstance().find<StoreClientProvider>();
 
   late TabController _tabController;
 
@@ -58,8 +64,9 @@ class StoreCoursePageState extends State<StoreCoursePage>
 
   void _handleTabSelection() {
     // 在这里处理标签的点击事件
-    _storeCourseLivePageState.currentState?.scrollToTop();
-    _storeCourseVideoPageState.currentState?.scrollToTop();
+    _storeEquipmentInPageHotState.currentState?.scrollToTop();
+    _storeEquipmentInPageDiscountState.currentState?.scrollToTop();
+    _storeEquipmentInPageAllState.currentState?.scrollToTop();
     setState(() {
       tabSelectionIndex = _tabController.index;
     });
@@ -74,11 +81,18 @@ class StoreCoursePageState extends State<StoreCoursePage>
     }
   }
 
-  void scrollToTop() {}
+  void scrollToTop() {
+    _scrollController.animateTo(
+      0.0, // 滚动位置为顶部
+      duration: const Duration(milliseconds: 300), // 动画持续时间
+      curve: Curves.easeInOut, // 动画曲线
+    );
+  }
 
   /* RefreshController */
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
+  final ScrollController _scrollController = ScrollController();
   double _scrollDistance = 0.0;
 
   final CarouselController _carouselController = CarouselController();
@@ -95,6 +109,26 @@ class StoreCoursePageState extends State<StoreCoursePage>
     return null;
   }
 
+  bool _readyLoad = false;
+
+  List<StoreEquipmentTypeModel> carouselData = [];
+
+  Future<String> getEquipmentsCarouse() {
+    Completer<String> completer = Completer();
+    storeClientProvider.getCarouselEquipmentsAction().then((value) {
+      final carouselDataGet = value.data!;
+      setState(() {
+        carouselData = [...carouselDataGet];
+        _readyLoad = true;
+      });
+      completer.complete('success');
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+
+    return completer.future;
+  }
+
   late AnimationController _RotateController;
   late Animation<double> _animation;
 
@@ -103,12 +137,68 @@ class StoreCoursePageState extends State<StoreCoursePage>
 
   int _myCourseNum = 0;
 
+  void _scrollListener() {
+    setState(() {
+      _scrollDistance = _scrollController.offset;
+      widget.scrollCallBack(_scrollDistance);
+      if (_scrollDistance < 0) {
+        _rotationAngle = _scrollDistance > -_headerTriggerDistance
+            ? (0 - _scrollDistance) / _headerTriggerDistance * 360
+            : 360;
+      } else {
+        _rotationAngle = 0;
+      }
+    });
+  }
+
+  void onRefresh() {
+    _onRefresh();
+  }
+
+  void _onRefresh() async {
+    // monitor network fetch
+    String result;
+    try {
+      result = await getLiveCourses(page: 1);
+      _refreshController.refreshCompleted();
+      if (result == 'success') {
+        _refreshController.loadComplete();
+      } else {
+        _refreshController.loadNoData();
+      }
+    } catch (e) {
+      _refreshController.refreshFailed();
+    }
+    // if failed,use refreshFailed()
+  }
+
+  void _onLoading() async {
+    // monitor network fetch
+    String result;
+    try {
+      result = await getLiveCourses();
+      print('最终的加载结果是: $result');
+      if (result == 'success') {
+        _refreshController.loadComplete();
+      } else {
+        _refreshController.loadNoData();
+      }
+    } catch (e) {
+      _refreshController.loadFailed();
+    }
+  }
+
+  Future getLiveCourses({int? page}) {
+    return Future(() => null);
+  }
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this, initialIndex: 2);
     _tabController.animation!.addListener(_handleTabViewScroll);
     _tabController.addListener(_handleTabSelection);
+    getEquipmentsCarouse();
   }
 
   @override
@@ -132,12 +222,20 @@ class StoreCoursePageState extends State<StoreCoursePage>
               controller: _tabController,
               children: [
                 KeepAliveWrapper(
-                    child: StoreCourseLivePage(
-                        key: _storeCourseLivePageState,
+                    child: StoreEquipmentInPage(
+                        ifUseCarousel: false,
+                        hotOrder: 1,
+                        key: _storeEquipmentInPageHotState,
                         scrollCallBack: scrollCallBack)),
                 KeepAliveWrapper(
-                    child: StoreCourseVideoPage(
-                        key: _storeCourseVideoPageState,
+                    child: StoreEquipmentInPage(
+                        ifUseCarousel: false,
+                        hasDiscount: 1,
+                        key: _storeEquipmentInPageDiscountState,
+                        scrollCallBack: scrollCallBack)),
+                KeepAliveWrapper(
+                    child: StoreEquipmentInPage(
+                        key: _storeEquipmentInPageAllState,
                         scrollCallBack: scrollCallBack)),
               ],
             ),
@@ -168,9 +266,11 @@ class StoreCoursePageState extends State<StoreCoursePage>
                           indicatorPadding: EdgeInsets.zero, // 设置指示器的内边距为零
                           onTap: (index) {
                             // 切换时滚动到顶部
-                            _storeCourseLivePageState.currentState
+                            _storeEquipmentInPageHotState.currentState
                                 ?.scrollToTop();
-                            _storeCourseVideoPageState.currentState
+                            _storeEquipmentInPageDiscountState.currentState
+                                ?.scrollToTop();
+                            _storeEquipmentInPageAllState.currentState
                                 ?.scrollToTop();
                           },
                           indicator: const BoxDecoration(
@@ -198,13 +298,13 @@ class StoreCoursePageState extends State<StoreCoursePage>
                                     margin: const EdgeInsets.only(right: 4),
                                     child: Center(
                                       child: IconFont(
-                                        IconNames.live_fill,
+                                        IconNames.remen,
                                         size: 20,
-                                        color: 'rgb(151,63,247)',
+                                        color: 'rgb(221,66,101)',
                                       ),
                                     ),
                                   ),
-                                  const Text('面对面康复指导')
+                                  const Text('热门')
                                 ],
                               ),
                             ),
@@ -218,14 +318,20 @@ class StoreCoursePageState extends State<StoreCoursePage>
                                     margin: const EdgeInsets.only(right: 4),
                                     child: Center(
                                       child: IconFont(
-                                        IconNames.video_fill,
+                                        IconNames.zhekou,
                                         size: 20,
-                                        color: 'rgb(28,144,237)',
+                                        color: 'rgb(97,59,208)',
                                       ),
                                     ),
                                   ),
-                                  const Text('专业能力提升')
+                                  const Text('折扣')
                                 ],
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 50,
+                              child: Row(
+                                children: [Text('全部')],
                               ),
                             )
                           ],

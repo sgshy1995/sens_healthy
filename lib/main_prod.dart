@@ -21,6 +21,13 @@ import 'app/pages/store/store_course_search.dart';
 import './app/pages/store/store_course_chart.dart';
 import './app/pages/store/store_course_order.dart';
 import './app/pages/store/store_course_order_result.dart';
+import './app/pages/store/store_equipment_detail.dart';
+import './app/pages/store/store_equipment_section.dart';
+import './app/pages/store/store_equipment_search.dart';
+import './app/pages/store/store_equipment_chart.dart';
+import './app/pages/store/store_equipment_order.dart';
+import './app/pages/mine/mine_address.dart';
+import './app/pages/mine/mine_address_publish.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 Future main() async {
@@ -112,6 +119,41 @@ Future main() async {
           GetPage(
             name: '/store_course_order_result',
             page: () => const StoreCourseOrderResultPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/store_equipment_result',
+            page: () => const StoreEquipmentDetailPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/store_equipment_section',
+            page: () => const StoreEquipmentSectionPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/store_equipment_search',
+            page: () => const StoreEquipmentSearchPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/store_equipment_chart',
+            page: () => const StoreEquipmentChartPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/store_equipment_order',
+            page: () => const StoreEquipmentOrderPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_address',
+            page: () => const MineAddressPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_address_publish',
+            page: () => const MineAddressPublishPage(),
             middlewares: [AuthMiddleware()],
           ),
         ],

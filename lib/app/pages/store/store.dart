@@ -3,9 +3,11 @@ import 'package:get/get.dart';
 import '../../../iconfont/icon_font.dart';
 import '../../../components/keep_alive_wrapper.dart';
 import './store_course.dart';
+import './store_equipment.dart';
 import '../../controllers/store_controller.dart';
 import '../../providers/api/store_client_provider.dart';
 import './store_course_search.dart';
+import './store_equipment_search.dart';
 
 class StorePage extends StatefulWidget {
   const StorePage({super.key});
@@ -21,6 +23,8 @@ class _StorePageState extends State<StorePage>
   final StoreController storeController = GetInstance().find<StoreController>();
   final GlobalKey<StoreCoursePageState> _storeCoursePageState =
       GlobalKey<StoreCoursePageState>();
+  final GlobalKey<StoreEquipmentPageState> _storeEquipmentPageState =
+      GlobalKey<StoreEquipmentPageState>();
   late TabController _tabController;
   double _opacity = 1.0; // 初始透明度
   double _scrollDistance = 0; // 初始滚动位置
@@ -61,13 +65,21 @@ class _StorePageState extends State<StorePage>
   }
 
   void handleGoToChart() {
-    Get.toNamed('store_course_chart');
+    if (tabSelectionIndex == 0) {
+      Get.toNamed('store_course_chart');
+    } else {
+      Get.toNamed('store_equipment_chart');
+    }
   }
 
   void loadChartsNum() {
     storeClientProvider.getCourseChartListAction().then((value) {
       storeController
           .setStoreCourseChartNum(value.data != null ? value.data!.length : 0);
+    });
+    storeClientProvider.getEquipmentChartListAction().then((value) {
+      storeController.setStoreEquipmentChartNum(
+          value.data != null ? value.data!.length : 0);
     });
   }
 
@@ -80,12 +92,38 @@ class _StorePageState extends State<StorePage>
         arguments: {'courseTypeChoose': index});
   }
 
-  void handleGoToSearch() {
+  //器材类型 0 康复训练器材 1 康复理疗设备 2 康复治疗师工具
+  final List<String> equipmentTypeList = ['康复训练器材', '康复理疗设备', '康复治疗师工具'];
+  int? equipmentTypeChoose;
+  void handleChooseEquipmentType(int index) {
+    Get.back();
+    Get.toNamed('/store_equipment_section',
+        arguments: {'equipmentTypeChoose': index});
+  }
+
+  void handleGoToCourseSearch() {
     Navigator.push(
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             const StoreCourseSearchPage(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 200),
+      ),
+    );
+  }
+
+  void handleGoToEquipmentSearch() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const StoreEquipmentSearchPage(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: animation,
@@ -150,8 +188,8 @@ class _StorePageState extends State<StorePage>
                       ),
                     ),
                   ),
-                  const Text('选择课程分类',
-                      style: TextStyle(
+                  Text(tabSelectionIndex == 0 ? '选择课程分类' : '选择器材分类',
+                      style: const TextStyle(
                           color: Colors.black,
                           fontSize: 15,
                           fontWeight: FontWeight.bold)),
@@ -160,47 +198,98 @@ class _StorePageState extends State<StorePage>
               const SizedBox(
                 height: 24,
               ),
-              Column(
-                children: List.generate(courseTypeList.length, (index) {
-                  return SizedBox(
-                    height: 64,
-                    child: GestureDetector(
-                      onTap: () => handleChooseCourseType(index),
-                      child: Center(
-                        child: (courseTypeChoose != index
-                            ? Text(
-                                courseTypeList[index],
-                                style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.normal),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    width: 18,
-                                    height: 18,
-                                    margin: const EdgeInsets.only(right: 8),
-                                    child: Center(
-                                      child: IconFont(IconNames.duigou,
-                                          size: 18, color: 'rgb(209,80,54)'),
-                                    ),
-                                  ),
-                                  Text(
-                                    courseTypeList[index],
-                                    style: const TextStyle(
-                                        color: Color.fromRGBO(209, 80, 54, 1),
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold),
-                                  )
-                                ],
-                              )),
-                      ),
-                    ),
-                  );
-                }),
-              )
+              (tabSelectionIndex == 0
+                  ? Column(
+                      children: List.generate(courseTypeList.length, (index) {
+                        return SizedBox(
+                          height: 64,
+                          child: GestureDetector(
+                            onTap: () => handleChooseCourseType(index),
+                            child: Center(
+                              child: (courseTypeChoose != index
+                                  ? Text(
+                                      courseTypeList[index],
+                                      style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.normal),
+                                    )
+                                  : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          width: 18,
+                                          height: 18,
+                                          margin:
+                                              const EdgeInsets.only(right: 8),
+                                          child: Center(
+                                            child: IconFont(IconNames.duigou,
+                                                size: 18,
+                                                color: 'rgb(209,80,54)'),
+                                          ),
+                                        ),
+                                        Text(
+                                          courseTypeList[index],
+                                          style: const TextStyle(
+                                              color: Color.fromRGBO(
+                                                  209, 80, 54, 1),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold),
+                                        )
+                                      ],
+                                    )),
+                            ),
+                          ),
+                        );
+                      }),
+                    )
+                  : Column(
+                      children:
+                          List.generate(equipmentTypeList.length, (index) {
+                        return SizedBox(
+                          height: 64,
+                          child: GestureDetector(
+                            onTap: () => handleChooseEquipmentType(index),
+                            child: Center(
+                              child: (equipmentTypeChoose != index
+                                  ? Text(
+                                      equipmentTypeList[index],
+                                      style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.normal),
+                                    )
+                                  : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          width: 18,
+                                          height: 18,
+                                          margin:
+                                              const EdgeInsets.only(right: 8),
+                                          child: Center(
+                                            child: IconFont(IconNames.duigou,
+                                                size: 18,
+                                                color: 'rgb(209,80,54)'),
+                                          ),
+                                        ),
+                                        Text(
+                                          equipmentTypeList[index],
+                                          style: const TextStyle(
+                                              color: Color.fromRGBO(
+                                                  209, 80, 54, 1),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold),
+                                        )
+                                      ],
+                                    )),
+                            ),
+                          ),
+                        );
+                      }),
+                    ))
             ],
           ),
         ),
@@ -217,7 +306,10 @@ class _StorePageState extends State<StorePage>
                       child: StoreCoursePage(
                           key: _storeCoursePageState,
                           scrollCallBack: scrollCallBack)),
-                  KeepAliveWrapper(child: Container()),
+                  KeepAliveWrapper(
+                      child: StoreEquipmentPage(
+                          key: _storeEquipmentPageState,
+                          scrollCallBack: scrollCallBack)),
                 ],
               ),
             )
@@ -284,7 +376,9 @@ class _StorePageState extends State<StorePage>
                                       height: 24,
                                       margin: const EdgeInsets.only(right: 0),
                                       child: GestureDetector(
-                                        onTap: handleGoToSearch,
+                                        onTap: tabSelectionIndex == 0
+                                            ? handleGoToCourseSearch
+                                            : handleGoToEquipmentSearch,
                                         child: Center(
                                           child: IconFont(
                                             IconNames.sousuo,
@@ -399,27 +493,49 @@ class _StorePageState extends State<StorePage>
                 ),
               ),
             )),
-        (Obx(() => storeController.storeCourseChartNum > 0
-            ? Positioned(
-                bottom: 56,
-                right: 18,
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: const BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.all(Radius.circular(24))),
-                  child: Center(
-                    child: Text(
-                      '${storeController.storeCourseChartNum.value}',
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ))
-            : const SizedBox.shrink()))
+        (Obx(() => tabSelectionIndex == 0
+            ? (storeController.storeCourseChartNum > 0
+                ? Positioned(
+                    bottom: 56,
+                    right: 18,
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      decoration: const BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.all(Radius.circular(24))),
+                      child: Center(
+                        child: Text(
+                          '${storeController.storeCourseChartNum.value}',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ))
+                : const SizedBox.shrink())
+            : (storeController.storeEquipmentChartNum > 0
+                ? Positioned(
+                    bottom: 56,
+                    right: 18,
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      decoration: const BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.all(Radius.circular(24))),
+                      child: Center(
+                        child: Text(
+                          '${storeController.storeEquipmentChartNum.value}',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ))
+                : const SizedBox.shrink())))
       ]),
     );
   }

@@ -689,262 +689,281 @@ class _StoreCourseVideoDetailPageState extends State<StoreCourseVideoDetailPage>
                                           tabIndex), // add this line
                                       index: tabIndex,
                                       children: [
-                                        Padding(
-                                          padding: EdgeInsets.fromLTRB(
-                                              12,
-                                              12,
-                                              12,
-                                              24 +
-                                                  16 +
-                                                  16 +
-                                                  mediaQuerySafeInfo.bottom +
-                                                  36),
-                                          child: Column(
-                                            children: [
-                                              RichText(
-                                                  maxLines: descriptionReadMore
-                                                      ? 9999
-                                                      : 12,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  textAlign: TextAlign.left,
-                                                  text: TextSpan(
-                                                    children: [
-                                                      TextSpan(
-                                                        text:
-                                                            storeVideoCourseDetail
-                                                                .description,
-                                                        style: const TextStyle(
-                                                            height:
-                                                                1.5, // 设置行高为字体大小的1.5倍
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal),
-                                                      )
-                                                    ],
-                                                  )),
-                                              const SizedBox(
-                                                height: 12,
+                                        Visibility(
+                                            visible: tabIndex == 0,
+                                            child: Padding(
+                                              padding: EdgeInsets.fromLTRB(
+                                                  12,
+                                                  12,
+                                                  12,
+                                                  24 +
+                                                      16 +
+                                                      16 +
+                                                      mediaQuerySafeInfo
+                                                          .bottom +
+                                                      36),
+                                              child: Column(
+                                                children: [
+                                                  RichText(
+                                                      maxLines:
+                                                          descriptionReadMore
+                                                              ? 9999
+                                                              : 12,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      textAlign: TextAlign.left,
+                                                      text: TextSpan(
+                                                        children: [
+                                                          TextSpan(
+                                                            text:
+                                                                storeVideoCourseDetail
+                                                                    .description,
+                                                            style:
+                                                                const TextStyle(
+                                                                    height:
+                                                                        1.5, // 设置行高为字体大小的1.5倍
+                                                                    color: Color
+                                                                        .fromRGBO(
+                                                                            0,
+                                                                            0,
+                                                                            0,
+                                                                            1),
+                                                                    fontSize:
+                                                                        14,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .normal),
+                                                          )
+                                                        ],
+                                                      )),
+                                                  const SizedBox(
+                                                    height: 12,
+                                                  ),
+                                                  (isRichTextGreaterThan12LinesDescription(
+                                                          12,
+                                                          mediaQuerySizeInfo
+                                                                  .width -
+                                                              24)
+                                                      ? GestureDetector(
+                                                          onTap:
+                                                              handleChangeDescriptionReadMore,
+                                                          child:
+                                                              (!descriptionReadMore
+                                                                  ? const Text(
+                                                                      '阅读更多...',
+                                                                      style: TextStyle(
+                                                                          color: Color.fromRGBO(
+                                                                              211,
+                                                                              66,
+                                                                              67,
+                                                                              1),
+                                                                          fontSize:
+                                                                              14),
+                                                                    )
+                                                                  : const Text(
+                                                                      '收起',
+                                                                      style: TextStyle(
+                                                                          color: Color.fromRGBO(
+                                                                              211,
+                                                                              66,
+                                                                              67,
+                                                                              1),
+                                                                          fontSize:
+                                                                              14),
+                                                                    )),
+                                                        )
+                                                      : const SizedBox
+                                                          .shrink()),
+                                                ],
                                               ),
-                                              (isRichTextGreaterThan12LinesDescription(
-                                                      12,
-                                                      mediaQuerySizeInfo.width -
-                                                          24)
-                                                  ? GestureDetector(
-                                                      onTap:
-                                                          handleChangeDescriptionReadMore,
-                                                      child:
-                                                          (!descriptionReadMore
-                                                              ? const Text(
-                                                                  '阅读更多...',
-                                                                  style: TextStyle(
-                                                                      color: Color
-                                                                          .fromRGBO(
-                                                                              211,
-                                                                              66,
-                                                                              67,
-                                                                              1),
-                                                                      fontSize:
-                                                                          14),
-                                                                )
-                                                              : const Text(
-                                                                  '收起',
-                                                                  style: TextStyle(
-                                                                      color: Color
-                                                                          .fromRGBO(
-                                                                              211,
-                                                                              66,
-                                                                              67,
-                                                                              1),
-                                                                      fontSize:
-                                                                          14),
-                                                                )),
-                                                    )
-                                                  : const SizedBox.shrink()),
-                                            ],
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.fromLTRB(
-                                              12,
-                                              12,
-                                              12,
-                                              24 +
-                                                  16 +
-                                                  16 +
-                                                  mediaQuerySafeInfo.bottom +
-                                                  36),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: List.generate(
-                                                storeVideoCourseDetail
-                                                    .videos!.length, (index) {
-                                              return Container(
-                                                padding:
-                                                    const EdgeInsets.all(12),
-                                                margin: EdgeInsets.only(
-                                                    bottom: index ==
-                                                            storeVideoCourseDetail
-                                                                    .videos!
-                                                                    .length -
-                                                                1
-                                                        ? 0
-                                                        : 12),
-                                                decoration: const BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(8)),
-                                                    color: Colors.white),
-                                                child: Column(
-                                                  children: [
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
+                                            )),
+                                        Visibility(
+                                            visible: tabIndex == 1,
+                                            child: Padding(
+                                              padding: EdgeInsets.fromLTRB(
+                                                  12,
+                                                  12,
+                                                  12,
+                                                  24 +
+                                                      16 +
+                                                      16 +
+                                                      mediaQuerySafeInfo
+                                                          .bottom +
+                                                      36),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: List.generate(
+                                                    storeVideoCourseDetail
+                                                        .videos!
+                                                        .length, (index) {
+                                                  return Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            12),
+                                                    margin: EdgeInsets.only(
+                                                        bottom: index ==
+                                                                storeVideoCourseDetail
+                                                                        .videos!
+                                                                        .length -
+                                                                    1
+                                                            ? 0
+                                                            : 12),
+                                                    decoration:
+                                                        const BoxDecoration(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .all(Radius
+                                                                        .circular(
+                                                                            8)),
+                                                            color:
+                                                                Colors.white),
+                                                    child: Column(
                                                       children: [
                                                         Row(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
                                                           children: [
-                                                            SizedBox(
-                                                              width: 120,
-                                                              height:
-                                                                  120 / 4 * 3,
-                                                              child: ClipRRect(
-                                                                borderRadius:
-                                                                    const BorderRadius
-                                                                        .all(
-                                                                        Radius.circular(
-                                                                            8)),
-                                                                child:
-                                                                    CachedNetworkImage(
-                                                                  imageUrl:
-                                                                      '${globalController.cdnBaseUrl}/${storeVideoCourseDetail.videos![index].cover}',
-                                                                  fit: BoxFit
-                                                                      .cover,
-                                                                  width: 120,
-                                                                  height: 120 /
-                                                                      4 *
-                                                                      3,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                              height: 12,
-                                                              width: 12,
-                                                            ),
-                                                            Column(
+                                                            Row(
                                                               crossAxisAlignment:
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
-                                                                Text(
-                                                                  storeVideoCourseDetail
-                                                                      .videos![
-                                                                          index]
-                                                                      .title,
-                                                                  style: const TextStyle(
-                                                                      color: Colors
-                                                                          .black,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
-                                                                      fontSize:
-                                                                          14),
+                                                                SizedBox(
+                                                                  width: 120,
+                                                                  height: 120 /
+                                                                      4 *
+                                                                      3,
+                                                                  child:
+                                                                      ClipRRect(
+                                                                    borderRadius:
+                                                                        const BorderRadius
+                                                                            .all(
+                                                                            Radius.circular(8)),
+                                                                    child:
+                                                                        CachedNetworkImage(
+                                                                      imageUrl:
+                                                                          '${globalController.cdnBaseUrl}/${storeVideoCourseDetail.videos![index].cover}',
+                                                                      fit: BoxFit
+                                                                          .cover,
+                                                                      width:
+                                                                          120,
+                                                                      height:
+                                                                          120 /
+                                                                              4 *
+                                                                              3,
+                                                                    ),
+                                                                  ),
                                                                 ),
                                                                 const SizedBox(
-                                                                  height: 6,
+                                                                  height: 12,
+                                                                  width: 12,
                                                                 ),
-                                                                Text(
-                                                                  storeVideoCourseDetail
-                                                                      .videos![
-                                                                          index]
-                                                                      .time_length,
-                                                                  style: const TextStyle(
-                                                                      color: Colors
-                                                                          .black,
-                                                                      fontWeight:
-                                                                          FontWeight
+                                                                Column(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    Text(
+                                                                      storeVideoCourseDetail
+                                                                          .videos![
+                                                                              index]
+                                                                          .title,
+                                                                      style: const TextStyle(
+                                                                          color: Colors
+                                                                              .black,
+                                                                          fontWeight: FontWeight
+                                                                              .bold,
+                                                                          fontSize:
+                                                                              14),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      height: 6,
+                                                                    ),
+                                                                    Text(
+                                                                      storeVideoCourseDetail
+                                                                          .videos![
+                                                                              index]
+                                                                          .time_length,
+                                                                      style: const TextStyle(
+                                                                          color: Colors
+                                                                              .black,
+                                                                          fontWeight: FontWeight
                                                                               .normal,
-                                                                      fontSize:
-                                                                          14),
-                                                                ),
+                                                                          fontSize:
+                                                                              14),
+                                                                    ),
+                                                                  ],
+                                                                )
                                                               ],
+                                                            ),
+                                                            SizedBox(
+                                                              width: 48,
+                                                              height: 48,
+                                                              child:
+                                                                  GestureDetector(
+                                                                onTap: () {
+                                                                  setState(() {
+                                                                    expandList[
+                                                                            index] =
+                                                                        !expandList[
+                                                                            index];
+                                                                  });
+                                                                },
+                                                                child: (!expandList[
+                                                                        index]
+                                                                    ? Center(
+                                                                        child: IconFont(
+                                                                            IconNames
+                                                                                .xiala,
+                                                                            size:
+                                                                                18,
+                                                                            color:
+                                                                                '#000'),
+                                                                      )
+                                                                    : Center(
+                                                                        child: IconFont(
+                                                                            IconNames
+                                                                                .shouqi,
+                                                                            size:
+                                                                                18,
+                                                                            color:
+                                                                                '#000'),
+                                                                      )),
+                                                              ),
                                                             )
                                                           ],
                                                         ),
-                                                        SizedBox(
-                                                          width: 48,
-                                                          height: 48,
-                                                          child:
-                                                              GestureDetector(
-                                                            onTap: () {
-                                                              setState(() {
-                                                                expandList[
-                                                                        index] =
-                                                                    !expandList[
-                                                                        index];
-                                                              });
-                                                            },
-                                                            child: (!expandList[
-                                                                    index]
-                                                                ? Center(
-                                                                    child: IconFont(
-                                                                        IconNames
-                                                                            .xiala,
-                                                                        size:
-                                                                            18,
-                                                                        color:
-                                                                            '#000'),
+                                                        (expandList[index]
+                                                            ? Column(
+                                                                children: [
+                                                                  const SizedBox(
+                                                                    height: 12,
+                                                                  ),
+                                                                  Text(
+                                                                    storeVideoCourseDetail
+                                                                        .videos![
+                                                                            index]
+                                                                        .description,
+                                                                    style: const TextStyle(
+                                                                        color: Colors
+                                                                            .black,
+                                                                        fontSize:
+                                                                            14,
+                                                                        height:
+                                                                            1.5),
                                                                   )
-                                                                : Center(
-                                                                    child: IconFont(
-                                                                        IconNames
-                                                                            .shouqi,
-                                                                        size:
-                                                                            18,
-                                                                        color:
-                                                                            '#000'),
-                                                                  )),
-                                                          ),
-                                                        )
+                                                                ],
+                                                              )
+                                                            : const SizedBox
+                                                                .shrink())
                                                       ],
                                                     ),
-                                                    (expandList[index]
-                                                        ? Column(
-                                                            children: [
-                                                              const SizedBox(
-                                                                height: 12,
-                                                              ),
-                                                              Text(
-                                                                storeVideoCourseDetail
-                                                                    .videos![
-                                                                        index]
-                                                                    .description,
-                                                                style: const TextStyle(
-                                                                    color: Colors
-                                                                        .black,
-                                                                    fontSize:
-                                                                        14,
-                                                                    height:
-                                                                        1.5),
-                                                              )
-                                                            ],
-                                                          )
-                                                        : const SizedBox
-                                                            .shrink())
-                                                  ],
-                                                ),
-                                              );
-                                            }),
-                                          ),
-                                        ),
+                                                  );
+                                                }),
+                                              ),
+                                            )),
                                       ]),
                                 ),
                               )

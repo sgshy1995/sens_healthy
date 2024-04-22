@@ -107,6 +107,27 @@ class StoreClientProvider extends GlobalClientProvider {
         .toList();
   }
 
+  static List<StoreEquipmentTypeModel> fromJsonListEquipemnt(
+      List<dynamic> jsonList) {
+    return jsonList
+        .map((json) => StoreEquipmentTypeModel.fromJson(json))
+        .toList();
+  }
+
+  static List<StoreEquipmentInModelTypeModel> fromJsonListModel(
+      List<dynamic> jsonList) {
+    return jsonList
+        .map((json) => StoreEquipmentInModelTypeModel.fromJson(json))
+        .toList();
+  }
+
+  static List<StoreEquipmentChartTypeModel> fromJsonListEquipmentChart(
+      List<dynamic> jsonList) {
+    return jsonList
+        .map((json) => StoreEquipmentChartTypeModel.fromJson(json))
+        .toList();
+  }
+
   static List<PainReplyTypeModel> fromJsonListReply(List<dynamic> jsonList) {
     return jsonList.map((json) => PainReplyTypeModel.fromJson(json)).toList();
   }
@@ -233,7 +254,7 @@ class StoreClientProvider extends GlobalClientProvider {
     return dataFinalCourseLiveTypeModel;
   }
 
-  // 根据课程购物车信息
+  // 用户用户的课程购物车信息
   Future<DataFinalModel<List<StoreCourseChartTypeModel>>>
       getCourseChartListAction() async {
     final jsonData = await get('/course_chart');
@@ -288,6 +309,175 @@ class StoreClientProvider extends GlobalClientProvider {
   // 清空用户的课程购物车
   Future<DataFinalModel> deleteCourseChartsByUserAction() async {
     final jsonData = await delete('/course_chart');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel dataFinalModel =
+        DataFinalModel(code: jsonMap['code'], message: jsonMap['message']);
+    return dataFinalModel;
+  }
+
+  // 分页请求器材列表
+  Future<DataPaginationFinalModel<List<StoreEquipmentTypeModel>>>
+      getEquipmentsAction(
+          {String? keyword,
+          int? pageNo = 1,
+          int? pageSize = 10,
+          int? equipmentType,
+          int? hotOrder,
+          int? hasDiscount}) async {
+    final Map<String, dynamic> queryMap = {
+      'pageNo': pageNo.toString(),
+      'pageSize': pageSize.toString()
+    };
+    if (keyword != null) {
+      queryMap['keyword'] = keyword.toString();
+    }
+    if (equipmentType != null) {
+      queryMap['equipment_type'] = equipmentType.toString();
+    }
+    if (hotOrder != null) {
+      queryMap['hot_order'] = hotOrder.toString();
+    }
+    if (hasDiscount != null) {
+      queryMap['has_discount'] = hasDiscount.toString();
+    }
+
+    final jsonData = await get('/equipment/custom', query: queryMap);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    late List<StoreEquipmentTypeModel> list =
+        fromJsonListEquipemnt(jsonMap['data']['data']);
+
+    final DataPaginationInModel<List<StoreEquipmentTypeModel>> inModel =
+        DataPaginationInModel(
+            data: list,
+            pageNo: jsonMap['data']['pageNo'],
+            pageSize: jsonMap['data']['pageSize'],
+            totalCount: jsonMap['data']['totalCount'],
+            totalPage: jsonMap['data']['totalPage']);
+
+    final DataPaginationFinalModel<List<StoreEquipmentTypeModel>>
+        dataFinalEquipmentTypeModel =
+        DataPaginationFinalModel<List<StoreEquipmentTypeModel>>(
+            code: jsonMap['code'], message: jsonMap['message'], data: inModel);
+    return dataFinalEquipmentTypeModel;
+  }
+
+  // 根据器材轮播
+  Future<DataFinalModel<List<StoreEquipmentTypeModel>>>
+      getCarouselEquipmentsAction() async {
+    final jsonData = await get('/equipment/carousel');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    late List<StoreEquipmentTypeModel> list =
+        fromJsonListEquipemnt(jsonMap['data']);
+
+    final DataFinalModel<List<StoreEquipmentTypeModel>>
+        dataFinalCarouselEquipmentsModel = DataFinalModel(
+            code: jsonMap['code'], message: jsonMap['message'], data: list);
+    return dataFinalCarouselEquipmentsModel;
+  }
+
+  // 器材根据id获取
+  Future<DataFinalModel<StoreEquipmentTypeModel>> getEquipmentByIdAction(
+      String id) async {
+    final jsonData = await get('/equipment/id/$id');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel<StoreEquipmentTypeModel> dataFinalEquipmentTypeModel =
+        DataFinalModel(
+            code: jsonMap['code'],
+            message: jsonMap['message'],
+            data: StoreEquipmentTypeModel.fromJson(jsonMap['data']));
+    return dataFinalEquipmentTypeModel;
+  }
+
+  // 型号信息根据id获取
+  Future<DataFinalModel<StoreEquipmentInModelTypeModel>> getModelByIdAction(
+      String id) async {
+    final jsonData = await get('/equipment_model/id/$id');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel<StoreEquipmentInModelTypeModel>
+        dataFinalEquipmentInModelTypeModel = DataFinalModel(
+            code: jsonMap['code'],
+            message: jsonMap['message'],
+            data: StoreEquipmentInModelTypeModel.fromJson(jsonMap['data']));
+    return dataFinalEquipmentInModelTypeModel;
+  }
+
+  // 根据器材id获取型号列表
+  Future<DataFinalModel<List<StoreEquipmentInModelTypeModel>>>
+      getModelsByEquipmentIdAction(String equipmentId) async {
+    final jsonData = await get('/equipment_model/equipment/$equipmentId');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    late List<StoreEquipmentInModelTypeModel> list =
+        fromJsonListModel(jsonMap['data']);
+
+    final DataFinalModel<List<StoreEquipmentInModelTypeModel>>
+        dataFinalEquipmentInModelsModel = DataFinalModel(
+            code: jsonMap['code'], message: jsonMap['message'], data: list);
+    return dataFinalEquipmentInModelsModel;
+  }
+
+  // 获取用户的器材购物车信息
+  Future<DataFinalModel<List<StoreEquipmentChartTypeModel>>>
+      getEquipmentChartListAction() async {
+    final jsonData = await get('/equipment_chart');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    late List<StoreEquipmentChartTypeModel> list =
+        fromJsonListEquipmentChart(jsonMap['data']);
+
+    final DataFinalModel<List<StoreEquipmentChartTypeModel>>
+        dataFinalEquipmentChartsModel = DataFinalModel(
+            code: jsonMap['code'], message: jsonMap['message'], data: list);
+    return dataFinalEquipmentChartsModel;
+  }
+
+  // 添加器材至购物车
+  Future<DataFinalModel> addEquipmentChartAction(
+      String equipmentId, String equipmentModelId, int addNum) async {
+    final jsonData = await post('/equipment_chart', {
+      'equipment_id': equipmentId,
+      'equipment_model_id': equipmentModelId,
+      'add_num': addNum
+    });
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel dataFinalModel =
+        DataFinalModel(code: jsonMap['code'], message: jsonMap['message']);
+    return dataFinalModel;
+  }
+
+  // 根据多个id删除器材购物车
+  Future<DataFinalModel> deleteEquipmentChartsByIdsAction(
+      List<String> equipmentChartIds) async {
+    final jsonData = await post(
+        '/equipment_chart/ids/delete', {'ids': equipmentChartIds.join(',')});
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel dataFinalModel =
+        DataFinalModel(code: jsonMap['code'], message: jsonMap['message']);
+    return dataFinalModel;
+  }
+
+  // 清空用户的器材购物车
+  Future<DataFinalModel> deleteEquipmentChartsByUserAction() async {
+    final jsonData = await delete('/equipment_chart/user/delete');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel dataFinalModel =
+        DataFinalModel(code: jsonMap['code'], message: jsonMap['message']);
+    return dataFinalModel;
+  }
+
+  // 更新器材购物车数量信息
+  Future<DataFinalModel> updateEquipmentChartAddNum(
+      String equipmentChartId, int addNum) async {
+    final jsonData = await put(
+        '/equipment_chart/num', {'id': equipmentChartId, 'number': addNum});
     final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
 
     final DataFinalModel dataFinalModel =

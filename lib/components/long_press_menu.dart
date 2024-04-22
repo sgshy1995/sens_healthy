@@ -13,13 +13,32 @@ class LongPressMenu extends StatefulWidget {
   State<LongPressMenu> createState() => _LongPressMenuState();
 }
 
-class _LongPressMenuState extends State<LongPressMenu> {
+class _LongPressMenuState extends State<LongPressMenu>
+    with SingleTickerProviderStateMixin {
   final CustomPopupMenuController _customPopupMenuController =
       CustomPopupMenuController();
+
+  late AnimationController _controller;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    // 创建颜色渐变动画
+    _colorAnimation = ColorTween(
+            begin: Colors.transparent, end: const Color.fromRGBO(0, 0, 0, 0.3))
+        .animate(_controller);
+  }
 
   @override
   void dispose() {
     _customPopupMenuController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -68,7 +87,24 @@ class _LongPressMenuState extends State<LongPressMenu> {
       menuBuilder: _buildLongPressMenu,
       barrierColor: Colors.transparent,
       pressType: PressType.longPress,
-      child: widget.child,
+      menuOnChange: (p0) {
+        if (p0) {
+          _controller.forward().then((_) {
+            _controller.reverse();
+          });
+        }
+      },
+      child: AnimatedBuilder(
+        animation: _colorAnimation,
+        builder: (context, child) {
+          return Center(
+            child: Container(
+              color: _colorAnimation.value,
+              child: widget.child,
+            ),
+          );
+        },
+      ),
     );
   }
 }
