@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sens_healthy/components/toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/user_controller.dart';
 
@@ -21,6 +22,7 @@ class ApiResponse<T> {
 }
 
 class GlobalClientProvider extends GetConnect {
+  String readyOffToken = '';
   late Function(dynamic jsonData) defaultDecoderFunction;
 
   final UserController userController = GetInstance().find<UserController>();
@@ -66,6 +68,32 @@ class GlobalClientProvider extends GetConnect {
         request.headers['Authorization'] = "Bearer $userController.token";
       }
       return request;
+    });
+
+    httpClient.addResponseModifier((request, response) {
+      final Object? responseBody = response ?? response.body;
+      final int? statusCode = response.statusCode;
+      //final String previousRoute = Get.previousRoute;
+      if (statusCode == 401 &&
+          userController.token.isNotEmpty &&
+          userController.token != readyOffToken) {
+        showToast('登录已过期, 请重新登录');
+        Future.delayed(const Duration(seconds: 1), () {
+          readyOffToken = userController.token;
+          Get.offAllNamed('/login');
+        });
+      } else if (responseBody != null &&
+          responseBody is Map<String, dynamic> &&
+          responseBody['code'] == 401 &&
+          userController.token.isNotEmpty &&
+          userController.token != readyOffToken) {
+        showToast('登录已过期, 请重新登录');
+        Future.delayed(const Duration(seconds: 1), () {
+          readyOffToken = userController.token;
+          Get.offAllNamed('/login');
+        });
+      }
+      return response;
     });
   }
 }

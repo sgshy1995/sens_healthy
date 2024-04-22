@@ -16,8 +16,8 @@ import './app/pages/prescription/prescription_section.dart';
 import './app/pages/prescription/prescription_detail.dart';
 import './app/pages/store/store_course_live_detail.dart';
 import './app/pages/store/store_course_video_detail.dart';
-import 'app/pages/store/store_course_section.dart';
-import 'app/pages/store/store_course_search.dart';
+import './app/pages/store/store_course_section.dart';
+import './app/pages/store/store_course_search.dart';
 import './app/pages/store/store_course_chart.dart';
 import './app/pages/store/store_course_order.dart';
 import './app/pages/store/store_course_order_result.dart';
@@ -31,7 +31,7 @@ import './app/pages/mine/mine_address_publish.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 Future main() async {
-  await dotenv.load(fileName: ".env.prod"); // 加载生产环境配置
+  await dotenv.load(fileName: ".env.prod"); // 加载开发环境配置
   WidgetsFlutterBinding.ensureInitialized(); // 确保Flutter绑定初始化
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -122,7 +122,7 @@ Future main() async {
             middlewares: [AuthMiddleware()],
           ),
           GetPage(
-            name: '/store_equipment_result',
+            name: '/store_equipment_detail',
             page: () => const StoreEquipmentDetailPage(),
             middlewares: [AuthMiddleware()],
           ),
@@ -157,6 +157,11 @@ Future main() async {
             middlewares: [AuthMiddleware()],
           ),
         ],
+        routingCallback: (Routing? routing) {
+          if (routing != null && routing.current == '/login') {
+            prefs.remove('token');
+          }
+        },
         initialBinding: HomeBinding()));
   });
 }

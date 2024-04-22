@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import '../../../iconfont/icon_font.dart';
+import '../../controllers/user_controller.dart';
 import 'login_phone.dart';
 import '../../../components/toast.dart';
 
@@ -18,6 +19,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
+  final UserController userController = GetInstance().find<UserController>();
+
   late AnimationController _controller1;
   late AnimationController _controller2;
   late AnimationController _controller3;
@@ -35,6 +38,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    userController.setToken('');
 
     //获取设备信息
     GetDeviceInfo().getDeviceId();

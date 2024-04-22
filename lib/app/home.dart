@@ -21,9 +21,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  final UserController userController = GetInstance().find<UserController>();
-  final UserClientProvider userClientProvider =
-      GetInstance().find<UserClientProvider>();
+  /// 这里的 Getx 实例必须手动 put
+  /// 因为在 GetMaterialApp 中 initialRoute: token is String ? '/' : '/login'
+  /// 如果是从登录页过来的，因为初始化页面不是 Home, 会导致这里的 userController 和 userClientProvider 找不到 报错
+  final UserController userController = Get.put(UserController());
+  final UserClientProvider userClientProvider = Get.put(UserClientProvider());
+
   late final AnimationController _animationHomeController;
   late final AnimationController _animationRecoveryController;
   late final AnimationController _animationStoreController;

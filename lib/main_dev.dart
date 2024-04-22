@@ -157,6 +157,11 @@ Future main() async {
             middlewares: [AuthMiddleware()],
           ),
         ],
+        routingCallback: (Routing? routing) {
+          if (routing != null && routing.current == '/login') {
+            prefs.remove('token');
+          }
+        },
         initialBinding: HomeBinding()));
   });
 }
