@@ -10,6 +10,7 @@ import 'login_phone.dart';
 import '../../../components/toast.dart';
 
 import '../../../utils/get_device_id.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -33,11 +34,17 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   late bool isChecked;
 
-  late var res;
+  void clearLocalRefs() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('token');
+    prefs.remove('user_id');
+    prefs.remove('user_info_id');
+  }
 
   @override
   void initState() {
     super.initState();
+    clearLocalRefs();
     userController.setToken('');
 
     //获取设备信息

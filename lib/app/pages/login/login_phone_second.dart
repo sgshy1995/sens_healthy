@@ -49,6 +49,42 @@ class LoginPhoneSecond extends StatelessWidget {
     capture.value = newCapture;
   }
 
+  Future<String?> getUserInfo(String token) async {
+    Completer<String?> completer = Completer();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    userController.setToken(token);
+    userClientProvider.getUserInfoByJWTAction().then((value) {
+      final resultCode = value.code;
+      final resultData = value.data;
+      if (resultCode == 200 && resultData != null) {
+        prefs.setString('user_id', resultData.id);
+        userController.setUserInfo(resultData);
+        completer.complete('success');
+      }
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<String?> getInfo(String token) async {
+    Completer<String?> completer = Completer();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    userController.setToken(token);
+    userClientProvider.getInfoByJWTAction().then((value) {
+      final resultCode = value.code;
+      final resultData = value.data;
+      if (resultCode == 200 && resultData != null) {
+        prefs.setString('user_info_id', resultData.id);
+        userController.setInfo(resultData);
+        completer.complete('success');
+      }
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
   void submit() {
     if (loginLoading.value) {
       return;
@@ -65,6 +101,10 @@ class LoginPhoneSecond extends StatelessWidget {
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('token', token);
           userController.setToken(token);
+          //等待请求数据完成
+          List<Future<String?>> futures = [getUserInfo(token), getInfo(token)];
+          // 等待所有异步任务完成
+          await Future.wait(futures);
           loginLoading.value = false;
           Get.offAllNamed('/');
         } else {

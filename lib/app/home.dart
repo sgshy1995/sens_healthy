@@ -43,6 +43,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         final resultCode = value.code;
         final resultData = value.data;
         if (resultCode == 200 && resultData != null) {
+          prefs.setString('user_id', resultData.id);
           userController.setUserInfo(resultData);
         }
       }).catchError((e) {});
@@ -58,6 +59,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         final resultCode = value.code;
         final resultData = value.data;
         if (resultCode == 200 && resultData != null) {
+          prefs.setString('user_info_id', resultData.id);
           userController.setInfo(resultData);
         }
       }).catchError((e) {});
