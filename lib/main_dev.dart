@@ -28,6 +28,7 @@ import './app/pages/store/store_equipment_chart.dart';
 import './app/pages/store/store_equipment_order.dart';
 import './app/pages/mine/mine_address.dart';
 import './app/pages/mine/mine_address_publish.dart';
+import './app/pages/mine/mine_record_publish.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 Future main() async {
@@ -154,6 +155,11 @@ Future main() async {
           GetPage(
             name: '/mine_address_publish',
             page: () => const MineAddressPublishPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_record_publish',
+            page: () => const MineRecordPublishPage(),
             middlewares: [AuthMiddleware()],
           ),
         ],

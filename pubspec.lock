@@ -33,6 +33,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.1.1"
+  bottom_picker:
+    dependency: "direct main"
+    description:
+      name: bottom_picker
+      sha256: eb43cd6afda954e1d6269b87a92f061d298b0beba1b8378e9a5a3af35c1657d5
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "2.6.0"
   cached_network_image:
     dependency: "direct main"
     description:

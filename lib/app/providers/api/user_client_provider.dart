@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:get/get.dart';
 import 'package:sens_healthy/app/models/data_model.dart';
 import '../global_client_provider.dart';
@@ -119,7 +121,7 @@ class UserClientProvider extends GlobalClientProvider {
     return capturePhoneModel;
   }
 
-  // Get request
+  // 根据 jwt 获取用户信息
   Future<DataFinalModel<UserTypeModel>> getUserInfoByJWTAction() async {
     final jsonData = await get('/user');
     final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
@@ -131,10 +133,33 @@ class UserClientProvider extends GlobalClientProvider {
     return dataFinalUserTypeModel;
   }
 
-  // Get request
+  // 根据 jwt 更新用户信息
+  Future<DataFinalModel> updateUserByJwtAction(Map<String, dynamic> user,
+      {String? deviceId, String? phoneCapture}) async {
+    final Map form = {'user': user};
+
+    if (deviceId != null) {
+      form['device_id'] = deviceId;
+    }
+
+    if (phoneCapture != null) {
+      form['phone_capture'] = phoneCapture;
+    }
+
+    final jsonData = await put('/user/jwt', form);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel dataFinal = DataFinalModel(
+      code: jsonMap['code'],
+      message: jsonMap['message'],
+    );
+    return dataFinal;
+  }
+
+  // 根据 jwt 获取个人信息
   Future<DataFinalModel<UserInfoTypeModel>> getInfoByJWTAction() async {
     final jsonData = await get('/user_info/user');
     final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
     final DataFinalModel<UserInfoTypeModel> dataFinalUserInfoTypeModel =
         DataFinalModel(
             code: jsonMap['code'],
@@ -153,6 +178,31 @@ class UserClientProvider extends GlobalClientProvider {
       message: jsonMap['message'],
     );
     return dataFinal;
+  }
+
+  // 文件上传-伤痛档案影像资料
+  Future<DataFinalModel<String?>> recordImageDataUploadAction(
+      File file, String filename) async {
+    final FormData formData =
+        FormData({'file': MultipartFile(file, filename: filename)});
+    final jsonData = await post('/user_info/upload/data', formData);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel<String?> dataFinalUploadModel = DataFinalModel(
+        code: jsonMap['code'],
+        message: jsonMap['message'],
+        data: jsonMap['data']);
+    return dataFinalUploadModel;
+  }
+
+  // 删除不必要图片
+  Future<DataFinalModel> removeUnnecessaryImagesAction(
+      List<String> keys) async {
+    final jsonData = await post('/pain_question/unnecessary', {'keys': keys});
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel dataFinalModel =
+        DataFinalModel(code: jsonMap['code'], message: jsonMap['message']);
+    return dataFinalModel;
   }
 
   // 创建地址

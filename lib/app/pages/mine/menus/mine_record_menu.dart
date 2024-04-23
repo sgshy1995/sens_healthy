@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../iconfont/icon_font.dart';
 import '../../../controllers/user_controller.dart';
+import '../mine_record_publish.dart';
 
 class MineRecordMenu extends StatefulWidget {
   const MineRecordMenu({super.key});
@@ -12,6 +13,28 @@ class MineRecordMenu extends StatefulWidget {
 
 class _MineRecordMenuState extends State<MineRecordMenu> {
   final UserController userController = GetInstance().find<UserController>();
+
+  void handleGotoRecordPublish() {
+    Navigator.push<String>(
+      context,
+      PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const MineRecordPublishPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final curvedAnimation =
+                CurvedAnimation(parent: animation, curve: Curves.easeInOut);
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.0, 1.0),
+                end: Offset.zero,
+              )
+                  .chain(CurveTween(curve: Curves.easeInOut))
+                  .animate(curvedAnimation),
+              child: child,
+            );
+          }),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,50 +68,101 @@ class _MineRecordMenuState extends State<MineRecordMenu> {
                           fontWeight: FontWeight.bold))
                 ],
               ),
-              (userController.info.injury_history == null ||
-                      userController.info.injury_history!.isEmpty
-                  ? Row(
-                      children: [
-                        const Text('未维护',
-                            style: TextStyle(
-                                color: Color.fromRGBO(156, 156, 156, 1),
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold)),
-                        Container(
-                          width: 16,
-                          height: 16,
-                          margin: const EdgeInsets.only(left: 8),
-                          child: Center(
-                            child: IconFont(
-                              IconNames.qianjin,
-                              size: 16,
-                              color: 'rgb(156, 156, 156)',
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : Row(
-                      children: [
-                        const Text('已维护',
-                            style: TextStyle(
-                                color: Color.fromRGBO(0, 0, 0, 1),
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold)),
-                        Container(
-                          width: 16,
-                          height: 16,
-                          margin: const EdgeInsets.only(left: 8),
-                          child: Center(
-                            child: IconFont(
-                              IconNames.qianjin,
-                              size: 16,
-                              color: 'rgb(156, 156, 156)',
-                            ),
-                          ),
-                        ),
-                      ],
-                    ))
+              GestureDetector(
+                onTap: handleGotoRecordPublish,
+                child: GetBuilder<UserController>(
+                  builder: (controller) {
+                    return ((controller.info.injury_history == null ||
+                            controller.info.injury_history!.isEmpty)
+                        ? Row(
+                            children: [
+                              const Text('未维护',
+                                  style: TextStyle(
+                                      color: Color.fromRGBO(156, 156, 156, 1),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold)),
+                              Container(
+                                width: 16,
+                                height: 16,
+                                margin: const EdgeInsets.only(left: 8),
+                                child: Center(
+                                  child: IconFont(
+                                    IconNames.qianjin,
+                                    size: 16,
+                                    color: 'rgb(156, 156, 156)',
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            children: [
+                              const Text('已维护',
+                                  style: TextStyle(
+                                      color: Color.fromRGBO(0, 0, 0, 1),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold)),
+                              Container(
+                                width: 16,
+                                height: 16,
+                                margin: const EdgeInsets.only(left: 8),
+                                child: Center(
+                                  child: IconFont(
+                                    IconNames.qianjin,
+                                    size: 16,
+                                    color: 'rgb(156, 156, 156)',
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ));
+                  },
+                ),
+                // child: ((userController.info.injury_history == null ||
+                //         userController.info.injury_history!.isEmpty)
+                //     ? Row(
+                //         children: [
+                //           const Text('未维护',
+                //               style: TextStyle(
+                //                   color: Color.fromRGBO(156, 156, 156, 1),
+                //                   fontSize: 14,
+                //                   fontWeight: FontWeight.bold)),
+                //           Container(
+                //             width: 16,
+                //             height: 16,
+                //             margin: const EdgeInsets.only(left: 8),
+                //             child: Center(
+                //               child: IconFont(
+                //                 IconNames.qianjin,
+                //                 size: 16,
+                //                 color: 'rgb(156, 156, 156)',
+                //               ),
+                //             ),
+                //           ),
+                //         ],
+                //       )
+                //     : Row(
+                //         children: [
+                //           const Text('已维护',
+                //               style: TextStyle(
+                //                   color: Color.fromRGBO(0, 0, 0, 1),
+                //                   fontSize: 14,
+                //                   fontWeight: FontWeight.bold)),
+                //           Container(
+                //             width: 16,
+                //             height: 16,
+                //             margin: const EdgeInsets.only(left: 8),
+                //             child: Center(
+                //               child: IconFont(
+                //                 IconNames.qianjin,
+                //                 size: 16,
+                //                 color: 'rgb(156, 156, 156)',
+                //               ),
+                //             ),
+                //           ),
+                //         ],
+                //       )),
+              )
             ],
           )
         ],
