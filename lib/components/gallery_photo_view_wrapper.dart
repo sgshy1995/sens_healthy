@@ -20,6 +20,7 @@ class GalleryPhotoViewWrapper extends StatefulWidget {
     this.initialIndex = 0,
     required this.galleryItems,
     this.scrollDirection = Axis.horizontal,
+    this.showIndicator = true,
   }) : pageController = PageController(initialPage: initialIndex);
 
   final LoadingBuilder? loadingBuilder;
@@ -30,6 +31,7 @@ class GalleryPhotoViewWrapper extends StatefulWidget {
   final PageController pageController;
   final List<GalleryExampleItem> galleryItems;
   final Axis scrollDirection;
+  final bool showIndicator;
 
   @override
   State<StatefulWidget> createState() {
@@ -94,25 +96,28 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
                 onPageChanged: onPageChanged,
                 scrollDirection: widget.scrollDirection,
               ),
-              Positioned(
-                  top: MediaQuery.of(context).padding.top + 12,
-                  child: Container(
-                    width: 60,
-                    height: 30,
-                    decoration: const BoxDecoration(
-                        color: Color.fromRGBO(0, 0, 0, 0.6),
-                        borderRadius: BorderRadius.all(Radius.circular(12))),
-                    child: Center(
-                      child: Text(
-                        "${currentIndex + 1} / ${widget.galleryItems.length}",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14.0,
-                          decoration: null,
+              widget.showIndicator
+                  ? Positioned(
+                      top: MediaQuery.of(context).padding.top + 12,
+                      child: Container(
+                        width: 60,
+                        height: 30,
+                        decoration: const BoxDecoration(
+                            color: Color.fromRGBO(0, 0, 0, 0.6),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(12))),
+                        child: Center(
+                          child: Text(
+                            "${currentIndex + 1} / ${widget.galleryItems.length}",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14.0,
+                              decoration: null,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  )),
+                      ))
+                  : const SizedBox.shrink(),
               Positioned(
                   bottom: MediaQuery.of(context).padding.bottom + 24,
                   right: 24,
