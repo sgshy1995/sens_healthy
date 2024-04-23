@@ -101,20 +101,36 @@ class PainClientProvider extends GlobalClientProvider {
           {String? keyword,
           int? pageNo = 1,
           int? pageSize = 10,
-          bool hasMajor = false}) async {
-    final jsonData = await get('/pain_question/custom',
-        query: hasMajor
-            ? {
-                'keyword': keyword ?? '',
-                'pageNo': pageNo.toString(),
-                'pageSize': pageSize.toString(),
-                'has_major': '1',
-              }
-            : {
-                'keyword': keyword ?? '',
-                'pageNo': pageNo.toString(),
-                'pageSize': pageSize.toString()
-              });
+          bool hasMajor = false,
+          String? userId,
+          String? collectUserId,
+          String? likeUserId}) async {
+    final Map<String, dynamic> queryMap = {
+      'pageNo': pageNo.toString(),
+      'pageSize': pageSize.toString()
+    };
+
+    if (keyword != null) {
+      queryMap['keyword'] = keyword.toString();
+    }
+
+    if (hasMajor) {
+      queryMap['has_major'] = '1';
+    }
+
+    if (userId != null) {
+      queryMap['user_id'] = userId.toString();
+    }
+
+    if (collectUserId != null) {
+      queryMap['collect_user_ids'] = collectUserId.toString();
+    }
+
+    if (likeUserId != null) {
+      queryMap['like_user_ids'] = likeUserId.toString();
+    }
+
+    final jsonData = await get('/pain_question/custom', query: queryMap);
     final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
 
     late List<PainQuestionTypeModel> list =
@@ -212,14 +228,24 @@ class PainClientProvider extends GlobalClientProvider {
   // 分页请求答复列表
   Future<DataPaginationFinalModel<List<PainReplyTypeModel>>>
       getPainRepliesByCustomAction(
-          {required String questionId,
+          {String? questionId,
           int? pageNo = 1,
-          int? pageSize = 10}) async {
-    final jsonData = await get('/pain_reply/custom', query: {
-      'question_id': questionId,
+          int? pageSize = 10,
+          String? userId}) async {
+    final Map<String, dynamic> queryMap = {
       'pageNo': pageNo.toString(),
       'pageSize': pageSize.toString()
-    });
+    };
+
+    if (questionId != null) {
+      queryMap['question_id'] = questionId.toString();
+    }
+
+    if (userId != null) {
+      queryMap['user_id'] = userId.toString();
+    }
+
+    final jsonData = await get('/pain_reply/custom', query: queryMap);
     final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
 
     late List<PainReplyTypeModel> list =

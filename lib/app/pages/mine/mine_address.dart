@@ -330,13 +330,13 @@ class _MineAddressPageState extends State<MineAddressPage>
   @override
   void initState() {
     super.initState();
-    if (Get.arguments['ifCanSelect'] != null) {
+    if (Get.arguments != null && Get.arguments['ifCanSelect'] != null) {
       ifCanSelect = Get.arguments['ifCanSelect'];
     } else {
       ifCanSelect = false;
     }
 
-    if (Get.arguments['selectId'] != null) {
+    if (Get.arguments != null && Get.arguments['selectId'] != null) {
       selectId = Get.arguments['selectId'];
     } else {
       selectId = null;
@@ -405,7 +405,31 @@ class _MineAddressPageState extends State<MineAddressPage>
     final Size mediaQuerySizeInfo = MediaQuery.of(context).size;
 
     Widget skeleton() {
-      return Container();
+      return SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: Column(
+              children: List.generate(
+                  16,
+                  (index) => Container(
+                        height: 120,
+                        width: mediaQuerySizeInfo.width,
+                        padding: const EdgeInsets.all(12),
+                        decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(6))),
+                        child: Shimmer.fromColors(
+                          baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            width: mediaQuerySizeInfo.width - 24,
+                            height: 120 - 24,
+                            decoration: const BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(6)),
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ))));
     }
 
     return Scaffold(
