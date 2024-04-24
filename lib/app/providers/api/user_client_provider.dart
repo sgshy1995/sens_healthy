@@ -95,7 +95,7 @@ class UserClientProvider extends GlobalClientProvider {
     return body;
   }
 
-  // Get request
+  // 登录获取验证码
   Future<CapturePhoneModel> capturePhoneAction(
       String deviceId, String phone, String capture,
       {String? ifReSend = '0'}) async {
@@ -111,7 +111,7 @@ class UserClientProvider extends GlobalClientProvider {
     return capturePhoneModel;
   }
 
-  // Get request
+  // 手机号登录
   Future<LoginModel> loginAction(
       String deviceId, String phone, String capture) async {
     final jsonData = await post('/user/login',
@@ -119,6 +119,33 @@ class UserClientProvider extends GlobalClientProvider {
     final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
     final LoginModel capturePhoneModel = LoginModel.fromJson(jsonMap);
     return capturePhoneModel;
+  }
+
+  // 修改手机号获取取验证码
+  Future<CapturePhoneModel> getCapturePhoneChangeAction(
+      String deviceId, String phone, String username) async {
+    final Map<String, dynamic> query = {
+      "device_id": deviceId,
+      "phone": phone,
+      "username": username
+    };
+    print(query);
+    final jsonData = await get('/auth/new/capture_phone', query: query);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final CapturePhoneModel capturePhoneModel =
+        CapturePhoneModel.fromJson(jsonMap);
+    return capturePhoneModel;
+  }
+
+  // 退出登录
+  Future<DataFinalModel> logoutAction() async {
+    final jsonData = await post('/user/logout', null);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel dataFinal = DataFinalModel(
+      code: jsonMap['code'],
+      message: jsonMap['message'],
+    );
+    return dataFinal;
   }
 
   // 根据 jwt 获取用户信息

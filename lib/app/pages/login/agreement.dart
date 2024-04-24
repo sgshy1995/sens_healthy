@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../iconfont/icon_font.dart';
 
 class AgreementPage extends StatelessWidget {
   AgreementPage({super.key});
+
+  void handleGoBack() {
+    Get.back();
+  }
 
   static const agreementTextList = [
     '为使用「赴康云健康」APP服务（以下简称“本服务”或“本程序”），用户应当阅读并遵守《赴康云健康APP用户使用协议》，请务必审慎阅读、充分理解各条款内容，特别是免除或限制责任的相应条款，以及开通或使用某项服务的单独协议，并选择接受或不接受。',
@@ -166,19 +171,60 @@ class AgreementPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final EdgeInsets mediaQuerySafeInfo = MediaQuery.of(context).padding;
+    final Size mediaQuerySizeInfo = MediaQuery.of(context).size;
+
     return Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            '用户使用协议',
-            style: TextStyle(fontSize: 18),
+        body: Column(
+      children: [
+        Container(
+          color: Colors.white,
+          padding: EdgeInsets.fromLTRB(12, mediaQuerySafeInfo.top + 12, 12, 12),
+          child: SizedBox(
+            height: 36,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: InkWell(
+                    onTap: handleGoBack,
+                    child: Center(
+                      child: IconFont(
+                        IconNames.fanhui,
+                        size: 24,
+                        color: '#000',
+                      ),
+                    ),
+                  ),
+                ),
+                const Text('用户服务协议',
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(width: 24, height: 24)
+              ],
+            ),
           ),
         ),
-        body: Container(
+        const Divider(
+          height: 2,
+          color: Color.fromRGBO(233, 234, 235, 1),
+        ),
+        Expanded(
+            child: Container(
+          color: Colors.white,
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
           child: ListView(
+            padding: const EdgeInsets.all(0),
             children: listNotice + listContent + listFooter,
           ),
-        ));
+        ))
+      ],
+    ));
   }
 }

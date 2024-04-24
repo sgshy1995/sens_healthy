@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import './app/home.dart';
 import './app/pages/login/login.dart';
 import './app/pages/login/agreement.dart';
 import './app/middlewares/route.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import './app/bindings/home_binding.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import './app/pages/pain/pain_question_detail.dart';
 import './app/pages/pain/pain_question_publish.dart';
 import './app/pages/pain/pain_search.dart';
@@ -30,7 +31,12 @@ import './app/pages/mine/mine_address.dart';
 import './app/pages/mine/mine_address_publish.dart';
 import './app/pages/mine/mine_record_publish.dart';
 import './app/pages/mine/mine_data.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
+import './app/pages/mine/mine_setting.dart';
+import './app/pages/mine/privacy.dart';
+import './app/pages/mine/mine_about.dart';
+import './app/pages/mine/mine_account.dart';
+import './app/pages/mine/mine_phone_change.dart';
+import './app/cache/token_manager.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env.dev"); // 加载开发环境配置
@@ -40,9 +46,7 @@ Future main() async {
     DeviceOrientation.portraitDown,
   ]);
   // Obtain shared preferences.
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-  // Try reading data from the 'action' key. If it doesn't exist, returns null.
-  final String? token = prefs.getString('token');
+  final String? token = await TokenManager.getToken();
   initializeDateFormatting('zh_CN', null).then((_) {
     runApp(GetMaterialApp(
         theme: ThemeData(
@@ -168,10 +172,35 @@ Future main() async {
             page: () => const MineDataPage(),
             middlewares: [AuthMiddleware()],
           ),
+          GetPage(
+            name: '/mine_setting',
+            page: () => const MineSettingPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/privacy',
+            page: () => PrivacyPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_about',
+            page: () => const MineAboutPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_account',
+            page: () => const MineAccountPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_phone_change',
+            page: () => const MinePhoneChangePage(),
+            middlewares: [AuthMiddleware()],
+          ),
         ],
         routingCallback: (Routing? routing) {
           if (routing != null && routing.current == '/login') {
-            prefs.remove('token');
+            //prefs.remove('token');
           }
         },
         initialBinding: HomeBinding()));

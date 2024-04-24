@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
 
 enum IconNames {
-  yigoumai, zhuanyerenzheng_menu, kefuyushouhou, shiyongbangzhu, qicai_yifahuo, qicai_daifahuo, qicai_yiquxiao, qicai_yiqianshou, shouhuodizhi, kaitongshoukequanxian, shangwuhezuo, jizhu, guanjie, yiwancheng, daixuexi, xuexizhong, yiyuyue, chongzhi, morenxuanzhong, moren_fill, phone_fill, dizhi_fill, dizhiguanli, lianxi_yishouqing_copy, zhekou, remen, a_yinhangkadaizhifuzhifu, tubiaozhizuomoban, jianshenke, jianji, zixingche, xiaidekecheng, yue, jingshi, qingkong, shouqi, zuixingengxin, live_fill, live, video_fill, video, dingdan, kangfushigongju, kecheng, gouwuche, liebiaoxingshi, duigou, hot, nandu, yanjing, yanjing_fill, fenlei, cainixihuan, nan, nv, shanchu, shezhi, yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, qianjin, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, pingguohuawei, baojianqicai, yuangongfuli, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
+  apple, biangeng_1, yigoumai, zhuanyerenzheng_menu, kefuyushouhou, shiyongbangzhu, qicai_yifahuo, qicai_daifahuo, qicai_yiquxiao, qicai_yiqianshou, shouhuodizhi, kaitongshoukequanxian, shangwuhezuo, jizhu, guanjie, yiwancheng, daixuexi, xuexizhong, yiyuyue, chongzhi, morenxuanzhong, moren_fill, phone_fill, dizhi_fill, dizhiguanli, lianxi_yishouqing_copy, zhekou, remen, a_yinhangkadaizhifuzhifu, tubiaozhizuomoban, jianshenke, jianji, zixingche, xiaidekecheng, yue, jingshi, qingkong, shouqi, zuixingengxin, live_fill, live, video_fill, video, dingdan, kangfushigongju, kecheng, gouwuche, liebiaoxingshi, duigou, hot, nandu, yanjing, yanjing_fill, fenlei, cainixihuan, nan, nv, shanchu, shezhi, yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, qianjin, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, pingguohuawei, baojianqicai, yuangongfuli, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
 }
 
 extension parseString on IconNames {
@@ -36,6 +36,12 @@ class IconFont extends StatelessWidget {
 
   static IconNames getIconNames(dynamic iconName) {
     switch (iconName) {
+      case 'apple':
+        iconName = IconNames.apple;
+        break;
+      case 'biangeng_1':
+        iconName = IconNames.biangeng_1;
+        break;
       case 'yigoumai':
         iconName = IconNames.yigoumai;
         break;
@@ -343,6 +349,30 @@ class IconFont extends StatelessWidget {
     String svgXml;
 
     switch (this.name!) {
+      case IconNames.apple:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M623.89333333 225.06666667c49.17333333-60.05333333 38.18666667-125.65333333 32.74666667-131.09333334-5.44-5.44-76.48 5.44-125.65333333 71.04-43.73333333 60.05333333-43.73333333 125.65333333-38.18666667 131.09333334C498.34666667 301.54666667 569.28 296.10666667 623.89333333 225.06666667L623.89333333 225.06666667zM744.10666667 530.98666667c-5.44-87.36 76.48-141.97333333 92.8-152.96l0-5.44c0 0-71.04-87.36-174.72-81.92-65.49333333 5.44-98.34666667 38.18666667-141.97333334 38.18666666-54.61333333 0-103.78666667-38.18666667-163.84-38.18666666-49.17333333 0-191.14666667 43.73333333-202.02666666 229.33333333-10.88 185.70666667 120.10666667 360.42666667 169.28 393.17333333 49.17333333 32.74666667 81.92 21.86666667 136.53333333-5.44 27.30666667-16.42666667 114.66666667-21.86666667 163.84 10.88 60.05333333 21.86666667 147.41333333 5.44 245.76-213.01333333C858.77333333 705.70666667 749.54666667 678.4 744.10666667 530.98666667L744.10666667 530.98666667zM744.10666667 530.98666667"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
+      case IconNames.biangeng_1:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M870.21875 423.3125c-15 0-26.53125 11.53125-26.53125 26.53125v336c0 44.25-35.34375 79.59375-79.59375 79.59375H224.65625c-44.25 0-79.59375-35.34375-79.59375-79.59375V317.1875c0-44.25 35.34375-79.59375 79.59375-79.59375h337.78125c15 0 26.53125-11.53125 26.53125-26.53125s-11.53125-26.53125-26.53125-26.53125H224.65625C151.25 184.53125 92 243.78125 92 317.1875v468.65625c0 73.40625 59.25 132.65625 132.65625 132.65625h539.4375c73.40625 0 132.65625-59.25 132.65625-132.65625V449.84375c0-14.15625-11.53125-26.53125-26.53125-26.53125z m0 0"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+            <path
+              d="M906.40625 144.6875l-14.15625-14.15625c-16.78125-16.78125-38.90625-25.6875-61.875-25.6875s-45.09375 8.8125-61.875 25.6875L512.9375 385.25l-61.875 61.875c-42.46875 42.46875-30.9375 134.4375-29.15625 145.03125l2.625 19.5 19.5 2.625c4.40625 0.84375 21.1875 3.5625 43.3125 3.5625 32.71875 0 76.03125-5.34375 101.71875-30.9375l317.4375-317.4375c16.78125-16.78125 25.6875-38.90625 25.6875-61.875-0.09375-24-8.90625-46.03125-25.78125-62.90625zM551 549.78125c-14.15625 14.15625-51.28125 16.78125-78.75 15-0.84375-27.375 0.84375-64.59375 15.9375-79.59375l22.125-22.125 63.65625 63.65625-22.96875 23.0625z m317.4375-318.375L613.71875 486.03125l-62.8125-62.8125 254.71875-254.71875c13.21875-13.21875 36.28125-13.21875 48.65625 0l14.15625 14.15625c14.15625 13.40625 14.15625 35.4375 0 48.75z m0 0"
+              fill="''' + getColor(1, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
       case IconNames.yigoumai:
         svgXml = '''
           <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
