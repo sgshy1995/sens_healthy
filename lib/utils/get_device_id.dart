@@ -4,7 +4,7 @@ import 'package:uuid/uuid.dart';
 import 'package:get/get.dart';
 
 class GetDeviceInfo {
-  final UserController userController = GetInstance().find<UserController>();
+  final UserController userController = Get.put(UserController());
 
   Future<String> getDeviceId() async {
     // Obtain shared preferences.

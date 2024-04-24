@@ -13,6 +13,8 @@ import '../../providers/api/user_client_provider.dart';
 import '../../controllers/user_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../cache/token_manager.dart';
+
 // 定义回调函数类型
 typedef StepCallback = void Function(int step);
 
@@ -52,7 +54,6 @@ class LoginPhoneSecond extends StatelessWidget {
   Future<String?> getUserInfo(String token) async {
     Completer<String?> completer = Completer();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    userController.setToken(token);
     userClientProvider.getUserInfoByJWTAction().then((value) {
       final resultCode = value.code;
       final resultData = value.data;
@@ -70,7 +71,6 @@ class LoginPhoneSecond extends StatelessWidget {
   Future<String?> getInfo(String token) async {
     Completer<String?> completer = Completer();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    userController.setToken(token);
     userClientProvider.getInfoByJWTAction().then((value) {
       final resultCode = value.code;
       final resultData = value.data;
@@ -98,15 +98,14 @@ class LoginPhoneSecond extends StatelessWidget {
           .then((result) async {
         if (result.code == 200 && result.data != null) {
           final token = result.data!.token;
-          final SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('token', token);
+          await TokenManager.saveToken(token);
           userController.setToken(token);
-          //等待请求数据完成
-          List<Future<String?>> futures = [getUserInfo(token), getInfo(token)];
           // 等待所有异步任务完成
-          await Future.wait(futures);
+          await Future.wait([getUserInfo(token), getInfo(token)]);
           loginLoading.value = false;
-          Get.offAllNamed('/');
+          final String? tokenGet = await TokenManager.getToken();
+          print('已经设置的token $tokenGet');
+          Get.offAndToNamed('/');
         } else {
           loginLoading.value = false;
           showToast(result.message);
@@ -115,7 +114,7 @@ class LoginPhoneSecond extends StatelessWidget {
     }
   }
 
-  final UserController userController = GetInstance().find<UserController>();
+  final UserController userController = Get.put(UserController());
 
   final Rx<Uint8List> bytes = Rx<Uint8List>(Uint8List(0));
 

@@ -35,9 +35,8 @@ class StoreCoursePageState extends State<StoreCoursePage>
       GlobalKey<StoreCourseLivePageState>();
   final GlobalKey<StoreCourseVideoPageState> _storeCourseVideoPageState =
       GlobalKey<StoreCourseVideoPageState>();
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
-  final UserController userController = GetInstance().find<UserController>();
+  final GlobalController globalController = Get.put(GlobalController());
+  final UserController userController = Get.put(UserController());
 
   late TabController _tabController;
 

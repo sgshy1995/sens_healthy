@@ -47,11 +47,9 @@ class PainQuestionDetailPage extends StatefulWidget {
 }
 
 class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
-  final PainClientProvider painClientProvider =
-      GetInstance().find<PainClientProvider>();
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
-  final UserController userController = GetInstance().find<UserController>();
+  final PainClientProvider painClientProvider = Get.put(PainClientProvider());
+  final GlobalController globalController = Get.put(GlobalController());
+  final UserController userController = Get.put(UserController());
 
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);

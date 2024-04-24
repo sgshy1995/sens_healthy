@@ -12,7 +12,7 @@ class MineRecordMenu extends StatefulWidget {
 }
 
 class _MineRecordMenuState extends State<MineRecordMenu> {
-  final UserController userController = GetInstance().find<UserController>();
+  final UserController userController = Get.put(UserController());
 
   void handleGotoRecordPublish() {
     Navigator.push<String>(

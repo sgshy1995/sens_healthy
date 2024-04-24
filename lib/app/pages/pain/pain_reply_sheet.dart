@@ -30,11 +30,9 @@ class PainReplySheetPage extends StatefulWidget {
 }
 
 class _PainReplySheetPageState extends State<PainReplySheetPage> {
-  final PainClientProvider painClientProvider =
-      GetInstance().find<PainClientProvider>();
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
-  final UserController userController = GetInstance().find<UserController>();
+  final PainClientProvider painClientProvider = Get.put(PainClientProvider());
+  final GlobalController globalController = Get.put(GlobalController());
+  final UserController userController = Get.put(UserController());
 
   bool publishCheck = false;
   String? painReplyValue;

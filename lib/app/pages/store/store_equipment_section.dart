@@ -22,8 +22,8 @@ class _StoreEquipmentSectionPageState extends State<StoreEquipmentSectionPage>
       GlobalKey<StoreEquipmentInPageState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final StoreClientProvider storeClientProvider =
-      GetInstance().find<StoreClientProvider>();
-  final StoreController storeController = GetInstance().find<StoreController>();
+      Get.put(StoreClientProvider());
+  final StoreController storeController = Get.put(StoreController());
   double _opacity = 1.0; // 初始透明度
   double _scrollDistance = 0; // 初始滚动位置
 

@@ -33,14 +33,12 @@ class StoreCourseOrderPage extends StatefulWidget {
 class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
   // 创建一个滚动控制器
   final ScrollController _scrollController = ScrollController();
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
+  final GlobalController globalController = Get.put(GlobalController());
   final StoreClientProvider storeClientProvider =
-      GetInstance().find<StoreClientProvider>();
-  final UserClientProvider userClientProvider =
-      GetInstance().find<UserClientProvider>();
-  final UserController userController = GetInstance().find<UserController>();
-  final StoreController storeController = GetInstance().find<StoreController>();
+      Get.put(StoreClientProvider());
+  final UserClientProvider userClientProvider = Get.put(UserClientProvider());
+  final UserController userController = Get.put(UserController());
+  final StoreController storeController = Get.put(StoreController());
   bool _readyLoad = false;
 
   bool checkWeixin = true;

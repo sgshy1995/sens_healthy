@@ -12,7 +12,7 @@ class MineLiveCourseOrderMenu extends StatefulWidget {
 }
 
 class _MineLiveCourseOrderMenuState extends State<MineLiveCourseOrderMenu> {
-  final UserController userController = GetInstance().find<UserController>();
+  final UserController userController = Get.put(UserController());
 
   @override
   Widget build(BuildContext context) {

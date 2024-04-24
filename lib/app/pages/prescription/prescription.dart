@@ -20,11 +20,10 @@ class _RecoveryPageState extends State<RecoveryPage>
     with SingleTickerProviderStateMixin {
   final GlobalKey<PrescriptionBodyState> _prescriptionBodyState =
       GlobalKey<PrescriptionBodyState>();
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
+  final GlobalController globalController = Get.put(GlobalController());
   final PrescriptionClientProvider prescriptionClientProvider =
-      GetInstance().find<PrescriptionClientProvider>();
-  final UserController userController = GetInstance().find<UserController>();
+      Get.put(PrescriptionClientProvider());
+  final UserController userController = Get.put(UserController());
   late TabController _tabController;
 
   int? part;

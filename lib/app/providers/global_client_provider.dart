@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get/get_connect/http/src/status/http_status.dart';
 import 'package:sens_healthy/components/toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/user_controller.dart';
@@ -25,7 +26,7 @@ class GlobalClientProvider extends GetConnect {
   String readyOffToken = '';
   late Function(dynamic jsonData) defaultDecoderFunction;
 
-  final UserController userController = GetInstance().find<UserController>();
+  final UserController userController = Get.put(UserController());
 
   void setDefaultDecoder(dynamic Function(dynamic json) decoder) {
     defaultDecoderFunction = decoder;
@@ -73,6 +74,7 @@ class GlobalClientProvider extends GetConnect {
     httpClient.addResponseModifier((request, response) {
       final Object? responseBody = response ?? response.body;
       final int? statusCode = response.statusCode;
+
       //final String previousRoute = Get.previousRoute;
       if (statusCode == 401 &&
           userController.token.isNotEmpty &&

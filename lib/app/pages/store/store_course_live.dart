@@ -31,12 +31,11 @@ class StoreCourseLivePage extends StatefulWidget {
 
 class StoreCourseLivePageState extends State<StoreCourseLivePage>
     with SingleTickerProviderStateMixin {
-  final StoreController storeController = GetInstance().find<StoreController>();
+  final StoreController storeController = Get.put(StoreController());
   final StoreClientProvider storeClientProvider =
-      GetInstance().find<StoreClientProvider>();
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
-  final UserController userController = GetInstance().find<UserController>();
+      Get.put(StoreClientProvider());
+  final GlobalController globalController = Get.put(GlobalController());
+  final UserController userController = Get.put(UserController());
 
   /* 数据信息 */
   bool _readyLoad = false;

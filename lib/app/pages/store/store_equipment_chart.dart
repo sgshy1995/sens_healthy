@@ -29,12 +29,11 @@ class StoreEquipmentChartPage extends StatefulWidget {
 }
 
 class _StoreEquipmentChartPageState extends State<StoreEquipmentChartPage> {
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
+  final GlobalController globalController = Get.put(GlobalController());
   final StoreClientProvider storeClientProvider =
-      GetInstance().find<StoreClientProvider>();
-  final UserController userController = GetInstance().find<UserController>();
-  final StoreController storeController = GetInstance().find<StoreController>();
+      Get.put(StoreClientProvider());
+  final UserController userController = Get.put(UserController());
+  final StoreController storeController = Get.put(StoreController());
   bool _readyLoad = false;
 
   //器材类型 0 康复训练器材 1 康复理疗设备 2 康复治疗师工具

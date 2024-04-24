@@ -25,12 +25,11 @@ class StoreCourseChartPage extends StatefulWidget {
 }
 
 class _StoreCourseChartPageState extends State<StoreCourseChartPage> {
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
+  final GlobalController globalController = Get.put(GlobalController());
   final StoreClientProvider storeClientProvider =
-      GetInstance().find<StoreClientProvider>();
-  final UserController userController = GetInstance().find<UserController>();
-  final StoreController storeController = GetInstance().find<StoreController>();
+      Get.put(StoreClientProvider());
+  final UserController userController = Get.put(UserController());
+  final StoreController storeController = Get.put(StoreController());
   bool _readyLoad = false;
 
   //课程类型 0 运动康复 1 神经康复 2 产后康复 3 术后康复

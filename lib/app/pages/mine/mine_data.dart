@@ -35,11 +35,9 @@ class MineDataPage extends StatefulWidget {
 }
 
 class _MineDataPageState extends State<MineDataPage> {
-  final UserClientProvider userClientProvider =
-      GetInstance().find<UserClientProvider>();
-  final UserController userController = GetInstance().find<UserController>();
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
+  final UserClientProvider userClientProvider = Get.put(UserClientProvider());
+  final UserController userController = Get.put(UserController());
+  final GlobalController globalController = Get.put(GlobalController());
 
   void handleGoBack() {
     Get.back();

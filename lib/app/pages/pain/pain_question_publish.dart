@@ -34,11 +34,9 @@ class PainQuestionPublishPage extends StatefulWidget {
 }
 
 class _PainQuestionPublishPageState extends State<PainQuestionPublishPage> {
-  final PainClientProvider painClientProvider =
-      GetInstance().find<PainClientProvider>();
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
-  final UserController userController = GetInstance().find<UserController>();
+  final PainClientProvider painClientProvider = Get.put(PainClientProvider());
+  final GlobalController globalController = Get.put(GlobalController());
+  final UserController userController = Get.put(UserController());
 
   final TextEditingController _textControllerPainDescription =
       TextEditingController();

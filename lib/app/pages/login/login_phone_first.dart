@@ -51,12 +51,11 @@ class _LoginPhoneFirstPageState extends State<LoginPhoneFirstPage> {
     }
   }
 
-  final UserController userController = GetInstance().find<UserController>();
+  final UserController userController = Get.put(UserController());
 
   Uint8List bytes = Uint8List(0);
 
-  final UserClientProvider userClientProvider =
-      GetInstance().find<UserClientProvider>();
+  final UserClientProvider userClientProvider = Get.put(UserClientProvider());
 
   void getCapture() {
     setState(() {

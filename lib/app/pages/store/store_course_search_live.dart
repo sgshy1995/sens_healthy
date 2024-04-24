@@ -35,12 +35,11 @@ class StoreCourseSearchLivePage extends StatefulWidget {
 
 class StoreCourseSearchLivePageState extends State<StoreCourseSearchLivePage>
     with SingleTickerProviderStateMixin {
-  final StoreController storeController = GetInstance().find<StoreController>();
+  final StoreController storeController = Get.put(StoreController());
   final StoreClientProvider storeClientProvider =
-      GetInstance().find<StoreClientProvider>();
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
-  final UserController userController = GetInstance().find<UserController>();
+      Get.put(StoreClientProvider());
+  final GlobalController globalController = Get.put(GlobalController());
+  final UserController userController = Get.put(UserController());
 
   late int? courseTypeGet;
   late String? keywordGet;

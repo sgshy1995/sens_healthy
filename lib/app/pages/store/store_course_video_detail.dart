@@ -24,13 +24,12 @@ class StoreCourseVideoDetailPage extends StatefulWidget {
 
 class _StoreCourseVideoDetailPageState extends State<StoreCourseVideoDetailPage>
     with SingleTickerProviderStateMixin {
-  final StoreController storeController = GetInstance().find<StoreController>();
+  final StoreController storeController = Get.put(StoreController());
   late TabController _tabController;
   final StoreClientProvider storeClientProvider =
-      GetInstance().find<StoreClientProvider>();
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
-  final UserController userController = GetInstance().find<UserController>();
+      Get.put(StoreClientProvider());
+  final GlobalController globalController = Get.put(GlobalController());
+  final UserController userController = Get.put(UserController());
 
   int tabIndex = 0;
 

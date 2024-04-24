@@ -28,11 +28,9 @@ class _PainSearchPageState extends State<PainSearchPage>
   final GlobalKey<PainSearchMajorPageState> _painSearchMajorPageState =
       GlobalKey<PainSearchMajorPageState>();
 
-  final PainClientProvider painClientProvider =
-      GetInstance().find<PainClientProvider>();
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
-  final UserController userController = GetInstance().find<UserController>();
+  final PainClientProvider painClientProvider = Get.put(PainClientProvider());
+  final GlobalController globalController = Get.put(GlobalController());
+  final UserController userController = Get.put(UserController());
   late TabController _tabController;
   final TextEditingController _textController = TextEditingController();
   List<String> searchHistoryList = [];

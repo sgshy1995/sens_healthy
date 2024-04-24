@@ -11,7 +11,7 @@ class MineManageMenu extends StatefulWidget {
 }
 
 class _MineManageMenuState extends State<MineManageMenu> {
-  final UserController userController = GetInstance().find<UserController>();
+  final UserController userController = Get.put(UserController());
 
   @override
   Widget build(BuildContext context) {

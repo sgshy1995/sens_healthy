@@ -30,11 +30,10 @@ class PrescriptionBody extends StatefulWidget {
 
 class PrescriptionBodyState extends State<PrescriptionBody>
     with TickerProviderStateMixin {
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
+  final GlobalController globalController = Get.put(GlobalController());
   final PrescriptionClientProvider prescriptionClientProvider =
-      GetInstance().find<PrescriptionClientProvider>();
-  final UserController userController = GetInstance().find<UserController>();
+      Get.put(PrescriptionClientProvider());
+  final UserController userController = Get.put(UserController());
 
   late int? partGet;
   late int? symptomsGet;

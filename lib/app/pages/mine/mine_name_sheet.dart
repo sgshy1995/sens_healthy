@@ -17,11 +17,9 @@ class MineNameSheetPage extends StatefulWidget {
 }
 
 class _MineNameSheetPageState extends State<MineNameSheetPage> {
-  final UserClientProvider userClientProvider =
-      GetInstance().find<UserClientProvider>();
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
-  final UserController userController = GetInstance().find<UserController>();
+  final UserClientProvider userClientProvider = Get.put(UserClientProvider());
+  final GlobalController globalController = Get.put(GlobalController());
+  final UserController userController = Get.put(UserController());
 
   bool publishCheck = false;
   String? nameValue;

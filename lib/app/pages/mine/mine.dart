@@ -30,13 +30,10 @@ class MinePage extends StatefulWidget {
 
 class _MinePageState extends State<MinePage>
     with SingleTickerProviderStateMixin {
-  final UserController userController = GetInstance().find<UserController>();
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
-  final PainClientProvider painClientProvider =
-      GetInstance().find<PainClientProvider>();
-  final UserClientProvider userClientProvider =
-      GetInstance().find<UserClientProvider>();
+  final UserController userController = Get.put(UserController());
+  final GlobalController globalController = Get.put(GlobalController());
+  final PainClientProvider painClientProvider = Get.put(PainClientProvider());
+  final UserClientProvider userClientProvider = Get.put(UserClientProvider());
   final ScrollController _scrollController = ScrollController();
 
   late AnimationController _animationController;
@@ -55,13 +52,10 @@ class _MinePageState extends State<MinePage>
 
   String? userIdLocal;
 
-  Future<int?> loadMyAskCounts() {
+  Future<int?> loadMyAskCounts(String userId) {
     Completer<int?> completer = Completer();
     painClientProvider
-        .getPainQuestionsByCustomAction(
-            userId: userController.userInfo.id.isNotEmpty
-                ? userController.userInfo.id
-                : userIdLocal)
+        .getPainQuestionsByCustomAction(userId: userId)
         .then((result) {
       completer.complete(result.data.totalCount);
     }).catchError((e) {
@@ -70,13 +64,10 @@ class _MinePageState extends State<MinePage>
     return completer.future;
   }
 
-  Future<int?> loadMyReplyCounts() {
+  Future<int?> loadMyReplyCounts(String userId) {
     Completer<int?> completer = Completer();
     painClientProvider
-        .getPainRepliesByCustomAction(
-            userId: userController.userInfo.id.isNotEmpty
-                ? userController.userInfo.id
-                : userIdLocal)
+        .getPainRepliesByCustomAction(userId: userId)
         .then((result) {
       completer.complete(result.data.totalCount);
     }).catchError((e) {
@@ -85,13 +76,10 @@ class _MinePageState extends State<MinePage>
     return completer.future;
   }
 
-  Future<int?> loadMyCollectCounts() {
+  Future<int?> loadMyCollectCounts(String userId) {
     Completer<int?> completer = Completer();
     painClientProvider
-        .getPainQuestionsByCustomAction(
-            collectUserId: userController.userInfo.id.isNotEmpty
-                ? userController.userInfo.id
-                : userIdLocal)
+        .getPainQuestionsByCustomAction(collectUserId: userId)
         .then((result) {
       completer.complete(result.data.totalCount);
     }).catchError((e) {
@@ -100,13 +88,10 @@ class _MinePageState extends State<MinePage>
     return completer.future;
   }
 
-  Future<int?> loadMyLikeCounts() {
+  Future<int?> loadMyLikeCounts(String userId) {
     Completer<int?> completer = Completer();
     painClientProvider
-        .getPainQuestionsByCustomAction(
-            likeUserId: userController.userInfo.id.isNotEmpty
-                ? userController.userInfo.id
-                : userIdLocal)
+        .getPainQuestionsByCustomAction(likeUserId: userId)
         .then((result) {
       completer.complete(result.data.totalCount);
     }).catchError((e) {
@@ -124,31 +109,35 @@ class _MinePageState extends State<MinePage>
         setState(() {
           userIdLocal = userId;
         });
-        completer.complete('success');
+        completer.complete(userId);
       } else {
         completer.completeError('error');
       }
+    } else {
+      completer.complete(userController.userInfo.id);
     }
     return completer.future;
   }
 
   void loadCounts() async {
-    await checkUserId();
+    Future.delayed(const Duration(milliseconds: 100), () async {
+      final String? userId = await checkUserId();
 
-    List<Future<int?>> futures = [
-      loadMyAskCounts(),
-      loadMyReplyCounts(),
-      loadMyCollectCounts(),
-      loadMyLikeCounts()
-    ];
-    // 等待所有异步任务完成
-    final List<int?> results = await Future.wait(futures);
-    results.asMap().forEach((index, value) {
-      setState(() {
-        myAskCounts = results[0] ?? 0;
-        myReplyCounts = results[1] ?? 0;
-        myCollectCounts = results[2] ?? 0;
-        myLikeCounts = results[3] ?? 0;
+      // 等待所有异步任务完成
+      final List<int?> results = await Future.wait([
+        loadMyAskCounts(userId!),
+        loadMyReplyCounts(userId),
+        loadMyCollectCounts(userId),
+        loadMyLikeCounts(userId)
+      ]);
+
+      results.asMap().forEach((index, value) {
+        setState(() {
+          myAskCounts = results[0] ?? 0;
+          myReplyCounts = results[1] ?? 0;
+          myCollectCounts = results[2] ?? 0;
+          myLikeCounts = results[3] ?? 0;
+        });
       });
     });
   }
@@ -212,6 +201,10 @@ class _MinePageState extends State<MinePage>
 
   void handleGotoDataPage() {
     Get.toNamed('/mine_data');
+  }
+
+  void handleGotoSettingPage() {
+    Get.toNamed('/mine_setting');
   }
 
   @override
@@ -791,15 +784,18 @@ class _MinePageState extends State<MinePage>
                                   ),
                                 ),
                               ),
-                              Container(
-                                width: 24,
-                                height: 24,
-                                margin: const EdgeInsets.only(right: 0),
-                                child: Center(
-                                  child: IconFont(
-                                    IconNames.shezhi,
-                                    size: 20,
-                                    color: 'rgb(0,0,0)',
+                              GestureDetector(
+                                onTap: handleGotoSettingPage,
+                                child: Container(
+                                  width: 24,
+                                  height: 24,
+                                  margin: const EdgeInsets.only(right: 0),
+                                  child: Center(
+                                    child: IconFont(
+                                      IconNames.shezhi,
+                                      size: 20,
+                                      color: 'rgb(0,0,0)',
+                                    ),
                                   ),
                                 ),
                               )

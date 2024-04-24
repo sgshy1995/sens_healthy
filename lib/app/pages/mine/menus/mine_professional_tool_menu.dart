@@ -12,7 +12,7 @@ class MineProfessionalToolMenu extends StatefulWidget {
 }
 
 class _MineProfessionalToolMenuState extends State<MineProfessionalToolMenu> {
-  final UserController userController = GetInstance().find<UserController>();
+  final UserController userController = Get.put(UserController());
 
   @override
   Widget build(BuildContext context) {

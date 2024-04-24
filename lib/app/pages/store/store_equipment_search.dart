@@ -21,8 +21,8 @@ class _StoreEquipmentSearchPageState extends State<StoreEquipmentSearchPage>
   final GlobalKey<StoreEquipmentInPageState> _storeEquipmentInPageState =
       GlobalKey<StoreEquipmentInPageState>();
   final StoreClientProvider storeClientProvider =
-      GetInstance().find<StoreClientProvider>();
-  final StoreController storeController = GetInstance().find<StoreController>();
+      Get.put(StoreClientProvider());
+  final StoreController storeController = Get.put(StoreController());
 
   int chartNum = 0;
 

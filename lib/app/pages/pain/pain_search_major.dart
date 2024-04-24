@@ -42,11 +42,9 @@ class PainSearchMajorPage extends StatefulWidget {
 
 class PainSearchMajorPageState extends State<PainSearchMajorPage>
     with TickerProviderStateMixin {
-  final PainClientProvider painClientProvider =
-      GetInstance().find<PainClientProvider>();
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
-  final UserController userController = GetInstance().find<UserController>();
+  final PainClientProvider painClientProvider = Get.put(PainClientProvider());
+  final GlobalController globalController = Get.put(GlobalController());
+  final UserController userController = Get.put(UserController());
 
   late String keywordCanChange;
 

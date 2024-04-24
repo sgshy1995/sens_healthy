@@ -36,12 +36,10 @@ class MineRecordPublishPage extends StatefulWidget {
 class _MineRecordPublishPageState extends State<MineRecordPublishPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final UserClientProvider userClientProvider =
-      GetInstance().find<UserClientProvider>();
+  final UserClientProvider userClientProvider = Get.put(UserClientProvider());
 
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
-  final UserController userController = GetInstance().find<UserController>();
+  final GlobalController globalController = Get.put(GlobalController());
+  final UserController userController = Get.put(UserController());
 
   final TextEditingController _textControllerGender = TextEditingController();
   final TextEditingController _textControllerAge = TextEditingController();

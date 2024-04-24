@@ -19,8 +19,8 @@ class _StorePageState extends State<StorePage>
     with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final StoreClientProvider storeClientProvider =
-      GetInstance().find<StoreClientProvider>();
-  final StoreController storeController = GetInstance().find<StoreController>();
+      Get.put(StoreClientProvider());
+  final StoreController storeController = Get.put(StoreController());
   final GlobalKey<StoreCoursePageState> _storeCoursePageState =
       GlobalKey<StoreCoursePageState>();
   final GlobalKey<StoreEquipmentPageState> _storeEquipmentPageState =
@@ -73,13 +73,15 @@ class _StorePageState extends State<StorePage>
   }
 
   void loadChartsNum() {
-    storeClientProvider.getCourseChartListAction().then((value) {
-      storeController
-          .setStoreCourseChartNum(value.data != null ? value.data!.length : 0);
-    });
-    storeClientProvider.getEquipmentChartListAction().then((value) {
-      storeController.setStoreEquipmentChartNum(
-          value.data != null ? value.data!.length : 0);
+    Future.delayed(const Duration(milliseconds: 100), () {
+      storeClientProvider.getCourseChartListAction().then((value) {
+        storeController.setStoreCourseChartNum(
+            value.data != null ? value.data!.length : 0);
+      });
+      storeClientProvider.getEquipmentChartListAction().then((value) {
+        storeController.setStoreEquipmentChartNum(
+            value.data != null ? value.data!.length : 0);
+      });
     });
   }
 

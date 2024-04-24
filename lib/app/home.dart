@@ -13,6 +13,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import './providers/api/user_client_provider.dart';
 import 'package:flutter/services.dart';
 
+import './cache/token_manager.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -35,8 +37,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   int currentIndex = 0;
 
   void getUserInfo() async {
+    final String? token = await TokenManager.getToken();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? token = prefs.getString('token');
     if (token != null && token.isNotEmpty) {
       userController.setToken(token);
       userClientProvider.getUserInfoByJWTAction().then((value) {
@@ -51,8 +53,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void getInfo() async {
+    final String? token = await TokenManager.getToken();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? token = prefs.getString('token');
     if (token != null && token.isNotEmpty) {
       userController.setToken(token);
       userClientProvider.getInfoByJWTAction().then((value) {

@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 import '../../../iconfont/icon_font.dart';
 import '../../controllers/user_controller.dart';
+import '../../providers/api/user_client_provider.dart';
 import 'login_phone.dart';
 import '../../../components/toast.dart';
 
@@ -20,7 +21,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
-  final UserController userController = GetInstance().find<UserController>();
+  /// 这里的 Getx 实例必须手动 put
+  /// 如果是从退出登录过来的，会导致这里的 userController 找不到 报错
+  final UserController userController = Get.put(UserController());
+  final UserClientProvider userClientProvider = Get.put(UserClientProvider());
 
   late AnimationController _controller1;
   late AnimationController _controller2;
@@ -45,7 +49,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     clearLocalRefs();
-    userController.setToken('');
 
     //获取设备信息
     GetDeviceInfo().getDeviceId();
@@ -350,7 +353,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                         });
                                       },
                                       child: const Text(
-                                        '康复云健康用户协议',
+                                        '用户服务协议',
                                         style: TextStyle(
                                             decoration:
                                                 TextDecoration.underline,

@@ -23,8 +23,8 @@ class _StoreCourseSectionPageState extends State<StoreCourseSectionPage>
       GlobalKey<StoreCourseSearchVideoPageState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final StoreClientProvider storeClientProvider =
-      GetInstance().find<StoreClientProvider>();
-  final StoreController storeController = GetInstance().find<StoreController>();
+      Get.put(StoreClientProvider());
+  final StoreController storeController = Get.put(StoreController());
   late TabController _tabController;
   double _opacity = 1.0; // 初始透明度
   double _scrollDistance = 0; // 初始滚动位置

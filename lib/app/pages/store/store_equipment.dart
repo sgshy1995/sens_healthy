@@ -39,11 +39,10 @@ class StoreEquipmentPageState extends State<StoreEquipmentPage>
       GlobalKey<StoreEquipmentInPageState>();
   final GlobalKey<StoreEquipmentInPageState> _storeEquipmentInPageAllState =
       GlobalKey<StoreEquipmentInPageState>();
-  final GlobalController globalController =
-      GetInstance().find<GlobalController>();
-  final UserController userController = GetInstance().find<UserController>();
+  final GlobalController globalController = Get.put(GlobalController());
+  final UserController userController = Get.put(UserController());
   final StoreClientProvider storeClientProvider =
-      GetInstance().find<StoreClientProvider>();
+      Get.put(StoreClientProvider());
 
   late TabController _tabController;
 
