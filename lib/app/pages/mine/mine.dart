@@ -210,6 +210,10 @@ class _MinePageState extends State<MinePage>
     );
   }
 
+  void handleGotoDataPage() {
+    Get.toNamed('/mine_data');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -282,140 +286,158 @@ class _MinePageState extends State<MinePage>
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
-                                      width: 64,
-                                      height: 64,
-                                      margin: const EdgeInsets.only(right: 12),
-                                      child: (userController.userInfo.avatar ==
-                                              null)
-                                          ? const CircleAvatar(
-                                              radius: 32,
-                                              backgroundImage: AssetImage(
-                                                  'assets/images/avatar.webp'),
-                                            )
-                                          : GestureDetector(
-                                              onTap: () => openAvatar(context),
-                                              child: Hero(
-                                                tag: 'user-avatar',
-                                                child: CircleAvatar(
+                                    GetBuilder<UserController>(
+                                      builder: (controller) {
+                                        return Container(
+                                          width: 64,
+                                          height: 64,
+                                          margin:
+                                              const EdgeInsets.only(right: 12),
+                                          child: (userController
+                                                      .userInfo.avatar ==
+                                                  null)
+                                              ? const CircleAvatar(
                                                   radius: 32,
-                                                  backgroundImage:
-                                                      CachedNetworkImageProvider(
-                                                          '${globalController.cdnBaseUrl}/${userController.userInfo.avatar}'),
+                                                  backgroundImage: AssetImage(
+                                                      'assets/images/avatar.webp'),
+                                                )
+                                              : GestureDetector(
+                                                  onTap: () =>
+                                                      openAvatar(context),
+                                                  child: Hero(
+                                                    tag: 'user-avatar',
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          const Color.fromRGBO(
+                                                              254, 251, 254, 1),
+                                                      radius: 32,
+                                                      backgroundImage:
+                                                          CachedNetworkImageProvider(
+                                                              '${globalController.cdnBaseUrl}/${userController.userInfo.avatar}'),
+                                                    ),
+                                                  ),
                                                 ),
-                                              ),
-                                            ),
+                                        );
+                                      },
                                     ),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          userController.userInfo.name ??
-                                              '赴康云用户',
-                                          style: const TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        const SizedBox(
-                                          height: 4,
-                                        ),
-                                        Row(
+                                    GetBuilder<UserController>(
+                                      builder: (controller) {
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              userController
-                                                          .userInfo.identity ==
-                                                      1
-                                                  ? '医师'
-                                                  : '患者',
-                                              style: TextStyle(
-                                                  color: userController.userInfo
+                                              controller.userInfo.name ??
+                                                  '赴康云用户',
+                                              style: const TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            const SizedBox(
+                                              height: 4,
+                                            ),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  controller.userInfo
                                                               .identity ==
                                                           1
-                                                      ? const Color.fromRGBO(
-                                                          211, 121, 47, 1)
-                                                      : const Color.fromRGBO(
-                                                          33, 33, 33, 1),
-                                                  fontSize: 14,
-                                                  fontWeight:
-                                                      FontWeight.normal),
-                                            ),
-                                            (userController.userInfo.identity ==
-                                                    1
-                                                ? Container(
-                                                    width: 18,
-                                                    height: 18,
-                                                    margin:
-                                                        const EdgeInsets.only(
-                                                            left: 8),
-                                                    child: Center(
-                                                      child: IconFont(
-                                                          IconNames
-                                                              .guanfangrenzheng,
-                                                          size: 18),
-                                                    ),
-                                                  )
-                                                : const SizedBox.shrink())
-                                          ],
-                                        ),
-                                        const SizedBox(
-                                          height: 4,
-                                        ),
-                                        RichText(
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            textAlign: TextAlign.left,
-                                            text: TextSpan(
-                                              children: [
-                                                const TextSpan(
-                                                  text: '@',
+                                                      ? '医师'
+                                                      : '患者',
                                                   style: TextStyle(
-                                                      color: Color.fromRGBO(
-                                                          33, 33, 33, 1),
+                                                      color: controller.userInfo
+                                                                  .identity ==
+                                                              1
+                                                          ? const Color
+                                                              .fromRGBO(
+                                                              211, 121, 47, 1)
+                                                          : const Color
+                                                              .fromRGBO(
+                                                              33, 33, 33, 1),
                                                       fontSize: 14,
                                                       fontWeight:
                                                           FontWeight.normal),
                                                 ),
-                                                TextSpan(
-                                                  text: userController
-                                                      .userInfo.username,
-                                                  style: const TextStyle(
-                                                      color: Color.fromRGBO(
-                                                          33, 33, 33, 1),
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.normal),
-                                                )
+                                                (controller.userInfo.identity ==
+                                                        1
+                                                    ? Container(
+                                                        width: 18,
+                                                        height: 18,
+                                                        margin: const EdgeInsets
+                                                            .only(left: 8),
+                                                        child: Center(
+                                                          child: IconFont(
+                                                              IconNames
+                                                                  .guanfangrenzheng,
+                                                              size: 18),
+                                                        ),
+                                                      )
+                                                    : const SizedBox.shrink())
                                               ],
-                                            ))
-                                      ],
-                                    )
+                                            ),
+                                            const SizedBox(
+                                              height: 4,
+                                            ),
+                                            RichText(
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                textAlign: TextAlign.left,
+                                                text: TextSpan(
+                                                  children: [
+                                                    const TextSpan(
+                                                      text: '@',
+                                                      style: TextStyle(
+                                                          color: Color.fromRGBO(
+                                                              33, 33, 33, 1),
+                                                          fontSize: 14,
+                                                          fontWeight: FontWeight
+                                                              .normal),
+                                                    ),
+                                                    TextSpan(
+                                                      text: controller
+                                                          .userInfo.username,
+                                                      style: const TextStyle(
+                                                          color: Color.fromRGBO(
+                                                              33, 33, 33, 1),
+                                                          fontSize: 14,
+                                                          fontWeight: FontWeight
+                                                              .normal),
+                                                    )
+                                                  ],
+                                                ))
+                                          ],
+                                        );
+                                      },
+                                    ),
                                   ],
                                 ),
-                                Container(
-                                  height: 36,
-                                  padding:
-                                      const EdgeInsets.fromLTRB(18, 0, 18, 0),
-                                  decoration: const BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: Alignment.centerLeft,
-                                        end: Alignment.centerRight,
-                                        colors: [
-                                          Color.fromRGBO(101, 80, 220, 1),
-                                          Color.fromRGBO(101, 80, 220, 0.9),
-                                          Color.fromRGBO(101, 80, 220, 0.8)
-                                        ], // 渐变的起始和结束颜色
+                                InkWell(
+                                  onTap: handleGotoDataPage,
+                                  child: Container(
+                                    height: 36,
+                                    padding:
+                                        const EdgeInsets.fromLTRB(18, 0, 18, 0),
+                                    decoration: const BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.centerLeft,
+                                          end: Alignment.centerRight,
+                                          colors: [
+                                            Color.fromRGBO(101, 80, 220, 1),
+                                            Color.fromRGBO(101, 80, 220, 0.9),
+                                            Color.fromRGBO(101, 80, 220, 0.8)
+                                          ], // 渐变的起始和结束颜色
+                                        ),
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(18))),
+                                    child: const Center(
+                                      child: Text(
+                                        '编辑资料',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold),
                                       ),
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(18))),
-                                  child: const Center(
-                                    child: Text(
-                                      '编辑资料',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 )
@@ -548,13 +570,18 @@ class _MinePageState extends State<MinePage>
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            Text(
-                                              '${userController.info.integral}',
-                                              style: const TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      0, 0, 0, 1),
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold),
+                                            GetBuilder<UserController>(
+                                              builder: (controller) {
+                                                return Text(
+                                                  '${controller.info.integral}',
+                                                  style: const TextStyle(
+                                                      color: Color.fromRGBO(
+                                                          0, 0, 0, 1),
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                );
+                                              },
                                             ),
                                             const SizedBox(
                                               width: 6,
@@ -589,13 +616,18 @@ class _MinePageState extends State<MinePage>
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            Text(
-                                              userController.info.balance,
-                                              style: const TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      232, 112, 50, 1),
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold),
+                                            GetBuilder<UserController>(
+                                              builder: (controller) {
+                                                return Text(
+                                                  controller.info.balance,
+                                                  style: const TextStyle(
+                                                      color: Color.fromRGBO(
+                                                          232, 112, 50, 1),
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                );
+                                              },
                                             ),
                                             const SizedBox(
                                               width: 6,
@@ -715,30 +747,34 @@ class _MinePageState extends State<MinePage>
                             opacity: _opacity,
                             duration: const Duration(milliseconds: 30),
                             curve: Curves.linear, // 指定渐变方式
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  userController.userInfo.name ?? '赴康云用户',
-                                  style: const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                (userController.userInfo.identity == 1
-                                    ? Container(
-                                        width: 18,
-                                        height: 18,
-                                        margin: const EdgeInsets.only(left: 8),
-                                        child: Center(
-                                          child: IconFont(
-                                              IconNames.guanfangrenzheng,
-                                              size: 18),
-                                        ),
-                                      )
-                                    : const SizedBox.shrink())
-                              ],
-                            ),
+                            child: GetBuilder<UserController>(
+                                builder: (controller) {
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    controller.userInfo.name ?? '赴康云用户',
+                                    style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  (controller.userInfo.identity == 1
+                                      ? Container(
+                                          width: 18,
+                                          height: 18,
+                                          margin:
+                                              const EdgeInsets.only(left: 8),
+                                          child: Center(
+                                            child: IconFont(
+                                                IconNames.guanfangrenzheng,
+                                                size: 18),
+                                          ),
+                                        )
+                                      : const SizedBox.shrink())
+                                ],
+                              );
+                            }),
                           ),
                           Row(
                             children: [

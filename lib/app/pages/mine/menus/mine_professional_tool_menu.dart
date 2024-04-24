@@ -45,17 +45,6 @@ class _MineProfessionalToolMenuState extends State<MineProfessionalToolMenu> {
                           fontSize: 14,
                           fontWeight: FontWeight.bold))
                 ],
-              ),
-              SizedBox(
-                width: 16,
-                height: 16,
-                child: Center(
-                  child: IconFont(
-                    IconNames.qianjin,
-                    size: 16,
-                    color: 'rgb(156, 156, 156)',
-                  ),
-                ),
               )
             ],
           ),

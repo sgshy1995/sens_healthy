@@ -180,6 +180,20 @@ class UserClientProvider extends GlobalClientProvider {
     return dataFinal;
   }
 
+  // 文件上传-头像
+  Future<DataFinalModel<String?>> avatarUploadAction(
+      File file, String filename) async {
+    final FormData formData =
+        FormData({'file': MultipartFile(file, filename: filename)});
+    final jsonData = await post('/user/upload_avatar', formData);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel<String?> dataFinalUploadModel = DataFinalModel(
+        code: jsonMap['code'],
+        message: jsonMap['message'],
+        data: jsonMap['data']);
+    return dataFinalUploadModel;
+  }
+
   // 文件上传-伤痛档案影像资料
   Future<DataFinalModel<String?>> recordImageDataUploadAction(
       File file, String filename) async {

@@ -417,14 +417,6 @@ class _MineRecordPublishPageState extends State<MineRecordPublishPage> {
       hideLoading();
       showToast('请求错误，请稍后再试');
     });
-
-    userClientProvider
-        .updateInfoByJwtAction(form)
-        .then((value) {})
-        .catchError((e) {
-      hideLoading();
-      showToast('请求错误，请稍后再试');
-    });
   }
 
   int? genderValue;
