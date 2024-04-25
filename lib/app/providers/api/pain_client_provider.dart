@@ -229,6 +229,7 @@ class PainClientProvider extends GlobalClientProvider {
   Future<DataPaginationFinalModel<List<PainReplyTypeModel>>>
       getPainRepliesByCustomAction(
           {String? questionId,
+          String? keyword,
           int? pageNo = 1,
           int? pageSize = 10,
           String? userId}) async {
@@ -245,7 +246,58 @@ class PainClientProvider extends GlobalClientProvider {
       queryMap['user_id'] = userId.toString();
     }
 
+    if (keyword != null) {
+      queryMap['keyword'] = keyword.toString();
+    }
+
     final jsonData = await get('/pain_reply/custom', query: queryMap);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    late List<PainReplyTypeModel> list =
+        fromJsonListReply(jsonMap['data']['data']);
+
+    final DataPaginationInModel<List<PainReplyTypeModel>> inModel =
+        DataPaginationInModel(
+            data: list,
+            pageNo: jsonMap['data']['pageNo'],
+            pageSize: jsonMap['data']['pageSize'],
+            totalCount: jsonMap['data']['totalCount'],
+            totalPage: jsonMap['data']['totalPage']);
+
+    final DataPaginationFinalModel<List<PainReplyTypeModel>>
+        dataFinalPainReplyTypeModel =
+        DataPaginationFinalModel<List<PainReplyTypeModel>>(
+            code: jsonMap['code'], message: jsonMap['message'], data: inModel);
+    return dataFinalPainReplyTypeModel;
+  }
+
+  // 分页请求答复列表-附带问题详情-但是没有评论列表
+  Future<DataPaginationFinalModel<List<PainReplyTypeModel>>>
+      getPainRepliesWithQuestionDetailByCustomAction(
+          {String? questionId,
+          String? keyword,
+          int? pageNo = 1,
+          int? pageSize = 10,
+          String? userId}) async {
+    final Map<String, dynamic> queryMap = {
+      'pageNo': pageNo.toString(),
+      'pageSize': pageSize.toString()
+    };
+
+    if (questionId != null) {
+      queryMap['question_id'] = questionId.toString();
+    }
+
+    if (userId != null) {
+      queryMap['user_id'] = userId.toString();
+    }
+
+    if (keyword != null) {
+      queryMap['keyword'] = keyword.toString();
+    }
+
+    final jsonData =
+        await get('/pain_reply/custom_with_question', query: queryMap);
     final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
 
     late List<PainReplyTypeModel> list =

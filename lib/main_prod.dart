@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import './app/cache/token_manager.dart';
 import './app/home.dart';
 import './app/pages/login/login.dart';
 import './app/pages/login/agreement.dart';
@@ -36,7 +36,7 @@ import './app/pages/mine/privacy.dart';
 import './app/pages/mine/mine_about.dart';
 import './app/pages/mine/mine_account.dart';
 import './app/pages/mine/mine_phone_change.dart';
-import './app/cache/token_manager.dart';
+import './app/pages/mine/mine_history.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env.prod"); // 加载开发环境配置
@@ -195,6 +195,11 @@ Future main() async {
           GetPage(
             name: '/mine_phone_change',
             page: () => const MinePhoneChangePage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_history',
+            page: () => const MineHistoryPage(),
             middlewares: [AuthMiddleware()],
           ),
         ],

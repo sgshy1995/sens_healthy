@@ -112,6 +112,7 @@ class PainReplyTypeModel {
   final String created_at;
   final String updated_at;
   late List<PainCommentTypeModel>? comments;
+  late PainQuestionTypeModel? question_info;
   PainReplyTypeModel(
       {required this.id,
       required this.user_id,
@@ -132,7 +133,8 @@ class PainReplyTypeModel {
       required this.status,
       required this.created_at,
       required this.updated_at,
-      this.comments});
+      this.comments,
+      this.question_info});
 
   factory PainReplyTypeModel.fromJson(Map<String, dynamic>? json) {
     if (json != null) {
@@ -142,7 +144,8 @@ class PainReplyTypeModel {
             .toList();
       }
 
-      final List<PainCommentTypeModel> list = fromJsonList(json['comments']);
+      final List<PainCommentTypeModel> list =
+          json['comments'] != null ? fromJsonList(json['comments']) : [];
       return PainReplyTypeModel(
           id: json['id'],
           user_id: json['user_id'],
@@ -162,7 +165,8 @@ class PainReplyTypeModel {
           status: json['status'],
           created_at: json['created_at'],
           updated_at: json['updated_at'],
-          comments: list);
+          comments: list,
+          question_info: PainQuestionTypeModel.fromJson(json['question_info']));
     }
     return PainReplyTypeModel(
         id: '',
@@ -183,7 +187,8 @@ class PainReplyTypeModel {
         status: 0,
         created_at: '',
         updated_at: '',
-        comments: []);
+        comments: [],
+        question_info: null);
   }
 }
 
