@@ -265,6 +265,10 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
     Get.toNamed('/mine_setting');
   }
 
+  void handleGotoBalance() {
+    Get.toNamed('/mine_balance');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -825,7 +829,7 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
                                           children: [
                                             Row(
                                               children: [
-                                                SizedBox(
+                                                Container(
                                                   width: (mediaQuerySizeInfo
                                                               .width -
                                                           24 -
@@ -833,6 +837,7 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
                                                           2) /
                                                       2,
                                                   height: 48,
+                                                  color: Colors.transparent,
                                                   child: Row(
                                                     mainAxisAlignment:
                                                         MainAxisAlignment
@@ -881,55 +886,60 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
                                                   color: const Color.fromRGBO(
                                                       227, 227, 227, 1),
                                                 ),
-                                                SizedBox(
-                                                  width: (mediaQuerySizeInfo
-                                                              .width -
-                                                          24 -
-                                                          24 -
-                                                          2) /
-                                                      2,
-                                                  height: 48,
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      GetBuilder<
-                                                          UserController>(
-                                                        builder: (controller) {
-                                                          return Text(
-                                                            controller
-                                                                .info.balance,
-                                                            style: const TextStyle(
-                                                                color: Color
-                                                                    .fromRGBO(
-                                                                        232,
-                                                                        112,
-                                                                        50,
-                                                                        1),
-                                                                fontSize: 16,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          );
-                                                        },
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 6,
-                                                        height: 6,
-                                                      ),
-                                                      const Text(
-                                                        '余额',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0, 0, 0, 1),
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal),
-                                                      ),
-                                                    ],
+                                                GestureDetector(
+                                                  onTap: handleGotoBalance,
+                                                  child: Container(
+                                                    width: (mediaQuerySizeInfo
+                                                                .width -
+                                                            24 -
+                                                            24 -
+                                                            2) /
+                                                        2,
+                                                    height: 48,
+                                                    color: Colors.transparent,
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        GetBuilder<
+                                                            UserController>(
+                                                          builder:
+                                                              (controller) {
+                                                            return Text(
+                                                              controller
+                                                                  .info.balance,
+                                                              style: const TextStyle(
+                                                                  color: Color
+                                                                      .fromRGBO(
+                                                                          232,
+                                                                          112,
+                                                                          50,
+                                                                          1),
+                                                                  fontSize: 16,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
+                                                            );
+                                                          },
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 6,
+                                                          height: 6,
+                                                        ),
+                                                        const Text(
+                                                          '余额',
+                                                          style: TextStyle(
+                                                              color: Color
+                                                                  .fromRGBO(0,
+                                                                      0, 0, 1),
+                                                              fontSize: 14,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .normal),
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 )
                                               ],
@@ -937,14 +947,18 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
                                             Positioned(
                                               right: 0,
                                               top: 0,
-                                              child: SizedBox(
-                                                width: 24,
-                                                height: 24,
-                                                child: Center(
-                                                  child: IconFont(
-                                                    IconNames.chongzhi,
-                                                    size: 24,
-                                                    color: 'rgb(232, 112, 50)',
+                                              child: GestureDetector(
+                                                onTap: handleGotoBalance,
+                                                child: SizedBox(
+                                                  width: 24,
+                                                  height: 24,
+                                                  child: Center(
+                                                    child: IconFont(
+                                                      IconNames.chongzhi,
+                                                      size: 24,
+                                                      color:
+                                                          'rgb(232, 112, 50)',
+                                                    ),
                                                   ),
                                                 ),
                                               ),

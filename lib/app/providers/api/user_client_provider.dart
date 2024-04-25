@@ -70,6 +70,11 @@ class UserClientProvider extends GlobalClientProvider {
     return jsonList.map((json) => AddressInfoTypeModel.fromJson(json)).toList();
   }
 
+  static List<TopUpOrderTypeModel> fromJsonListTopUpOrder(
+      List<dynamic> jsonList) {
+    return jsonList.map((json) => TopUpOrderTypeModel.fromJson(json)).toList();
+  }
+
   Future<List<UserModel>> getUsers() async {
     final response = await get('users/path');
     if (response.status.hasError) {
@@ -290,6 +295,56 @@ class UserClientProvider extends GlobalClientProvider {
         DataFinalModel(
             code: jsonMap['code'], message: jsonMap['message'], data: list);
     return dataFinalListModel;
+  }
+
+  // 根据 jwt 信息充值
+  Future<DataFinalModel<TopUpOrderTypeModel>> addBalanceByUserIdAction(
+      String balance, int paymentType) async {
+    final jsonData = await put('/user_info/balance/add',
+        {'balance': balance, 'payment_type': paymentType});
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel<TopUpOrderTypeModel> dataFinalModel = DataFinalModel(
+        code: jsonMap['code'],
+        message: jsonMap['message'],
+        data: TopUpOrderTypeModel.fromJson(jsonMap['data']));
+    return dataFinalModel;
+  }
+
+  // 余额明细列表获取, 带分页
+  Future<DataPaginationFinalModel<List<TopUpOrderTypeModel>>>
+      getTopUpOrdersWithPaginationAction(
+          {required String userId,
+          int? pageNo = 1,
+          int? pageSize = 10,
+          int? recent}) async {
+    final Map<String, dynamic> queryMap = {
+      'user_id': userId.toString(),
+      'pageNo': pageNo.toString(),
+      'pageSize': pageSize.toString()
+    };
+    if (recent != null) {
+      queryMap['recent'] = recent.toString();
+    }
+
+    final jsonData = await get('/top_up_order/custom', query: queryMap);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    late List<TopUpOrderTypeModel> list =
+        fromJsonListTopUpOrder(jsonMap['data']['data']);
+
+    final DataPaginationInModel<List<TopUpOrderTypeModel>> inModel =
+        DataPaginationInModel(
+            data: list,
+            pageNo: jsonMap['data']['pageNo'],
+            pageSize: jsonMap['data']['pageSize'],
+            totalCount: jsonMap['data']['totalCount'],
+            totalPage: jsonMap['data']['totalPage']);
+
+    final DataPaginationFinalModel<List<TopUpOrderTypeModel>> dataFinalModel =
+        DataPaginationFinalModel<List<TopUpOrderTypeModel>>(
+            code: jsonMap['code'], message: jsonMap['message'], data: inModel);
+    return dataFinalModel;
   }
 
   // Post request

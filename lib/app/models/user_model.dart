@@ -198,3 +198,62 @@ class AddressInfoTypeModel {
             updated_at: '');
   }
 }
+
+class TopUpOrderTypeModel {
+  final String id; //订单id
+  final String user_id; //用户id
+  final String
+      order_no; //订单号（28位）编号规则：系统ID（6位）+系统交易日期（8位：YYYYMMDD)+系统交易时间戳(6位：HHmmss)+订单序号（8位，保证当天唯一）
+  final String order_time; //下单时间
+  final String
+      payment_no; //支付流水号（32位）编号规则：系统ID（6位）+系统交易日期（8位：YYYYMMDD)+系统交易时间戳(6位：HHmmss)+支付流水序号（12位，保证当天唯一）
+  final int payment_type; //支付类型 0 余额支付（表示消费余额） 1 微信支付 2 支付宝支付 3 Apple支付
+  final String payment_time; //支付时间
+  final String payment_num; //支付金额
+  final String? created_reason; //生成原因
+  final int status; //订单状态 2 已完成 1 待支付 0 取消/关闭
+  final String created_at;
+  final String updated_at;
+  TopUpOrderTypeModel(
+      {required this.id,
+      required this.user_id,
+      required this.order_no,
+      required this.order_time,
+      required this.payment_no,
+      required this.payment_type,
+      required this.payment_time,
+      required this.payment_num,
+      this.created_reason,
+      required this.status,
+      required this.created_at,
+      required this.updated_at});
+  factory TopUpOrderTypeModel.fromJson(Map<String, dynamic>? json) {
+    return json != null
+        ? TopUpOrderTypeModel(
+            id: json['id'],
+            user_id: json['user_id'],
+            order_no: json['order_no'],
+            order_time: json['order_time'],
+            payment_no: json['payment_no'],
+            payment_type: json['payment_type'],
+            payment_time: json['payment_time'],
+            payment_num: json['payment_num'],
+            created_reason: json['created_reason'],
+            status: json['status'],
+            created_at: json['created_at'],
+            updated_at: json['updated_at'])
+        : TopUpOrderTypeModel(
+            id: '',
+            user_id: '',
+            order_no: '',
+            order_time: '',
+            payment_no: '',
+            payment_type: 0,
+            payment_time: '',
+            payment_num: '',
+            created_reason: null,
+            status: 0,
+            created_at: '',
+            updated_at: '');
+  }
+}
