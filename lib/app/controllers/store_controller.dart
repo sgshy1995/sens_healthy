@@ -10,6 +10,8 @@ class StoreController extends GetxController {
   List<String> storeCourseSearchHistory = [];
   // 器械搜索历史记录，最多存20个
   List<String> storeEquipmentSearchHistory = [];
+  // 器械订单搜索历史记录，最多存20个
+  List<String> storeEquipmentOrderSearchHistory = [];
 
   void setStoreCourseChartNum(int storeCourseChartNumNew) {
     storeCourseChartNum.value = storeCourseChartNumNew;
@@ -61,6 +63,26 @@ class StoreController extends GetxController {
     storeEquipmentSearchHistory = storeEquipmentSearchHistory.length > 20
         ? storeEquipmentSearchHistory.sublist(0, 20)
         : storeEquipmentSearchHistory;
+    update();
+  }
+
+  void setStoreEquipmentOrderSearchHistory(
+      List<String> storeEquipmentOrderSearchHistoryNew) {
+    storeEquipmentOrderSearchHistory = storeEquipmentOrderSearchHistoryNew;
+    storeEquipmentOrderSearchHistory =
+        storeEquipmentOrderSearchHistory.length > 20
+            ? storeEquipmentOrderSearchHistory.sublist(0, 20)
+            : storeEquipmentOrderSearchHistory;
+    update();
+  }
+
+  void pushStoreEquipmentOrderSearchHistory(
+      String equipmentOrderSearchHistoryItem) {
+    storeEquipmentOrderSearchHistory.insert(0, equipmentOrderSearchHistoryItem);
+    storeEquipmentOrderSearchHistory =
+        storeEquipmentOrderSearchHistory.length > 20
+            ? storeEquipmentOrderSearchHistory.sublist(0, 20)
+            : storeEquipmentOrderSearchHistory;
     update();
   }
 }

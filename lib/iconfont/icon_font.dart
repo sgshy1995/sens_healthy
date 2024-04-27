@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
 
 enum IconNames {
-  apple, biangeng_1, yigoumai, zhuanyerenzheng_menu, kefuyushouhou, shiyongbangzhu, qicai_yifahuo, qicai_daifahuo, qicai_yiquxiao, qicai_yiqianshou, shouhuodizhi, kaitongshoukequanxian, shangwuhezuo, jizhu, guanjie, yiwancheng, daixuexi, xuexizhong, yiyuyue, chongzhi, morenxuanzhong, moren_fill, phone_fill, dizhi_fill, dizhiguanli, lianxi_yishouqing_copy, zhekou, remen, a_yinhangkadaizhifuzhifu, tubiaozhizuomoban, jianshenke, jianji, zixingche, xiaidekecheng, yue, jingshi, qingkong, shouqi, zuixingengxin, live_fill, live, video_fill, video, dingdan, kangfushigongju, kecheng, gouwuche, liebiaoxingshi, duigou, hot, nandu, yanjing, yanjing_fill, fenlei, cainixihuan, nan, nv, shanchu, shezhi, yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, qianjin, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, course_order, equipment_order, top_up_order, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
+  fuzhi, apple, biangeng_1, yigoumai, zhuanyerenzheng_menu, kefuyushouhou, shiyongbangzhu, qicai_yifahuo, qicai_daifahuo, qicai_yiquxiao, qicai_yiqianshou, shouhuodizhi, kaitongshoukequanxian, shangwuhezuo, jizhu, guanjie, yiwancheng, daixuexi, xuexizhong, yiyuyue, chongzhi, morenxuanzhong, moren_fill, phone_fill, dizhi_fill, dizhiguanli, lianxi_yishouqing_copy, zhekou, remen, a_yinhangkadaizhifuzhifu, tubiaozhizuomoban, jianshenke, jianji, zixingche, xiaidekecheng, yue, jingshi, qingkong, shouqi, zuixingengxin, live_fill, live, video_fill, video, dingdan, kangfushigongju, kecheng, gouwuche, liebiaoxingshi, duigou, hot, nandu, yanjing, yanjing_fill, fenlei, cainixihuan, nan, nv, shanchu, shezhi, yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, qianjin, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, course_order, equipment_order, top_up_order, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
 }
 
 extension parseString on IconNames {
@@ -36,6 +36,9 @@ class IconFont extends StatelessWidget {
 
   static IconNames getIconNames(dynamic iconName) {
     switch (iconName) {
+      case 'fuzhi':
+        iconName = IconNames.fuzhi;
+        break;
       case 'apple':
         iconName = IconNames.apple;
         break;
@@ -349,6 +352,24 @@ class IconFont extends StatelessWidget {
     String svgXml;
 
     switch (this.name!) {
+      case IconNames.fuzhi:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M122.09375 571.71875a30.1875 30.09375 0 1 0 60.375 0 30.1875 30.09375 0 1 0-60.375 0Z"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+            <path
+              d="M727.71875 454.53125l-252.65625-1.96875c-13.40625-0.09375-24.375 12.9375-24.375 29.0625s10.96875 29.34375 24.375 29.4375l252.65625 1.96875c13.40625 0.09375 24.375-12.9375 24.375-29.0625s-10.96875-29.34375-24.375-29.4375zM727.71875 573.59375l-252.65625-1.96875c-13.40625-0.09375-24.375 12.9375-24.375 29.0625s10.96875 29.34375 24.375 29.4375l252.65625 1.96875c13.40625 0.1875 24.375-12.9375 24.375-29.0625s-10.96875-29.34375-24.375-29.4375z"
+              fill="''' + getColor(1, color, colors, '#333333') + '''"
+            />
+            <path
+              d="M722.09375 91.90625H422.9375c-66 0-120 54-120 120h-60.84375c-66 0-120 54-120 120v120c-0.09375 16.59375 13.5 30 30.1875 30 16.6875 0 30.1875-13.5 30.1875-30.09375V332c0-33 27-60 60-60H302.9375v419.8125c0 66 54 120 120 120h239.15625c-0.09375 33-27 59.8125-60 59.8125H242.46875c-33 0-60-27-60-60V691.53125c0-16.59375-13.5-30.09375-30.1875-30.09375-16.6875 0-30.28125 13.5-30.28125 30.09375v120.28125c0 66 54 120 120 120h360.09375c66 0 120-54 120-120h60.9375c66 0 120-54 120-120V271.90625l-180.9375-180z m0.09375 59.4375l119.71875 120.28125H782c-33 0-60-27-60-60v-60.28125h0.1875z m60 600.9375H422.09375c-33 0-60-27-60-60v-480.9375c0-33 27-60 60-60H661.0625V211.0625c0 66 54 120 120 120h61.125v361.21875c0 33-27 60-60 60z"
+              fill="''' + getColor(2, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
       case IconNames.apple:
         svgXml = '''
           <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">

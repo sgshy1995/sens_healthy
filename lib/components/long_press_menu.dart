@@ -97,7 +97,8 @@ class _LongPressMenuState extends State<LongPressMenu>
       child: AnimatedBuilder(
         animation: _colorAnimation,
         builder: (context, child) {
-          return Center(
+          return Align(
+            alignment: Alignment.centerLeft,
             child: Container(
               color: _colorAnimation.value,
               child: widget.child,

@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:sens_healthy/app/models/user_model.dart';
 import '../../../components/gallery_photo_view_wrapper.dart';
@@ -12,6 +10,7 @@ import '../../controllers/global_controller.dart';
 import '../../controllers/user_controller.dart';
 import '../../providers/api/pain_client_provider.dart';
 import '../../providers/api/user_client_provider.dart';
+import '../../providers/api/store_client_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import './menus/mine_record_menu.dart';
 import './menus/mine_live_course_order_menu.dart';
@@ -34,6 +33,8 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
   final GlobalController globalController = Get.put(GlobalController());
   final PainClientProvider painClientProvider = Get.put(PainClientProvider());
   final UserClientProvider userClientProvider = Get.put(UserClientProvider());
+  final StoreClientProvider storeClientProvider =
+      Get.put(StoreClientProvider());
 
   late AnimationController _animationController;
   late Animation<Color?> _colorTween;
@@ -129,6 +130,60 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
     return completer.future;
   }
 
+  //器材订单信息
+  int equipmentWaitCounts = 0;
+  int equipmentShippingCounts = 0;
+  int equipmentReceivedCounts = 0;
+  int equipmentCanceledCounts = 0;
+
+  Future<int?> loadEquipmentWaitCounts(String userId) {
+    Completer<int?> completer = Completer();
+    storeClientProvider
+        .findManyEquipmentOrdersWithPaginationAction(userId: userId, status: 2)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<int?> loadEquipmentShippingCounts(String userId) {
+    Completer<int?> completer = Completer();
+    storeClientProvider
+        .findManyEquipmentOrdersWithPaginationAction(userId: userId, status: 3)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<int?> loadEquipmentReceivedCounts(String userId) {
+    Completer<int?> completer = Completer();
+    storeClientProvider
+        .findManyEquipmentOrdersWithPaginationAction(userId: userId, status: 4)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<int?> loadEquipmentCanceledCounts(String userId) {
+    Completer<int?> completer = Completer();
+    storeClientProvider
+        .findManyEquipmentOrdersWithPaginationAction(userId: userId, status: 0)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
   Future<String?> loadInfos() async {
     Completer<String?> completer = Completer();
     if (userController.token.isNotEmpty) {
@@ -177,6 +232,35 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
           myReplyCounts = results[1] ?? 0;
           myCollectCounts = results[2] ?? 0;
           myLikeCounts = results[3] ?? 0;
+        });
+      });
+    }).then((value) {
+      completer.complete('success');
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<String?> loadEquipmentOrderCounts() async {
+    Completer<String?> completer = Completer();
+    Future.delayed(const Duration(milliseconds: 100), () async {
+      final String? userId = await checkUserId();
+
+      // 等待所有异步任务完成
+      final List<int?> results = await Future.wait([
+        loadEquipmentWaitCounts(userId!),
+        loadEquipmentShippingCounts(userId),
+        loadEquipmentReceivedCounts(userId),
+        loadEquipmentCanceledCounts(userId)
+      ]);
+
+      results.asMap().forEach((index, value) {
+        setState(() {
+          equipmentWaitCounts = results[0] ?? 0;
+          equipmentShippingCounts = results[1] ?? 0;
+          equipmentReceivedCounts = results[2] ?? 0;
+          equipmentCanceledCounts = results[3] ?? 0;
         });
       });
     }).then((value) {
@@ -269,6 +353,10 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
     Get.toNamed('/mine_balance');
   }
 
+  void showEquipmentOrderDetailCallback() {
+    loadEquipmentOrderCounts();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -304,7 +392,7 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
 
   void _onRefresh() async {
     // monitor network fetch
-    Future.wait([loadCounts(), loadInfos()]);
+    Future.wait([loadCounts(), loadInfos(), loadEquipmentOrderCounts()]);
     _refreshController.refreshCompleted();
     _refreshController.loadComplete();
     // if failed,use refreshFailed()
@@ -970,49 +1058,60 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
                                     const SizedBox(
                                       height: 12,
                                     ),
-                                    const Padding(
-                                      padding:
-                                          EdgeInsets.fromLTRB(12, 0, 12, 0),
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          12, 0, 12, 0),
                                       child: Column(
                                         children: [
                                           //伤痛档案
-                                          MineRecordMenu(),
-                                          SizedBox(
+                                          const MineRecordMenu(),
+                                          const SizedBox(
                                             height: 12,
                                           ),
                                           //面对面康复订单
-                                          MineLiveCourseOrderMenu(),
-                                          SizedBox(
+                                          const MineLiveCourseOrderMenu(),
+                                          const SizedBox(
                                             height: 12,
                                           ),
                                           //专业能力提升订单
-                                          MineVideoCourseOrderMenu(),
-                                          SizedBox(
+                                          const MineVideoCourseOrderMenu(),
+                                          const SizedBox(
                                             height: 12,
                                           ),
                                           //器材订单
-                                          MineEquipmentOrderMenu(),
-                                          SizedBox(
+                                          MineEquipmentOrderMenu(
+                                            showDetailCallback:
+                                                showEquipmentOrderDetailCallback,
+                                            equipmentWaitCounts:
+                                                equipmentWaitCounts,
+                                            equipmentShippingCounts:
+                                                equipmentShippingCounts,
+                                            equipmentReceivedCounts:
+                                                equipmentReceivedCounts,
+                                            equipmentCanceledCounts:
+                                                equipmentCanceledCounts,
+                                          ),
+                                          const SizedBox(
                                             height: 12,
                                           ),
                                           //管理
-                                          MineManageMenu(),
-                                          SizedBox(
+                                          const MineManageMenu(),
+                                          const SizedBox(
                                             height: 12,
                                           ),
                                           //专业医师升级
-                                          MineDoctorMenu(),
-                                          SizedBox(
+                                          const MineDoctorMenu(),
+                                          const SizedBox(
                                             height: 12,
                                           ),
                                           //专业工具
-                                          MineProfessionalToolMenu(),
-                                          SizedBox(
+                                          const MineProfessionalToolMenu(),
+                                          const SizedBox(
                                             height: 12,
                                           ),
                                           //咨询与帮助
-                                          MineHelpMenu(),
-                                          SizedBox(
+                                          const MineHelpMenu(),
+                                          const SizedBox(
                                             height: 12,
                                           ),
                                         ],

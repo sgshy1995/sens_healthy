@@ -39,6 +39,9 @@ import './app/pages/mine/mine_phone_change.dart';
 import './app/pages/mine/mine_history.dart';
 import './app/pages/mine/mine_balance.dart';
 import './app/pages/mine/mine_balance_detail.dart';
+import './app/pages/mine/mine_equipment_order.dart';
+import './app/pages/mine/mine_equipment_order_detail.dart';
+import './app/pages/mine/mine_equipment_order_search.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env.prod"); // 加载开发环境配置
@@ -212,6 +215,21 @@ Future main() async {
           GetPage(
             name: '/mine_balance_detail',
             page: () => const MineBalanceDetailPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_equipment_order',
+            page: () => const MineEquipmentOrderPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_equipment_order_detail',
+            page: () => const MineEquipmentOrderDetailPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_equipment_order_search',
+            page: () => const MineEquipmentOrderSearchPage(),
             middlewares: [AuthMiddleware()],
           ),
         ],

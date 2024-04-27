@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:sens_healthy/app/models/user_model.dart';
 import 'package:sens_healthy/components/loading.dart';
 import 'package:sens_healthy/components/toast.dart';
@@ -82,6 +83,9 @@ class _StoreEquipmentOrderPageState extends State<StoreEquipmentOrderPage> {
   List<String> modelsIdsList = [];
   List<String> userIdsList = [];
   List<StoreEquipmentTypeModel> equipmentsList = [];
+
+  final String orderTime =
+      DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
 
   //待定单拟购物车聚合列表
   List<StoreEquipmentChartPolymerizationTypeModel>
@@ -267,24 +271,69 @@ class _StoreEquipmentOrderPageState extends State<StoreEquipmentOrderPage> {
                 : '其他方式支付中...');
     Future.delayed(const Duration(milliseconds: 2000), () {
       hideLoading();
-      showLoading('订单生成中...');
-      Future.delayed(const Duration(milliseconds: 2000), () {
+      showLoading('请稍后...');
+      final Map<String, dynamic> form = {
+        'equipment_info': {
+          'equipment_ids': equipmentsList.map((e) => e.id).join(','),
+          'model_ids': modelsIdsList.join(','),
+          'order_nums': addNumsList.join(','),
+          'payment_num': totalDiscount.toString()
+        },
+        'shipping_address': userController.info.default_address_info.all_text,
+        'shipping_name': userController.info.default_address_info.name,
+        'shipping_phone': userController.info.default_address_info.phone,
+        'order_time': orderTime,
+        'payment_type': checkWeixin
+            ? 1
+            : checkZhifubao
+                ? 2
+                : checkBalance
+                    ? 0
+                    : 3
+      };
+
+      if (chartInIdsList.isNotEmpty) {
+        form['equipment_chart_ids'] = chartInIdsList.join(',');
+      }
+
+      storeClientProvider.addEquipmentOrderByUserIdAction(form).then((result) {
+        if (result.code == 200) {
+          userClientProvider.getInfoByJWTAction().then((resultIn) {
+            if (resultIn.code == 200 && resultIn.data != null) {
+              userController.setInfo(resultIn.data!);
+              hideLoading();
+              Get.toNamed('/store_course_order_result', arguments: {
+                'result': 'success',
+                'orderNo': result.data!.order_no,
+                'paymentType': checkWeixin
+                    ? 'weixin'
+                    : checkZhifubao
+                        ? 'zhifubao'
+                        : checkBalance
+                            ? 'balance'
+                            : 'others',
+                'total': result.data!.payment_num
+              })!
+                  .then((value) {
+                Get.back(result: 'success');
+              });
+            } else {
+              hideLoading();
+              showToast(result.message);
+            }
+          }).catchError((e) {
+            print('e1 $e');
+            hideLoading();
+            showToast('请求失败, 请稍后再试');
+          });
+        } else {
+          hideLoading();
+          showToast(result.message);
+        }
+      }).catchError((e) {
+        print('e2 $e');
         hideLoading();
-        Get.toNamed('/store_course_order_result', arguments: {
-          'result': 'success',
-          'orderNo': '2183042024041213490157928557',
-          'paymentType': checkWeixin
-              ? 'weixin'
-              : checkZhifubao
-                  ? 'zhifubao'
-                  : checkBalance
-                      ? 'balance'
-                      : 'others',
-          'total': totalDiscount.toString()
-        })!
-            .then((value) {
-          Get.back(result: 'success');
-        });
+        showToast('请求失败, 请稍后再试');
       });
     });
   }

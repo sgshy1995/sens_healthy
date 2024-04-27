@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class StoreLiveCourseTypeModel {
   final String id; //课程id
   final String title; //课程标题
@@ -576,5 +578,251 @@ class StoreEquipmentChartPolymerizationTypeModel {
         status_list: [],
         equipment_info: null,
         equipment_model_infos: []);
+  }
+}
+
+class StoreEquipmentOrderTypeModel {
+  final String id; //订单id
+  final String user_id; //用户id
+  final String equipment_ids; //器材id集合
+  final String model_ids; //型号id集合
+  final String order_prices; //购买价格集合
+  final String order_nums; //购买数量集合
+  final int order_total_num; //购买总数量
+  final int order_total; //购买器材种类数
+  final String
+      order_no; //订单号（28位）编号规则：系统ID（6位）+系统交易日期（8位：YYYYMMDD)+系统交易时间戳(6位：HHmmss)+订单序号（8位，保证当天唯一）
+  final String order_time; //下单时间
+  final String
+      payment_no; //支付流水号（32位）编号规则：系统ID（6位）+系统交易日期（8位：YYYYMMDD)+系统交易时间戳(6位：HHmmss)+支付流水序号（12位，保证当天唯一）
+  final int payment_type; //支付类型 0 余额支付 1 微信支付 2 支付宝支付 3 Apple支付
+  final String payment_time; //支付时间
+  final String payment_num; //支付金额
+  final String? origin_address; //起送地址
+  final String? origin_name; //起送人
+  final String? origin_phone; //起送联系电话
+  final String shipping_address; //配送地址
+  final String shipping_name; //配送人
+  final String shipping_phone; //配送联系电话
+  final String? courier_number; //物流单号
+  final String? courier_company; //物流公司
+  final String? remark; //备注
+  final int status; //订单状态 6 已退货 5 退货中 4 已收货 3 已发货 2 待发货 1 待支付 0 取消/关闭
+  final String created_at;
+  final String updated_at;
+  final StoreCourierTypeModel? courier_info;
+  final List<StoreEquipmentTypeModel>? equipment;
+  StoreEquipmentOrderTypeModel(
+      {required this.id,
+      required this.user_id,
+      required this.equipment_ids,
+      required this.model_ids,
+      required this.order_prices,
+      required this.order_nums,
+      required this.order_total_num,
+      required this.order_total,
+      required this.order_no,
+      required this.order_time,
+      required this.payment_no,
+      required this.payment_type,
+      required this.payment_time,
+      required this.payment_num,
+      this.origin_address,
+      this.origin_name,
+      this.origin_phone,
+      required this.shipping_address,
+      required this.shipping_name,
+      required this.shipping_phone,
+      this.courier_number,
+      this.courier_company,
+      this.remark,
+      required this.status,
+      required this.created_at,
+      required this.updated_at,
+      this.courier_info,
+      this.equipment});
+
+  factory StoreEquipmentOrderTypeModel.fromJson(Map<String, dynamic>? json) {
+    if (json != null) {
+      List<StoreEquipmentTypeModel> fromJsonList(List<dynamic> jsonList) {
+        return jsonList
+            .map((json) => StoreEquipmentTypeModel.fromJson(json))
+            .toList();
+      }
+
+      final List<StoreEquipmentTypeModel> list =
+          json['equipment'] != null ? fromJsonList(json['equipment']) : [];
+
+      return StoreEquipmentOrderTypeModel(
+          id: json['id'],
+          user_id: json['user_id'],
+          equipment_ids: json['equipment_ids'],
+          model_ids: json['model_ids'],
+          order_prices: json['order_prices'],
+          order_nums: json['order_nums'],
+          order_total_num: json['order_total_num'],
+          order_total: json['order_total'],
+          order_no: json['order_no'],
+          order_time: json['order_time'],
+          payment_no: json['payment_no'],
+          payment_type: json['payment_type'],
+          payment_time: json['payment_time'],
+          payment_num: json['payment_num'],
+          origin_address: json['origin_address'],
+          origin_name: json['origin_name'],
+          origin_phone: json['origin_phone'],
+          shipping_address: json['shipping_address'],
+          shipping_name: json['shipping_name'],
+          shipping_phone: json['shipping_phone'],
+          courier_number: json['courier_number'],
+          courier_company: json['courier_company'],
+          remark: json['remark'],
+          status: json['status'],
+          created_at: json['created_at'],
+          updated_at: json['updated_at'],
+          courier_info: (json['courier_info'] != null &&
+                  json['courier_info']['id'] != null)
+              ? StoreCourierTypeModel.fromJson(json['courier_info'])
+              : StoreCourierTypeModel.fromJson(null),
+          equipment: list);
+    }
+    return StoreEquipmentOrderTypeModel(
+        id: '',
+        user_id: '',
+        equipment_ids: '',
+        model_ids: '',
+        order_prices: '',
+        order_nums: '',
+        order_total_num: 0,
+        order_total: 0,
+        order_no: '',
+        order_time: '',
+        payment_no: '',
+        payment_type: 0,
+        payment_time: '',
+        payment_num: '',
+        origin_address: null,
+        origin_name: null,
+        origin_phone: null,
+        shipping_address: '',
+        shipping_name: '',
+        shipping_phone: '',
+        courier_number: null,
+        courier_company: null,
+        remark: null,
+        status: 0,
+        created_at: '',
+        updated_at: '',
+        courier_info: null,
+        equipment: null);
+  }
+}
+
+class StoreCourierTypeModel {
+  final String id; //物流信息id
+  final String courier_number; //物流单号
+  final StoreCourierContentTypeModel courier_content; //物流信息
+  final int status; //物流状态 6 退件签收 5 疑难件 4 派送失败 3 已签收 2 正在派件 1 在途中 0 揽件
+  final String? recent_update_time; //最近记录时间
+  final String created_at;
+  final String updated_at;
+  StoreCourierTypeModel(
+      {required this.id,
+      required this.courier_number,
+      required this.courier_content,
+      required this.status,
+      this.recent_update_time,
+      required this.created_at,
+      required this.updated_at});
+
+  factory StoreCourierTypeModel.fromJson(Map<String, dynamic>? jsonIn) {
+    return jsonIn != null
+        ? StoreCourierTypeModel(
+            id: jsonIn['id'],
+            courier_number: jsonIn['courier_number'],
+            courier_content: StoreCourierContentTypeModel.fromJson(
+                json.decode(jsonIn['courier_content'])),
+            status: jsonIn['status'],
+            recent_update_time: jsonIn['recent_update_time'],
+            created_at: jsonIn['created_at'],
+            updated_at: jsonIn['updated_at'])
+        : StoreCourierTypeModel(
+            id: '',
+            courier_number: '',
+            courier_content: StoreCourierContentTypeModel.fromJson(null),
+            status: 0,
+            recent_update_time: null,
+            created_at: '',
+            updated_at: '');
+  }
+}
+
+class StoreCourierContentTypeModel {
+  final List<StoreCourierContentListTypeModel> list; //物流信息条目
+  final String type; //物流公司编码 STO
+  final String deliverystatus; //物流状态
+  final String issign; //是否签收 1 签收 0 未签收
+  final String expName; //物流公司名称
+  final String logo; //物流公司logo地址
+  final String updateTime; //更新时间
+  final String takeTime; //总耗时
+
+  StoreCourierContentTypeModel({
+    required this.list,
+    required this.type,
+    required this.deliverystatus,
+    required this.issign,
+    required this.expName,
+    required this.logo,
+    required this.updateTime,
+    required this.takeTime,
+  });
+
+  factory StoreCourierContentTypeModel.fromJson(Map<String, dynamic>? json) {
+    if (json != null) {
+      List<StoreCourierContentListTypeModel> fromJsonList(
+          List<dynamic> jsonList) {
+        return jsonList
+            .map((json) => StoreCourierContentListTypeModel.fromJson(json))
+            .toList();
+      }
+
+      final List<StoreCourierContentListTypeModel> list =
+          json['list'] != null ? fromJsonList(json['list']) : [];
+
+      return StoreCourierContentTypeModel(
+        list: list,
+        type: json['type'],
+        deliverystatus: json['deliverystatus'],
+        issign: json['issign'],
+        expName: json['expName'],
+        logo: json['logo'],
+        updateTime: json['updateTime'],
+        takeTime: json['takeTime'],
+      );
+    }
+    return StoreCourierContentTypeModel(
+        list: [],
+        type: '',
+        deliverystatus: '',
+        issign: '',
+        expName: '',
+        logo: '',
+        updateTime: '',
+        takeTime: '');
+  }
+}
+
+class StoreCourierContentListTypeModel {
+  final String time; //条目时间
+  final String status; //条目信息
+  StoreCourierContentListTypeModel({required this.time, required this.status});
+
+  factory StoreCourierContentListTypeModel.fromJson(
+      Map<String, dynamic>? json) {
+    return json != null
+        ? StoreCourierContentListTypeModel(
+            time: json['time'], status: json['status'])
+        : StoreCourierContentListTypeModel(time: '', status: '');
   }
 }

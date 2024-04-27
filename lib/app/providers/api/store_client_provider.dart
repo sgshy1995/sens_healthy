@@ -121,10 +121,24 @@ class StoreClientProvider extends GlobalClientProvider {
         .toList();
   }
 
+  static List<StoreEquipmentTypeModel> fromJsonListEquipment(
+      List<dynamic> jsonList) {
+    return jsonList
+        .map((json) => StoreEquipmentTypeModel.fromJson(json))
+        .toList();
+  }
+
   static List<StoreEquipmentChartTypeModel> fromJsonListEquipmentChart(
       List<dynamic> jsonList) {
     return jsonList
         .map((json) => StoreEquipmentChartTypeModel.fromJson(json))
+        .toList();
+  }
+
+  static List<StoreEquipmentOrderTypeModel> fromJsonListEquipemntOrder(
+      List<dynamic> jsonList) {
+    return jsonList
+        .map((json) => StoreEquipmentOrderTypeModel.fromJson(json))
         .toList();
   }
 
@@ -361,6 +375,22 @@ class StoreClientProvider extends GlobalClientProvider {
         DataPaginationFinalModel<List<StoreEquipmentTypeModel>>(
             code: jsonMap['code'], message: jsonMap['message'], data: inModel);
     return dataFinalEquipmentTypeModel;
+  }
+
+  // 器材列表获取包括型号，无分页，传id集合
+  Future<DataFinalModel<List<StoreEquipmentTypeModel>>>
+      getEquipmentsWithModelsAction(String equipmentIds) async {
+    final jsonData =
+        await get('/equipment/with_models', query: {'ids': equipmentIds});
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    late List<StoreEquipmentTypeModel> list =
+        fromJsonListEquipment(jsonMap['data']);
+
+    final DataFinalModel<List<StoreEquipmentTypeModel>>
+        dataFinalEquipmentsModel = DataFinalModel(
+            code: jsonMap['code'], message: jsonMap['message'], data: list);
+    return dataFinalEquipmentsModel;
   }
 
   // 根据器材轮播
@@ -678,6 +708,90 @@ class StoreClientProvider extends GlobalClientProvider {
       message: jsonMap['message'],
     );
     return dataFinalPainCommentCreate;
+  }
+
+  // 购物车或详情的器材下单
+  Future<DataFinalModel<StoreEquipmentOrderTypeModel>>
+      addEquipmentOrderByUserIdAction(Map<String, dynamic> json) async {
+    final jsonData = await post(
+        json['equipment_chart_ids'] != null
+            ? '/user_info/chart_equipment_order'
+            : '/user_info/normal_equipment_order',
+        json);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel<StoreEquipmentOrderTypeModel> dataFinalModel =
+        DataFinalModel(
+            code: jsonMap['code'],
+            message: jsonMap['message'],
+            data: StoreEquipmentOrderTypeModel.fromJson(jsonMap['data']));
+    return dataFinalModel;
+  }
+
+  // 获取器材订单, 带分页
+  Future<DataPaginationFinalModel<List<StoreEquipmentOrderTypeModel>>>
+      findManyEquipmentOrdersWithPaginationAction(
+          {required String userId,
+          String? keyword,
+          int? pageNo = 1,
+          int? pageSize = 10,
+          int? status}) async {
+    final Map<String, dynamic> queryMap = {
+      'pageNo': pageNo.toString(),
+      'pageSize': pageSize.toString(),
+      'user_id': userId.toString()
+    };
+    if (keyword != null) {
+      queryMap['keyword'] = keyword.toString();
+    }
+    if (status != null) {
+      queryMap['status'] = status.toString();
+    }
+
+    final jsonData = await get('/equipment_order/custom', query: queryMap);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    late List<StoreEquipmentOrderTypeModel> list =
+        fromJsonListEquipemntOrder(jsonMap['data']['data']);
+
+    final DataPaginationInModel<List<StoreEquipmentOrderTypeModel>> inModel =
+        DataPaginationInModel(
+            data: list,
+            pageNo: jsonMap['data']['pageNo'],
+            pageSize: jsonMap['data']['pageSize'],
+            totalCount: jsonMap['data']['totalCount'],
+            totalPage: jsonMap['data']['totalPage']);
+
+    final DataPaginationFinalModel<List<StoreEquipmentOrderTypeModel>>
+        dataFinalModel =
+        DataPaginationFinalModel<List<StoreEquipmentOrderTypeModel>>(
+            code: jsonMap['code'], message: jsonMap['message'], data: inModel);
+    return dataFinalModel;
+  }
+
+  // 根据器材订单号获取订单详情
+  Future<DataFinalModel<StoreEquipmentOrderTypeModel>>
+      findEquipmentOrderByOrderNoAction(String orderNo) async {
+    final jsonData = await get('/equipment_order/order_no/$orderNo');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel<StoreEquipmentOrderTypeModel> dataFinalModel =
+        DataFinalModel(
+            code: jsonMap['code'],
+            message: jsonMap['message'],
+            data: StoreEquipmentOrderTypeModel.fromJson(jsonMap['data']));
+    return dataFinalModel;
+  }
+
+  // 根据 订单号 确认收货
+  Future<DataFinalModel> receiveOrderShipmentAction(String orderNo) async {
+    final jsonData = await post('/equipment_order/receive/$orderNo', {});
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel dataFinalModel = DataFinalModel(
+      code: jsonMap['code'],
+      message: jsonMap['message'],
+    );
+    return dataFinalModel;
   }
 
   // Get request
