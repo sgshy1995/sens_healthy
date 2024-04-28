@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
 
 enum IconNames {
-  fuzhi, apple, biangeng_1, yigoumai, zhuanyerenzheng_menu, kefuyushouhou, shiyongbangzhu, qicai_yifahuo, qicai_daifahuo, qicai_yiquxiao, qicai_yiqianshou, shouhuodizhi, kaitongshoukequanxian, shangwuhezuo, jizhu, guanjie, yiwancheng, daixuexi, xuexizhong, yiyuyue, chongzhi, morenxuanzhong, moren_fill, phone_fill, dizhi_fill, dizhiguanli, lianxi_yishouqing_copy, zhekou, remen, a_yinhangkadaizhifuzhifu, tubiaozhizuomoban, jianshenke, jianji, zixingche, xiaidekecheng, yue, jingshi, qingkong, shouqi, zuixingengxin, live_fill, live, video_fill, video, dingdan, kangfushigongju, kecheng, gouwuche, liebiaoxingshi, duigou, hot, nandu, yanjing, yanjing_fill, fenlei, cainixihuan, nan, nv, shanchu, shezhi, yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, qianjin, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, course_order, equipment_order, top_up_order, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
+  renzhenglishi, fuzhi, apple, biangeng_1, yigoumai, zhuanyerenzheng_menu, kefuyushouhou, shiyongbangzhu, qicai_yifahuo, qicai_daifahuo, qicai_yiquxiao, qicai_yiqianshou, shouhuodizhi, kaitongshoukequanxian, shangwuhezuo, jizhu, guanjie, yiwancheng, daixuexi, xuexizhong, yiyuyue, chongzhi, morenxuanzhong, moren_fill, phone_fill, dizhi_fill, dizhiguanli, lianxi_yishouqing_copy, zhekou, remen, a_yinhangkadaizhifuzhifu, tubiaozhizuomoban, jianshenke, jianji, zixingche, xiaidekecheng, yue, jingshi, qingkong, shouqi, zuixingengxin, live_fill, live, video_fill, video, dingdan, kangfushigongju, kecheng, gouwuche, liebiaoxingshi, duigou, hot, nandu, yanjing, yanjing_fill, fenlei, cainixihuan, nan, nv, shanchu, shezhi, yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, qianjin, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, course_order, equipment_order, top_up_order, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
 }
 
 extension parseString on IconNames {
@@ -36,6 +36,9 @@ class IconFont extends StatelessWidget {
 
   static IconNames getIconNames(dynamic iconName) {
     switch (iconName) {
+      case 'renzhenglishi':
+        iconName = IconNames.renzhenglishi;
+        break;
       case 'fuzhi':
         iconName = IconNames.fuzhi;
         break;
@@ -352,6 +355,16 @@ class IconFont extends StatelessWidget {
     String svgXml;
 
     switch (this.name!) {
+      case IconNames.renzhenglishi:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M512 90.125C279.125 90.125 90.125 279.125 90.125 512s189 421.875 421.875 421.875 421.875-189 421.875-421.875S744.875 90.125 512 90.125z m45.5625 685.546875L250.4375 346.625l143.859375-0.421875 163.6875 258.609375 116.859375-258.609375 92.8125 0.421875-210.09375 429.046875z"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
       case IconNames.fuzhi:
         svgXml = '''
           <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">

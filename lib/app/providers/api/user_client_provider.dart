@@ -347,6 +347,102 @@ class UserClientProvider extends GlobalClientProvider {
     return dataFinalModel;
   }
 
+  // 认证 根据 jwt 获取
+  Future<DataFinalModel<AuthenticateTypeModel>>
+      findOneAuthenticateByUserIdAction() async {
+    final jsonData = await get('/authenticate/jwt');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel<AuthenticateTypeModel> dataFinalModel = DataFinalModel(
+        code: jsonMap['code'],
+        message: jsonMap['message'],
+        data: AuthenticateTypeModel.fromJson(jsonMap['data']));
+    return dataFinalModel;
+  }
+
+  // 文件上传-认证-身份证正面
+  Future<DataFinalModel<String?>> uploadIdentityCardFrontAction(
+      File file, String filename) async {
+    final FormData formData =
+        FormData({'file': MultipartFile(file, filename: filename)});
+    final jsonData =
+        await post('/authenticate/upload/identity_card_front', formData);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel<String?> dataFinalUploadModel = DataFinalModel(
+        code: jsonMap['code'],
+        message: jsonMap['message'],
+        data: jsonMap['data']);
+    return dataFinalUploadModel;
+  }
+
+  // 文件上传-认证-身份证反面
+  Future<DataFinalModel<String?>> uploadIdentityCardBackAction(
+      File file, String filename) async {
+    final FormData formData =
+        FormData({'file': MultipartFile(file, filename: filename)});
+    final jsonData =
+        await post('/authenticate/upload/identity_card_back', formData);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel<String?> dataFinalUploadModel = DataFinalModel(
+        code: jsonMap['code'],
+        message: jsonMap['message'],
+        data: jsonMap['data']);
+    return dataFinalUploadModel;
+  }
+
+  // 文件上传-认证-执业证照
+  Future<DataFinalModel<String?>> uploadPracticingCertificateAction(
+      File file, String filename) async {
+    final FormData formData =
+        FormData({'file': MultipartFile(file, filename: filename)});
+    final jsonData =
+        await post('/authenticate/upload/practicing_certificate', formData);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel<String?> dataFinalUploadModel = DataFinalModel(
+        code: jsonMap['code'],
+        message: jsonMap['message'],
+        data: jsonMap['data']);
+    return dataFinalUploadModel;
+  }
+
+  // 文件上传-认证-工作证照
+  Future<DataFinalModel<String?>> uploadEmployeeCardAction(
+      File file, String filename) async {
+    final FormData formData =
+        FormData({'file': MultipartFile(file, filename: filename)});
+    final jsonData = await post('/authenticate/upload/employee_card', formData);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel<String?> dataFinalUploadModel = DataFinalModel(
+        code: jsonMap['code'],
+        message: jsonMap['message'],
+        data: jsonMap['data']);
+    return dataFinalUploadModel;
+  }
+
+  // 创建认证
+  Future<DataFinalModel> createAuthenticateAction(
+      Map<String, dynamic> json) async {
+    final jsonData = await post('/authenticate', json);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel dataFinal = DataFinalModel(
+      code: jsonMap['code'],
+      message: jsonMap['message'],
+    );
+    return dataFinal;
+  }
+
+  // 更新重新认证
+  Future<DataFinalModel> updateAuthenticateAction(
+      Map<String, dynamic> json) async {
+    final jsonData = await put('/authenticate', json);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+    final DataFinalModel dataFinal = DataFinalModel(
+      code: jsonMap['code'],
+      message: jsonMap['message'],
+    );
+    return dataFinal;
+  }
+
   // Post request
   Future<Response> postUser(Map data) => post('http://youapi/users', data);
 

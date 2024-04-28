@@ -42,6 +42,8 @@ import './app/pages/mine/mine_balance_detail.dart';
 import './app/pages/mine/mine_equipment_order.dart';
 import './app/pages/mine/mine_equipment_order_detail.dart';
 import './app/pages/mine/mine_equipment_order_search.dart';
+import './app/pages/mine/mine_authenticate.dart';
+import './app/pages/mine/mine_authenticate_publish.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env.dev"); // 加载开发环境配置
@@ -230,6 +232,16 @@ Future main() async {
           GetPage(
             name: '/mine_equipment_order_search',
             page: () => const MineEquipmentOrderSearchPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_authenticate',
+            page: () => const MineAuthenticatePage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_authenticate_publish',
+            page: () => const MineAuthenticatePublishPage(),
             middlewares: [AuthMiddleware()],
           ),
         ],

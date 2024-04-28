@@ -257,3 +257,76 @@ class TopUpOrderTypeModel {
             updated_at: '');
   }
 }
+
+class AuthenticateTypeModel {
+  String id; //认证id
+  final String user_id; //用户id
+  final String name; //认证名
+  final String phone; //认证联系电话
+  final int gender; //认证性别 1 男 0 女
+  final String organization; //认证机构组织
+  final String identity_card_front; //身份证正面照
+  final String identity_card_back; //身份证反面照
+  final String practicing_certificate; //执业证照
+  final String employee_card; //工作证照
+  final String fcc; //认证简介
+  final String? audit_info; //审核意见
+  final String? validity_time; //有效期
+  final int status; //认证状态 3 审核通过 2 待审核 1 驳回 0 失效
+  final String created_at;
+  final String updated_at;
+  AuthenticateTypeModel(
+      {required this.id,
+      required this.user_id,
+      required this.name,
+      required this.phone,
+      required this.gender,
+      required this.organization,
+      required this.identity_card_front,
+      required this.identity_card_back,
+      required this.practicing_certificate,
+      required this.employee_card,
+      required this.fcc,
+      this.audit_info,
+      this.validity_time,
+      required this.status,
+      required this.created_at,
+      required this.updated_at});
+  factory AuthenticateTypeModel.fromJson(Map<String, dynamic>? json) {
+    return json != null
+        ? AuthenticateTypeModel(
+            id: json['id'],
+            user_id: json['user_id'],
+            name: json['name'],
+            phone: json['phone'],
+            gender: json['gender'],
+            organization: json['organization'],
+            identity_card_front: json['identity_card_front'],
+            identity_card_back: json['identity_card_back'],
+            practicing_certificate: json['practicing_certificate'],
+            employee_card: json['employee_card'],
+            fcc: json['fcc'],
+            audit_info: json['audit_info'],
+            validity_time: json['validity_time'],
+            status: json['status'],
+            created_at: json['created_at'],
+            updated_at: json['updated_at'])
+        : AuthenticateTypeModel(
+            id: '',
+            user_id: '',
+            name: '',
+            phone: '',
+            gender: 0,
+            organization: '',
+            identity_card_front: '',
+            identity_card_back: '',
+            practicing_certificate: '',
+            employee_card: '',
+            fcc: '',
+            audit_info: null,
+            validity_time: null,
+            status: 0,
+            created_at: '',
+            updated_at: '');
+  }
+}

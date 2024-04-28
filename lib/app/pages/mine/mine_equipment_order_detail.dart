@@ -362,7 +362,8 @@ class _MineEquipmentOrderDetailPageState
               ValueListenableBuilder<String>(
                 valueListenable: dialogText,
                 builder: (BuildContext context, String value, Widget? child) {
-                  return value != '0'
+                  return value != '0' &&
+                          storeEquipmentOrderDetail.courier_info!.status != 3
                       ? SizedBox(
                           height: 32,
                           child: ElevatedButton(

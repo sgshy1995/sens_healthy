@@ -13,6 +13,10 @@ class MineDoctorMenu extends StatefulWidget {
 class _MineDoctorMenuState extends State<MineDoctorMenu> {
   final UserController userController = Get.put(UserController());
 
+  void handleGotoAuthentication() {
+    Get.toNamed('mine_authenticate');
+  }
+
   @override
   Widget build(BuildContext context) {
     final EdgeInsets mediaQuerySafeInfo = MediaQuery.of(context).padding;
@@ -52,31 +56,35 @@ class _MineDoctorMenuState extends State<MineDoctorMenu> {
           ),
           Row(
             children: [
-              SizedBox(
-                width: (mediaQuerySizeInfo.width - 24 - 24) / 4,
-                height: 54,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 6),
-                      width: 24,
-                      height: 24,
-                      child: Center(
-                        child: IconFont(
-                          IconNames.zhuanyerenzheng_menu,
-                          size: 24,
-                          color: 'rgb(0, 0, 0)',
+              GestureDetector(
+                onTap: handleGotoAuthentication,
+                child: Container(
+                  width: (mediaQuerySizeInfo.width - 24 - 24) / 4,
+                  height: 54,
+                  color: Colors.transparent,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 6),
+                        width: 24,
+                        height: 24,
+                        child: Center(
+                          child: IconFont(
+                            IconNames.zhuanyerenzheng_menu,
+                            size: 24,
+                            color: 'rgb(0, 0, 0)',
+                          ),
                         ),
                       ),
-                    ),
-                    const Text('专业认证',
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 13,
-                            fontWeight: FontWeight.normal))
-                  ],
+                      const Text('专业认证',
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 13,
+                              fontWeight: FontWeight.normal))
+                    ],
+                  ),
                 ),
               ),
               SizedBox(
