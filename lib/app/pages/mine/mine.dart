@@ -20,6 +20,7 @@ import './menus/mine_manage_menu.dart';
 import './menus/mine_doctor_menu.dart';
 import './menus/mine_professional_tool_menu.dart';
 import './menus/mine_help_menu.dart';
+import './menus/mine_doctor_enter_menu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MinePage extends StatefulWidget {
@@ -903,6 +904,17 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
                                     const SizedBox(
                                       height: 24,
                                     ),
+                                    //专业医师入口
+                                    GetBuilder<UserController>(
+                                        builder: (controller) {
+                                      return (controller.userInfo.identity ==
+                                                  1 &&
+                                              controller
+                                                      .userInfo.authenticate ==
+                                                  2)
+                                          ? const MineDoctorEnterMenu()
+                                          : const SizedBox.shrink();
+                                    }),
                                     Padding(
                                       padding: const EdgeInsets.fromLTRB(
                                           12, 0, 12, 0),

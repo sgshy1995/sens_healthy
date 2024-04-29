@@ -1,9 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:syncfusion_localizations/syncfusion_localizations.dart';
+// ignore: depend_on_referenced_packages
+import 'package:flutter_localizations/flutter_localizations.dart';
 import './app/cache/token_manager.dart';
 import './app/home.dart';
 import './app/pages/login/login.dart';
@@ -44,6 +48,9 @@ import './app/pages/mine/mine_equipment_order_detail.dart';
 import './app/pages/mine/mine_equipment_order_search.dart';
 import './app/pages/mine/mine_authenticate.dart';
 import './app/pages/mine/mine_authenticate_publish.dart';
+import './app/pages/mine/mine_doctor.dart';
+import './app/pages/mine/mine_doctor_time.dart';
+import './app/pages/mine/mine_doctor_time_explain.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env.dev"); // 加载开发环境配置
@@ -56,8 +63,26 @@ Future main() async {
   final String? token = await TokenManager.getToken();
   initializeDateFormatting('zh_CN', null).then((_) {
     runApp(GetMaterialApp(
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          // ... app-specific localization delegate[s] here
+          SfGlobalLocalizations.delegate,
+          DefaultCupertinoLocalizations
+              .delegate, // 添加 CupertinoLocalizations.delegate
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('zh')
+          // ... other locales the app supports
+        ],
+        locale: const Locale('zh'),
         theme: ThemeData(
           // 修改默认进度指示器颜色
+
+          scaffoldBackgroundColor: Colors.white,
+          backgroundColor: Colors.white,
+          dialogBackgroundColor: Colors.white,
           primaryColor: Colors.black, // 修改主题的默认颜色为绿色
           progressIndicatorTheme: const ProgressIndicatorThemeData(
             color: Color.fromRGBO(200, 200, 200, 1), // 设置进度指示器的颜色
@@ -242,6 +267,21 @@ Future main() async {
           GetPage(
             name: '/mine_authenticate_publish',
             page: () => const MineAuthenticatePublishPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_doctor',
+            page: () => const MineDoctorPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_doctor_time',
+            page: () => const MineDoctorTimePage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_doctor_time_explain',
+            page: () => MineDoctorTimeExplainPage(),
             middlewares: [AuthMiddleware()],
           ),
         ],
