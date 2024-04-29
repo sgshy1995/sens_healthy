@@ -330,6 +330,24 @@ class StoreClientProvider extends GlobalClientProvider {
     return dataFinalModel;
   }
 
+  // 购物车或详情的课程下单
+  Future<DataFinalModel<StoreCourseOrderTypeModel>> addChartOrderByUserIdAction(
+      Map<String, dynamic> json) async {
+    final jsonData = await post(
+        json['course_chart_ids'] != null
+            ? '/user_info/chart_course_order'
+            : '/user_info/normal_course_order',
+        json);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel<StoreCourseOrderTypeModel> dataFinalModel =
+        DataFinalModel(
+            code: jsonMap['code'],
+            message: jsonMap['message'],
+            data: StoreCourseOrderTypeModel.fromJson(jsonMap['data']));
+    return dataFinalModel;
+  }
+
   // 分页请求器材列表
   Future<DataPaginationFinalModel<List<StoreEquipmentTypeModel>>>
       getEquipmentsAction(

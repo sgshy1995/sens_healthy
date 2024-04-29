@@ -286,6 +286,95 @@ class StoreCourseChartTypeModel {
   }
 }
 
+class StoreCourseOrderTypeModel {
+  final String id; //订单id
+  final String user_id; //用户id
+  final String course_ids; //课程id集合
+  final String course_types; //课程类型集合 1 直播课 0 视频课
+  final String order_prices; //购买价格集合
+  final int order_total; //购买总数
+  final String
+      order_no; //订单号（28位）编号规则：系统ID（6位）+系统交易日期（8位：YYYYMMDD)+系统交易时间戳(6位：HHmmss)+订单序号（8位，保证当天唯一）
+  final String order_time; //下单时间
+  final String
+      payment_no; //支付流水号（32位）编号规则：系统ID（6位）+系统交易日期（8位：YYYYMMDD)+系统交易时间戳(6位：HHmmss)+支付流水序号（12位，保证当天唯一）
+  final int payment_type; //支付类型 0 余额支付 1 微信支付 2 支付宝支付 3 Apple支付
+  final String payment_time; //支付时间
+  final String payment_num; //支付金额
+  final int status; //订单状态 2 已完成 1 待支付 0 取消/关闭
+  final String created_at;
+  final String updated_at;
+  final List<Object>? course_infos;
+  StoreCourseOrderTypeModel(
+      {required this.id,
+      required this.user_id,
+      required this.course_ids,
+      required this.course_types,
+      required this.order_prices,
+      required this.order_total,
+      required this.order_no,
+      required this.order_time,
+      required this.payment_no,
+      required this.payment_type,
+      required this.payment_time,
+      required this.payment_num,
+      required this.status,
+      required this.created_at,
+      required this.updated_at,
+      this.course_infos});
+
+  factory StoreCourseOrderTypeModel.fromJson(Map<String, dynamic>? json) {
+    if (json != null) {
+      List<Object> fromJsonList(List<dynamic> jsonList) {
+        return jsonList
+            .map((json) => json['live_num'] != null
+                ? StoreLiveCourseTypeModel.fromJson(json)
+                : StoreVideoCourseTypeModel.fromJson(json))
+            .toList();
+      }
+
+      final List<Object> list = json['course_infos'] != null
+          ? fromJsonList(json['course_infos'])
+          : [];
+
+      return StoreCourseOrderTypeModel(
+          id: json['id'],
+          user_id: json['user_id'],
+          course_ids: json['course_ids'],
+          course_types: json['course_types'],
+          order_prices: json['order_prices'],
+          order_total: json['order_total'],
+          order_no: json['order_no'],
+          order_time: json['order_time'],
+          payment_no: json['payment_no'],
+          payment_type: json['payment_type'],
+          payment_time: json['payment_time'],
+          payment_num: json['payment_num'],
+          status: json['status'],
+          created_at: json['created_at'],
+          updated_at: json['updated_at'],
+          course_infos: list);
+    }
+    return StoreCourseOrderTypeModel(
+        id: '',
+        user_id: '',
+        course_ids: '',
+        course_types: '',
+        order_prices: '',
+        order_total: 0,
+        order_no: '',
+        order_time: '',
+        payment_no: '',
+        payment_type: 0,
+        payment_time: '',
+        payment_num: '',
+        status: 0,
+        created_at: '',
+        updated_at: '',
+        course_infos: null);
+  }
+}
+
 class StoreEquipmentTypeModel {
   final String id; //器材id
   final String serial_number; //器材编号 唯一编号，数字和大写字母组合

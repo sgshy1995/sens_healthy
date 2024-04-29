@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:sens_healthy/components/loading.dart';
 import 'package:sens_healthy/components/toast.dart';
 import '../../../iconfont/icon_font.dart';
@@ -149,6 +150,9 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
     Get.back();
   }
 
+  final String orderTime =
+      DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
   void handleBuy() {
     if (totalCount == 0) {
       return;
@@ -163,23 +167,67 @@ class _StoreCourseOrderPageState extends State<StoreCourseOrderPage> {
     Future.delayed(const Duration(milliseconds: 2000), () {
       hideLoading();
       showLoading('订单生成中...');
-      Future.delayed(const Duration(milliseconds: 2000), () {
+
+      final Map<String, dynamic> form = {
+        'course_info': {
+          'course_ids': courseInOrderList.map((e) => e.id).join(','),
+          'course_types': courseInOrderList
+              .map((e) => e is StoreLiveCourseTypeModel ? 1 : 0)
+              .join(','),
+          'payment_num': totalDiscount.toString()
+        },
+        'order_time': orderTime,
+        'payment_type': checkWeixin
+            ? 1
+            : checkZhifubao
+                ? 2
+                : checkBalance
+                    ? 0
+                    : 3
+      };
+
+      if (chartInIdsList.isNotEmpty) {
+        form['course_chart_ids'] = chartInIdsList.join(',');
+      }
+
+      storeClientProvider.addChartOrderByUserIdAction(form).then((result) {
+        if (result.code == 200) {
+          userClientProvider.getInfoByJWTAction().then((resultIn) {
+            if (resultIn.code == 200 && resultIn.data != null) {
+              userController.setInfo(resultIn.data!);
+              hideLoading();
+              Get.toNamed('/store_course_order_result', arguments: {
+                'result': 'success',
+                'orderNo': result.data!.order_no,
+                'paymentType': checkWeixin
+                    ? 'weixin'
+                    : checkZhifubao
+                        ? 'zhifubao'
+                        : checkBalance
+                            ? 'balance'
+                            : 'others',
+                'total': result.data!.payment_num
+              })!
+                  .then((value) {
+                Get.back(result: 'success');
+              });
+            } else {
+              hideLoading();
+              showToast(result.message);
+            }
+          }).catchError((e) {
+            print('e1 $e');
+            hideLoading();
+            showToast('请求失败, 请稍后再试');
+          });
+        } else {
+          hideLoading();
+          showToast(result.message);
+        }
+      }).catchError((e) {
+        print('e2 $e');
         hideLoading();
-        Get.toNamed('/store_course_order_result', arguments: {
-          'result': 'success',
-          'orderNo': '2183042024041213490157928557',
-          'paymentType': checkWeixin
-              ? 'weixin'
-              : checkZhifubao
-                  ? 'zhifubao'
-                  : checkBalance
-                      ? 'balance'
-                      : 'others',
-          'total': totalDiscount.toString()
-        })!
-            .then((value) {
-          Get.back(result: 'success');
-        });
+        showToast('请求失败, 请稍后再试');
       });
     });
   }
