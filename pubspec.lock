@@ -25,6 +25,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.11.0"
+  board_datetime_picker:
+    dependency: "direct main"
+    description:
+      name: board_datetime_picker
+      sha256: "26097aaa5e6294d432615d7487f0b0593c749c0b305458722edd4811c92941f3"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.6.4"
   boolean_selector:
     dependency: transitive
     description:
@@ -310,6 +318,19 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.0.1"
+  flutter_localization:
+    dependency: "direct main"
+    description:
+      name: flutter_localization
+      sha256: faaeb1eba307473032e2c2af737f36ced61fc98735608410d0a6d9c231b50912
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.2.0"
+  flutter_localizations:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -460,10 +481,10 @@ packages:
     dependency: "direct main"
     description:
       name: intl
-      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
+      sha256: "3bc132a9dbce73a7e4a21a17d06e1878839ffbf975568bc875c60537824b0c4d"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.19.0"
+    version: "0.18.1"
   js:
     dependency: transitive
     description:
@@ -901,6 +922,38 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.2.0"
+  syncfusion_flutter_calendar:
+    dependency: "direct main"
+    description:
+      name: syncfusion_flutter_calendar
+      sha256: e06aff78dd2040a3239d59b8543020afd4bfcfde5d66d028d6ac04a84ed0e4b0
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "25.1.41"
+  syncfusion_flutter_core:
+    dependency: transitive
+    description:
+      name: syncfusion_flutter_core
+      sha256: "708425f534ef04253334763c8b75acc79eaec2d9b325bcd862575ea0a2207d87"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "25.1.41"
+  syncfusion_flutter_datepicker:
+    dependency: transitive
+    description:
+      name: syncfusion_flutter_datepicker
+      sha256: b6abaa80a6dff16552a5b7a7b3879094d285ae5a49a33466d4d1a62041e250dd
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "25.1.41"
+  syncfusion_localizations:
+    dependency: "direct main"
+    description:
+      name: syncfusion_localizations
+      sha256: "2ef01ba46fb42860bfe73f7931f7662a1c792a2852a0abfaf4d406e0ffbf95c1"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "25.1.41"
   synchronized:
     dependency: transitive
     description:
@@ -925,6 +978,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.6.1"
+  timezone:
+    dependency: transitive
+    description:
+      name: timezone
+      sha256: "1cfd8ddc2d1cfd836bc93e67b9be88c3adaeca6f40a00ca999104c30693cdca0"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.9.2"
   typed_data:
     dependency: transitive
     description:
