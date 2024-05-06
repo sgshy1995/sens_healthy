@@ -5,9 +5,11 @@ import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+// ignore: unused_import
 import 'package:syncfusion_localizations/syncfusion_localizations.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_localizations/flutter_localizations.dart';
+import './localization/localization_extendibility.dart';
 import './app/cache/token_manager.dart';
 import './app/home.dart';
 import './app/pages/login/login.dart';
@@ -51,6 +53,9 @@ import './app/pages/mine/mine_authenticate_publish.dart';
 import './app/pages/mine/mine_doctor.dart';
 import './app/pages/mine/mine_doctor_time.dart';
 import './app/pages/mine/mine_doctor_time_explain.dart';
+import './app/pages/center/center.dart';
+import './app/pages/center/center_course_time.dart';
+import './app/pages/center/center_course_time_explain.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env.prod"); // 加载开发环境配置
@@ -67,7 +72,8 @@ Future main() async {
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           // ... app-specific localization delegate[s] here
-          SfGlobalLocalizations.delegate,
+          SfLocalizationsZhDelegate(),
+          //SfGlobalLocalizations.delegate,
           DefaultCupertinoLocalizations
               .delegate, // 添加 CupertinoLocalizations.delegate
           GlobalCupertinoLocalizations.delegate,
@@ -282,6 +288,21 @@ Future main() async {
           GetPage(
             name: '/mine_doctor_time_explain',
             page: () => MineDoctorTimeExplainPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/center',
+            page: () => const CenterPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/center_course_time',
+            page: () => const CenterCourseTimePage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/center_course_time_explain',
+            page: () => CenterCourseTimeExplainPage(),
             middlewares: [AuthMiddleware()],
           ),
         ],
