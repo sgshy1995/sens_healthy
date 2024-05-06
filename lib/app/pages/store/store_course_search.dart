@@ -29,6 +29,8 @@ class _StoreCourseSearchPageState extends State<StoreCourseSearchPage>
   double _opacity = 1.0; // 初始透明度
   double _scrollDistance = 0; // 初始滚动位置
 
+  final FocusNode _focusNode = FocusNode();
+
   int tabSelectionIndex = 0;
 
   int chartNum = 0;
@@ -81,17 +83,7 @@ class _StoreCourseSearchPageState extends State<StoreCourseSearchPage>
     Get.back();
   }
 
-  void handleSearch(BuildContext context, {bool ifSetToHistory = true}) async {
-    if (FocusScope.of(_scaffoldKey.currentContext!).hasFocus) {
-      FocusScope.of(_scaffoldKey.currentContext!).unfocus();
-    }
-
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (FocusScope.of(_scaffoldKey.currentContext!).hasFocus) {
-        FocusScope.of(_scaffoldKey.currentContext!).unfocus();
-      }
-    });
-
+  void handleSearch({bool ifSetToHistory = true}) async {
     if (ifSetToHistory &&
         searchContentValue != null &&
         searchContentValue!.isNotEmpty &&
@@ -182,10 +174,13 @@ class _StoreCourseSearchPageState extends State<StoreCourseSearchPage>
     });
   }
 
-  void handleChooseHistory(BuildContext context, String item) {
+  void handleChooseHistory(String item) {
     _textController.text = item;
     changeSearchContent(item);
-    handleSearch(context, ifSetToHistory: false);
+    handleSearch(ifSetToHistory: false);
+    Future.delayed(const Duration(milliseconds: 10), () {
+      _focusNode.unfocus();
+    });
   }
 
   @override
@@ -200,6 +195,7 @@ class _StoreCourseSearchPageState extends State<StoreCourseSearchPage>
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _textController.dispose();
     _tabController.dispose();
     super.dispose();
@@ -308,7 +304,6 @@ class _StoreCourseSearchPageState extends State<StoreCourseSearchPage>
                                               return GestureDetector(
                                                 onTap: () =>
                                                     handleChooseHistory(
-                                                        context,
                                                         searchHistoryList[
                                                             index]),
                                                 child: Chip(
@@ -373,7 +368,7 @@ class _StoreCourseSearchPageState extends State<StoreCourseSearchPage>
                                           searchWantList.length, (index) {
                                         return GestureDetector(
                                           onTap: () => handleChooseHistory(
-                                              context, searchWantList[index]),
+                                              searchWantList[index]),
                                           child: Chip(
                                             side: BorderSide.none,
                                             backgroundColor:
@@ -561,11 +556,19 @@ class _StoreCourseSearchPageState extends State<StoreCourseSearchPage>
                                     onSubmitted: (String value) {
                                       // 在用户按下确定键或完成输入时调用
                                       // 点击外部区域时取消焦点
-                                      handleSearch(context);
+                                      Future.delayed(
+                                          const Duration(milliseconds: 10), () {
+                                        _focusNode.unfocus();
+                                      });
+                                      handleSearch();
                                     },
                                     autofocus:
                                         true, // 设置为 true，使 TextField 自动获取焦点
-                                    enabled: inputEnabled,
+                                    focusNode: _focusNode,
+                                    onTapOutside: (PointerDownEvent p) {
+                                      // 点击外部区域时取消焦点
+                                      _focusNode.unfocus();
+                                    },
                                     controller: _textController,
                                     maxLines: 6,
                                     textAlignVertical: TextAlignVertical.center,
@@ -621,7 +624,7 @@ class _StoreCourseSearchPageState extends State<StoreCourseSearchPage>
                                   child: InkWell(
                                     onTap: () {
                                       // 点击外部区域时取消焦点
-                                      handleSearch(context);
+                                      handleSearch();
                                     },
                                     child: Center(
                                       child: IconFont(

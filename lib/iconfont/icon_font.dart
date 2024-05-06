@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
 
 enum IconNames {
-  qiehuan, yuyueshijian_doctor, shoukequanxian_doctor, shangwuhezuo_doctor, doctor_enter, renzhenglishi, fuzhi, apple, biangeng_1, yigoumai, zhuanyerenzheng_menu, kefuyushouhou, shiyongbangzhu, qicai_yifahuo, qicai_daifahuo, qicai_yiquxiao, qicai_yiqianshou, shouhuodizhi, kaitongshoukequanxian, shangwuhezuo, jizhu, guanjie, yiwancheng, daixuexi, xuexizhong, yiyuyue, chongzhi, morenxuanzhong, moren_fill, phone_fill, dizhi_fill, dizhiguanli, lianxi_yishouqing_copy, zhekou, remen, a_yinhangkadaizhifuzhifu, tubiaozhizuomoban, jianshenke, jianji, zixingche, xiaidekecheng, yue, jingshi, qingkong, shouqi, zuixingengxin, live_fill, live, video_fill, video, dingdan, kangfushigongju, kecheng, gouwuche, liebiaoxingshi, duigou, hot, nandu, yanjing, yanjing_fill, fenlei, cainixihuan, nan, nv, shanchu, shezhi, yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, qianjin, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, course_order, equipment_order, top_up_order, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
+  sayhi, xuexizhongxin, qiehuan, yuyueshijian_doctor, shoukequanxian_doctor, shangwuhezuo_doctor, doctor_enter, renzhenglishi, fuzhi, apple, biangeng_1, yigoumai, zhuanyerenzheng_menu, kefuyushouhou, shiyongbangzhu, qicai_yifahuo, qicai_daifahuo, qicai_yiquxiao, qicai_yiqianshou, shouhuodizhi, kaitongshoukequanxian, shangwuhezuo, jizhu, guanjie, yiwancheng, daixuexi, xuexizhong, yiyuyue, chongzhi, morenxuanzhong, moren_fill, phone_fill, dizhi_fill, dizhiguanli, lianxi_yishouqing_copy, zhekou, remen, a_yinhangkadaizhifuzhifu, tubiaozhizuomoban, jianshenke, jianji, zixingche, xiaidekecheng, yue, jingshi, qingkong, shouqi, zuixingengxin, live_fill, live, video_fill, video, dingdan, kangfushigongju, kecheng, gouwuche, liebiaoxingshi, duigou, hot, nandu, yanjing, yanjing_fill, fenlei, cainixihuan, nan, nv, shanchu, shezhi, yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, qianjin, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, course_order, equipment_order, top_up_order, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
 }
 
 extension parseString on IconNames {
@@ -36,6 +36,12 @@ class IconFont extends StatelessWidget {
 
   static IconNames getIconNames(dynamic iconName) {
     switch (iconName) {
+      case 'sayhi':
+        iconName = IconNames.sayhi;
+        break;
+      case 'xuexizhongxin':
+        iconName = IconNames.xuexizhongxin;
+        break;
       case 'qiehuan':
         iconName = IconNames.qiehuan;
         break;
@@ -370,6 +376,50 @@ class IconFont extends StatelessWidget {
     String svgXml;
 
     switch (this.name!) {
+      case IconNames.sayhi:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M965.888 459.7248c0-201.8816-201.216-365.568-449.4848-365.568s-449.4848 163.6352-449.4848 365.568c0 178.2272 156.8768 326.5536 364.3904 358.912l55.5008 97.0752c12.7488 22.3232 45.2096 21.7088 57.088-1.1264l49.2032-94.72c211.712-29.5936 372.7872-179.5072 372.7872-360.1408z"
+              fill="''' + getColor(0, color, colors, '#f39996') + '''"
+            />
+            <path
+              d="M516.4544 218.0096c-222.3104 0-406.8352 131.328-442.9312 303.7696 31.488 149.76 175.0016 268.3904 357.888 296.8576l55.5008 97.0752c12.7488 22.3232 45.2096 21.7088 57.088-1.1264l49.2032-94.72c186.88-26.1632 334.2848-146.0736 366.2336-298.1376-36.1984-172.3904-220.672-303.7184-442.9824-303.7184z"
+              fill="''' + getColor(1, color, colors, '#e8817d') + '''"
+            />
+            <path
+              d="M516.4544 341.8624c-194.7648 0-360.5504 100.7616-422.9632 241.7152 53.0944 119.8592 180.992 210.688 337.92 235.1104l55.5008 97.0752c12.7488 22.3232 45.2096 21.7088 57.088-1.1264l49.2032-94.72c160.7168-22.4768 292.2496-114.3808 346.2656-236.3904-62.5152-140.9024-228.2496-241.664-423.0144-241.664z"
+              fill="''' + getColor(2, color, colors, '#dd6d6a') + '''"
+            />
+            <path
+              d="M516.4544 465.664c-164.864 0-308.8896 72.192-387.1232 179.8144 64.4096 88.576 173.4656 153.1392 302.0288 173.1584l55.5008 97.0752c12.7488 22.3232 45.2096 21.7088 57.088-1.1264l49.2032-94.72c132.1472-18.4832 244.5824-83.8656 310.4256-174.336-78.2336-107.6224-222.2592-179.8656-387.1232-179.8656z"
+              fill="''' + getColor(3, color, colors, '#d45f5b') + '''"
+            />
+            <path
+              d="M486.8608 915.7632c12.7488 22.3232 45.2096 21.7088 57.088-1.1264l49.2032-94.72c99.6864-13.9264 188.1088-54.5792 253.7984-112.4864-82.1248-72.448-199.7824-117.8624-330.496-117.8624-130.7136 0-248.3712 45.4144-330.496 117.8624 63.8464 56.32 149.1968 96.3072 245.4016 111.3088l55.5008 97.024z"
+              fill="''' + getColor(4, color, colors, '#C34D49') + '''"
+            />
+            <path
+              d="M518.0416 275.712c-19.8144 0-35.84 16.0256-35.84 35.84v91.1872H382.2592V311.552c0-19.8144-16.0256-35.84-35.84-35.84s-35.84 16.0256-35.84 35.84v254.1056c0 19.8144 16.0256 35.84 35.84 35.84s35.84-16.0256 35.84-35.84V474.4192h99.9424v91.1872c0 19.8144 16.0256 35.84 35.84 35.84s35.84-16.0256 35.84-35.84V311.552c0-19.8144-16.0256-35.84-35.84-35.84zM665.7024 384.6144c-19.8144 0-35.84 16.0256-35.84 35.84v140.3392c0 19.8144 16.0256 35.84 35.84 35.84s35.84-16.0256 35.84-35.84V420.4544c0-19.8144-16.0768-35.84-35.84-35.84zM665.7024 349.3888c23.9616 0 43.4176-19.456 43.4176-43.4176 0-23.9616-19.456-43.4176-43.4176-43.4176-23.9616 0-43.4176 19.456-43.4176 43.4176 0 24.0128 19.4048 43.4176 43.4176 43.4176z"
+              fill="''' + getColor(5, color, colors, '#FFFFFF') + '''"
+            />
+          </svg>
+        ''';
+        break;
+      case IconNames.xuexizhongxin:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M909.6 221c-5-4.9-51.4-48-126.6-70-64.6-18.8-161.3-24.7-268.8 45.3-21.8-14.9-54.3-33.2-95.3-45.3-71.1-20.7-181.1-25.7-301.7 68.8C105.1 229.2 98 243.7 98 259v433.7c0 17.6 9.3 33.9 24.5 42.9 15.3 9 34 9.2 49.5 0.6 1.1-0.6 117.8-60.4 324.1 4 4.9 1.6 9.8 2.3 14.8 2.3h0.5c8.5 0.1 17.1-2 24.8-6.3 1.1-0.6 117.8-60.4 324.1 4 4.9 1.6 9.8 2.3 14.8 2.3 10.5 0 20.9-3.4 29.5-9.7 12.8-9.4 20.3-24.3 20.3-40.1V256.9c0-13.5-5.5-26.5-15.3-35.9zM461.1 627.7c-55.3-12.4-104.6-17.1-147.2-17.1-47.1 0-86.1 5.7-116.3 12.6v-339c62.7-43 126.5-55.9 189.7-38.6 32.9 9 58.6 24.5 73.8 35.2v346.9z m364.2 0c-55.3-12.4-104.6-17.1-147.2-17.1-47.1 0-86.1 5.7-116.3 12.6v-339c62.7-43 126.5-55.9 189.7-38.6 32.9 9 58.6 24.5 73.8 35.2v346.9z"
+              fill="''' + getColor(0, color, colors, '#ffffff') + '''"
+            />
+            <path
+              d="M924.2 850.6c-6.7 21.4-26.3 35-47.5 35-4.9 0-10-0.7-14.9-2.3-206.3-64.4-323-4.6-324.1-4-8.3 4.7-17.5 6.7-26.5 6.2-0.6 0.1-1.2 0.1-1.9 0.1-4.9 0-10-0.7-14.9-2.3-206.3-64.4-322.9-4.6-324.1-4-24 13.4-54.4 4.7-67.7-19.4-13.4-24-4.7-54.3 19.4-67.7 5.9-3.3 146-78.7 386.2-8.8 47.5-19.2 181.6-58.1 383.1 4.8 26.5 8.3 41.1 36.2 32.9 62.4z"
+              fill="''' + getColor(1, color, colors, '#ffffff') + '''"
+            />
+          </svg>
+        ''';
+        break;
       case IconNames.qiehuan:
         svgXml = '''
           <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">

@@ -49,31 +49,7 @@ class _MineDoctorTimePageState extends State<MineDoctorTimePage> {
         setState(() {
           lecturerTimesList = result.data!;
         });
-        List<Appointment> appointments = <Appointment>[];
-        List<CalendarResource> resources = <CalendarResource>[];
-        List.generate(lecturerTimesList.length, (index) {
-          appointments.add(Appointment(
-              startTime: DateTime.parse(lecturerTimesList[index].start_time),
-              endTime: DateTime.parse(lecturerTimesList[index].end_time),
-              isAllDay: false,
-              subject: lecturerTimesList[index].if_booked == 0 ? '未预约' : '已预约',
-              color: lecturerTimesList[index].if_booked == 0
-                  ? const Color.fromRGBO(45, 195, 174, 1)
-                  : Colors.pink,
-              startTimeZone: 'Asia/Shanghai',
-              endTimeZone: 'Asia/Shanghai',
-              location: 'Asia/Shanghai',
-              notes: 'Hello World',
-              id: lecturerTimesList[index]));
-
-          // resources.add(CalendarResource(
-          //     displayName: 'John', id: '0001', color: Colors.red));
-          // resources.add(CalendarResource(
-          //     displayName: 'Sgs', id: '0002', color: Colors.pink));
-        });
-        setState(() {
-          dataSource = DataSource(appointments, resources);
-        });
+        generateDataSource();
         completer.complete('success');
         hideLoading();
       } else {
@@ -89,57 +65,110 @@ class _MineDoctorTimePageState extends State<MineDoctorTimePage> {
     return completer.future;
   }
 
+  void generateDataSource() {
+    List<Appointment> appointments = <Appointment>[];
+    List<CalendarResource> resources = <CalendarResource>[];
+    List.generate(lecturerTimesList.length, (index) {
+      appointments.add(Appointment(
+          startTime: DateTime.parse(lecturerTimesList[index].start_time),
+          endTime: DateTime.parse(lecturerTimesList[index].end_time),
+          isAllDay: false,
+          subject: lecturerTimesList[index].if_booked == 0 ? '未预约' : '已预约',
+          color: lecturerTimesList[index].if_booked == 0
+              ? const Color.fromRGBO(45, 195, 174, 1)
+              : Colors.pink,
+          startTimeZone: 'Asia/Shanghai',
+          endTimeZone: 'Asia/Shanghai',
+          location: 'Asia/Shanghai',
+          notes: 'Hello World',
+          id: lecturerTimesList[index]));
+
+      // resources.add(CalendarResource(
+      //     displayName: 'John', id: '0001', color: Colors.red));
+      // resources.add(CalendarResource(
+      //     displayName: 'Sgs', id: '0002', color: Colors.pink));
+    });
+    setState(() {
+      dataSource = DataSource(appointments, resources);
+    });
+  }
+
   void handleEditTime(Appointment item) {
-    showBoardDateTimePicker(
-      initialDate: item.startTime,
-      context: context,
-      pickerType: DateTimePickerType.datetime,
-      options: BoardDateTimeOptions(
-          boardTitle:
-              '修改预约时间 ${DateFormat('MM-dd HH:mm').format(item.startTime)}',
-          pickerSubTitles: const BoardDateTimeItemTitles(
-              year: '年', month: '月', day: '日', hour: '时', minute: '分'),
-          backgroundDecoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: <Color>[
-                Colors.white,
-                Colors.white,
-              ],
-            ),
-          ),
-          languages: const BoardPickerLanguages(
-            locale: 'zh',
-            today: '今天',
-            tomorrow: '明天',
-            now: '现在',
-          )),
-    ).then((value) {
-      if (value != null) {
-        String formattedDateStart =
-            DateFormat('yyyy-MM-dd HH:mm:ss').format(value);
-        String formattedDateEnd = DateFormat('yyyy-MM-dd HH:mm:ss')
-            .format(value.add(const Duration(hours: 1)));
-        showLoading('请稍后...');
-        appointmentClientProvider.createLecturerTimeAction({
-          'start_time': formattedDateStart,
-          'end_time': formattedDateEnd
-        }).then((result) {
-          if (result.code == 200) {
-            loadInfo().then((resultIn) {
-              hideLoading();
-              showToast('预约时间已修改');
-            }).catchError((eIn) {
-              hideLoading();
-            });
-          } else {
-            hideLoading();
-            showToast(result.message);
-          }
-        }).catchError((e) {
-          hideLoading();
-          showToast('添加失败, 请稍后再试');
+    showLoading('请稍后...');
+    appointmentClientProvider
+        .getLecturerTimeByIdAction((item.id as LecturerTimeTypeModel).id)
+        .then((result) {
+      if (result.code == 200 && result.data != null) {
+        final LecturerTimeTypeModel lecturerTimeInfo = result.data!;
+        final int findIndex = lecturerTimesList
+            .indexWhere((element) => element.id == lecturerTimeInfo.id);
+        setState(() {
+          lecturerTimesList[findIndex] = lecturerTimeInfo;
         });
+        generateDataSource();
+        hideLoading();
+        if (lecturerTimeInfo.if_booked == 1) {
+          showToast('该时间段已被预约');
+          return;
+        }
+        showBoardDateTimePicker(
+          initialDate: item.startTime,
+          context: context,
+          pickerType: DateTimePickerType.datetime,
+          options: BoardDateTimeOptions(
+              boardTitle:
+                  '修改预约时间 ${DateFormat('MM-dd HH:mm').format(item.startTime)}',
+              pickerSubTitles: const BoardDateTimeItemTitles(
+                  year: '年', month: '月', day: '日', hour: '时', minute: '分'),
+              backgroundDecoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: <Color>[
+                    Colors.white,
+                    Colors.white,
+                  ],
+                ),
+              ),
+              languages: const BoardPickerLanguages(
+                locale: 'zh',
+                today: '今天',
+                tomorrow: '明天',
+                now: '现在',
+              )),
+        ).then((value) {
+          if (value != null) {
+            String formattedDateStart =
+                DateFormat('yyyy-MM-dd HH:mm:ss').format(value);
+            String formattedDateEnd = DateFormat('yyyy-MM-dd HH:mm:ss')
+                .format(value.add(const Duration(hours: 1)));
+            showLoading('请稍后...');
+            appointmentClientProvider.createLecturerTimeAction({
+              'start_time': formattedDateStart,
+              'end_time': formattedDateEnd
+            }).then((result) {
+              if (result.code == 200) {
+                loadInfo().then((resultIn) {
+                  hideLoading();
+                  showToast('预约时间已修改');
+                }).catchError((eIn) {
+                  hideLoading();
+                });
+              } else {
+                hideLoading();
+                showToast(result.message);
+              }
+            }).catchError((e) {
+              hideLoading();
+              showToast('添加失败, 请稍后再试');
+            });
+          }
+        });
+      } else {
+        showToast(result.message);
+        hideLoading();
       }
+    }).catchError((e) {
+      showToast('获取信息失败');
+      hideLoading();
     });
   }
 
@@ -407,151 +436,256 @@ class _MineDoctorTimePageState extends State<MineDoctorTimePage> {
   }
 
   void handleShowDeleteDialog(Appointment item) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-          return AlertDialog(
-            surfaceTintColor: const Color.fromRGBO(255, 255, 255, 1),
-            backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
-            shadowColor: Colors.transparent,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(8), // 设置顶部边缘为直角
-              ),
-            ),
-            title: null,
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(
-                  height: 12,
+    showLoading('请稍后...');
+    appointmentClientProvider
+        .getLecturerTimeByIdAction((item.id as LecturerTimeTypeModel).id)
+        .then((result) {
+      if (result.code == 200 && result.data != null) {
+        final LecturerTimeTypeModel lecturerTimeInfo = result.data!;
+        final int findIndex = lecturerTimesList
+            .indexWhere((element) => element.id == lecturerTimeInfo.id);
+        setState(() {
+          lecturerTimesList[findIndex] = lecturerTimeInfo;
+        });
+        generateDataSource();
+        hideLoading();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState) {
+              return AlertDialog(
+                surfaceTintColor: const Color.fromRGBO(255, 255, 255, 1),
+                backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
+                shadowColor: Colors.transparent,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(8), // 设置顶部边缘为直角
+                  ),
                 ),
-                Column(
+                title: null,
+                content: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      '您确定取消以下预约时间段吗?',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontWeight: FontWeight.normal),
-                    ),
                     const SizedBox(
-                      height: 4,
+                      height: 12,
                     ),
-                    Text(
-                      '${DateFormat('yyyy-MM-dd HH:mm').format(item.startTime)} - ${DateFormat('HH:mm').format(item.endTime)}',
-                      style: const TextStyle(
-                          color: Color.fromRGBO(0, 0, 0, 1),
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '您确定取消以下预约时间段吗?',
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal),
+                        ),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        Text(
+                          '${DateFormat('yyyy-MM-dd HH:mm').format(item.startTime)} - ${DateFormat('HH:mm').format(item.endTime)}',
+                          style: const TextStyle(
+                              color: Color.fromRGBO(0, 0, 0, 1),
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        lecturerTimeInfo.if_booked == 1
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(
+                                    height: 12,
+                                  ),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 18,
+                                        height: 18,
+                                        margin: const EdgeInsets.only(right: 4),
+                                        child: Center(
+                                          child: IconFont(
+                                            IconNames.jingshi,
+                                            size: 14,
+                                            color: 'rgb(255, 31, 47)',
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                          child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            '该时间段已被预约',
+                                            style: TextStyle(
+                                                color: Color.fromRGBO(
+                                                    255, 31, 47, 1),
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(
+                                            height: 4,
+                                          ),
+                                          lecturerTimeInfo.patient_course_info!
+                                                      .outer_cancel_num <
+                                                  1
+                                              ? Text(
+                                                  '当前系列课程剩余 ${1 - lecturerTimeInfo.patient_course_info!.outer_cancel_num} 次无责取消机会',
+                                                  style: const TextStyle(
+                                                      color: Color.fromRGBO(
+                                                          255, 31, 47, 1),
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )
+                                              : RichText(
+                                                  maxLines: 3,
+                                                  overflow: TextOverflow.clip,
+                                                  textAlign: TextAlign.left,
+                                                  text: const TextSpan(
+                                                    children: [
+                                                      TextSpan(
+                                                        text:
+                                                            '如您取消, 按约定您将额外承担一次该课程的直播',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Color.fromRGBO(
+                                                                    255,
+                                                                    31,
+                                                                    47,
+                                                                    1),
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      )
+                                                    ],
+                                                  )),
+                                        ],
+                                      ))
+                                    ],
+                                  )
+                                ],
+                              )
+                            : const SizedBox.shrink()
+                      ],
                     ),
+                    // const SizedBox(
+                    //   height: 12,
+                    // ),
+                    // Row(
+                    //   crossAxisAlignment: CrossAxisAlignment.start,
+                    //   children: [
+                    //     Container(
+                    //       width: 18,
+                    //       height: 18,
+                    //       margin: const EdgeInsets.only(right: 4),
+                    //       child: Center(
+                    //         child: IconFont(
+                    //           IconNames.jingshi,
+                    //           size: 14,
+                    //           color: '#000',
+                    //         ),
+                    //       ),
+                    //     ),
+                    //     Column(
+                    //       crossAxisAlignment: CrossAxisAlignment.start,
+                    //       children: [
+                    //         const Text('请确认您已阅读并悉知',
+                    //             style: TextStyle(
+                    //                 color: Colors.black,
+                    //                 fontSize: 14,
+                    //                 fontWeight: FontWeight.bold)),
+                    //         GestureDetector(
+                    //           onTap: handleGotoExplain,
+                    //           child: const Text('《 面对面康复课程预约时间说明 》',
+                    //               style: TextStyle(
+                    //                   decoration: TextDecoration.underline,
+                    //                   decorationThickness: 2,
+                    //                   decorationColor:
+                    //                       Color.fromRGBO(211, 66, 67, 1),
+                    //                   color: Color.fromRGBO(211, 66, 67, 1),
+                    //                   fontSize: 14,
+                    //                   fontWeight: FontWeight.bold)),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ],
+                    // )
                   ],
                 ),
-                // const SizedBox(
-                //   height: 12,
-                // ),
-                // Row(
-                //   crossAxisAlignment: CrossAxisAlignment.start,
-                //   children: [
-                //     Container(
-                //       width: 18,
-                //       height: 18,
-                //       margin: const EdgeInsets.only(right: 4),
-                //       child: Center(
-                //         child: IconFont(
-                //           IconNames.jingshi,
-                //           size: 14,
-                //           color: '#000',
-                //         ),
-                //       ),
-                //     ),
-                //     Column(
-                //       crossAxisAlignment: CrossAxisAlignment.start,
-                //       children: [
-                //         const Text('请确认您已阅读并悉知',
-                //             style: TextStyle(
-                //                 color: Colors.black,
-                //                 fontSize: 14,
-                //                 fontWeight: FontWeight.bold)),
-                //         GestureDetector(
-                //           onTap: handleGotoExplain,
-                //           child: const Text('《 面对面康复课程预约时间说明 》',
-                //               style: TextStyle(
-                //                   decoration: TextDecoration.underline,
-                //                   decorationThickness: 2,
-                //                   decorationColor:
-                //                       Color.fromRGBO(211, 66, 67, 1),
-                //                   color: Color.fromRGBO(211, 66, 67, 1),
-                //                   fontSize: 14,
-                //                   fontWeight: FontWeight.bold)),
-                //         ),
-                //       ],
-                //     ),
-                //   ],
-                // )
-              ],
-            ),
-            actions: <Widget>[
-              SizedBox(
-                height: 32,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                      padding: MaterialStateProperty.all<EdgeInsets>(
-                          const EdgeInsets.fromLTRB(12, 0, 12, 0)),
-                      backgroundColor: MaterialStateProperty.all(Colors.black),
-                      shape: MaterialStateProperty.all(
-                          const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(4)),
-                              side:
-                                  BorderSide(color: Colors.black, width: 1)))),
-                  onPressed: () {
-                    // 点击确认按钮时执行的操作
-                    Navigator.of(context).pop();
-                    // 在这里执行你的操作
-                    handleConfirmDeleteTime(item);
-                  },
-                  child: const Text(
-                    '确认',
-                    style: TextStyle(color: Colors.white, fontSize: 14),
+                actions: <Widget>[
+                  SizedBox(
+                    height: 32,
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          padding: MaterialStateProperty.all<EdgeInsets>(
+                              const EdgeInsets.fromLTRB(12, 0, 12, 0)),
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.black),
+                          shape: MaterialStateProperty.all(
+                              const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(4)),
+                                  side: BorderSide(
+                                      color: Colors.black, width: 1)))),
+                      onPressed: () {
+                        // 点击确认按钮时执行的操作
+                        Navigator.of(context).pop();
+                        // 在这里执行你的操作
+                        handleConfirmDeleteTime(item);
+                      },
+                      child: Text(
+                        lecturerTimeInfo.if_booked == 1 ? '我已知悉并确认' : '确认',
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 14),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              SizedBox(
-                height: 32,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                      padding: MaterialStateProperty.all<EdgeInsets>(
-                          const EdgeInsets.all(0)),
-                      backgroundColor: MaterialStateProperty.all(Colors.white),
-                      shape: MaterialStateProperty.all(
-                          const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(4)),
-                              side: BorderSide(
-                                  color: Color.fromRGBO(0, 0, 0, 1),
-                                  width: 1)))),
-                  onPressed: () {
-                    // 点击确认按钮时执行的操作
-                    Navigator.of(context).pop();
-                    // 在这里执行你的操作
-                  },
-                  child: const Text(
-                    '取消',
-                    style: TextStyle(color: Colors.black, fontSize: 14),
+                  SizedBox(
+                    height: 32,
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          padding: MaterialStateProperty.all<EdgeInsets>(
+                              const EdgeInsets.all(0)),
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.white),
+                          shape: MaterialStateProperty.all(
+                              const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(4)),
+                                  side: BorderSide(
+                                      color: Color.fromRGBO(0, 0, 0, 1),
+                                      width: 1)))),
+                      onPressed: () {
+                        // 点击确认按钮时执行的操作
+                        Navigator.of(context).pop();
+                        // 在这里执行你的操作
+                      },
+                      child: const Text(
+                        '取消',
+                        style: TextStyle(color: Colors.black, fontSize: 14),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
-          );
-        });
-      },
-    );
+                ],
+              );
+            });
+          },
+        );
+      } else {
+        showToast(result.message);
+        hideLoading();
+      }
+    }).catchError((e) {
+      showToast('获取信息失败, 请稍后再试');
+      hideLoading();
+    });
   }
 
   void handleConfirmDeleteTime(Appointment item) {
@@ -672,7 +806,8 @@ class _MineDoctorTimePageState extends State<MineDoctorTimePage> {
                 child: SfCalendar(
                   controller: _calendarController,
                   allowAppointmentResize: false,
-                  resourceViewSettings: ResourceViewSettings(showAvatar: false),
+                  resourceViewSettings:
+                      const ResourceViewSettings(showAvatar: false),
                   dataSource: dataSource,
                   todayHighlightColor: const Color.fromRGBO(211, 66, 67, 1),
                   todayTextStyle:
@@ -788,23 +923,31 @@ class _MineDoctorTimePageState extends State<MineDoctorTimePage> {
                                         bottom: 0,
                                         child: Row(
                                           children: [
-                                            Container(
-                                              width: 24,
-                                              height: 24,
-                                              color: Colors.transparent,
-                                              child: InkWell(
-                                                onTap: () => handleEditTime(
-                                                    detail.appointments
-                                                        .toList()[index]),
-                                                child: Center(
-                                                  child: IconFont(
-                                                    IconNames.bianji,
-                                                    size: 20,
-                                                    color: '#fff',
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
+                                            (detail.appointments
+                                                                .toList()[index]
+                                                                .id
+                                                            as LecturerTimeTypeModel)
+                                                        .if_booked ==
+                                                    0
+                                                ? Container(
+                                                    width: 24,
+                                                    height: 24,
+                                                    color: Colors.transparent,
+                                                    child: InkWell(
+                                                      onTap: () =>
+                                                          handleEditTime(detail
+                                                              .appointments
+                                                              .toList()[index]),
+                                                      child: Center(
+                                                        child: IconFont(
+                                                          IconNames.bianji,
+                                                          size: 20,
+                                                          color: '#fff',
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  )
+                                                : const SizedBox.shrink(),
                                             Container(
                                               width: 24,
                                               height: 24,
@@ -863,28 +1006,33 @@ class _MineDoctorTimePageState extends State<MineDoctorTimePage> {
                                     ),
                                     Row(
                                       children: [
+                                        ((detail.appointments.toList()[index].id
+                                                        as LecturerTimeTypeModel)
+                                                    .if_booked ==
+                                                0
+                                            ? Container(
+                                                width: 20,
+                                                height: 20,
+                                                margin: const EdgeInsets.only(
+                                                    right: 6),
+                                                color: Colors.transparent,
+                                                child: InkWell(
+                                                  onTap: () => handleEditTime(
+                                                      detail.appointments
+                                                          .toList()[index]),
+                                                  child: Center(
+                                                    child: IconFont(
+                                                      IconNames.bianji,
+                                                      size: 20,
+                                                      color: '#fff',
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            : const SizedBox.shrink()),
                                         Container(
                                           width: 20,
                                           height: 20,
-                                          color: Colors.transparent,
-                                          child: InkWell(
-                                            onTap: () => handleEditTime(detail
-                                                .appointments
-                                                .toList()[index]),
-                                            child: Center(
-                                              child: IconFont(
-                                                IconNames.bianji,
-                                                size: 20,
-                                                color: '#fff',
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          width: 20,
-                                          height: 20,
-                                          margin:
-                                              const EdgeInsets.only(left: 6),
                                           color: Colors.transparent,
                                           child: InkWell(
                                             onTap: () => handleShowDeleteDialog(

@@ -11,6 +11,7 @@ import '../../controllers/user_controller.dart';
 import '../../providers/api/pain_client_provider.dart';
 import '../../providers/api/user_client_provider.dart';
 import '../../providers/api/store_client_provider.dart';
+import '../../providers/api/appointment_client_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import './menus/mine_record_menu.dart';
 import './menus/mine_live_course_order_menu.dart';
@@ -36,6 +37,8 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
   final UserClientProvider userClientProvider = Get.put(UserClientProvider());
   final StoreClientProvider storeClientProvider =
       Get.put(StoreClientProvider());
+  final AppointmentClientProvider appointmentClientProvider =
+      Get.put(AppointmentClientProvider());
 
   late AnimationController _animationController;
   late Animation<Color?> _colorTween;
@@ -185,6 +188,34 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
     return completer.future;
   }
 
+  //面对面康复订单信息
+  int learningCounts = 0;
+  int finishCounts = 0;
+
+  Future<int?> loadLearningCounts(String userId) {
+    Completer<int?> completer = Completer();
+    appointmentClientProvider
+        .getPatientCoursesPaginationAction(userId: userId, status: 1)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<int?> loadFinishCounts(String userId) {
+    Completer<int?> completer = Completer();
+    appointmentClientProvider
+        .getPatientCoursesPaginationAction(userId: userId, status: 2)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
   Future<String?> loadInfos() async {
     Completer<String?> completer = Completer();
     if (userController.token.isNotEmpty) {
@@ -262,6 +293,29 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
           equipmentShippingCounts = results[1] ?? 0;
           equipmentReceivedCounts = results[2] ?? 0;
           equipmentCanceledCounts = results[3] ?? 0;
+        });
+      });
+    }).then((value) {
+      completer.complete('success');
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<String?> loadPatientCourseOrderCounts() async {
+    Completer<String?> completer = Completer();
+    Future.delayed(const Duration(milliseconds: 100), () async {
+      final String? userId = await checkUserId();
+
+      // 等待所有异步任务完成
+      final List<int?> results = await Future.wait(
+          [loadLearningCounts(userId!), loadFinishCounts(userId)]);
+
+      results.asMap().forEach((index, value) {
+        setState(() {
+          learningCounts = results[0] ?? 0;
+          finishCounts = results[1] ?? 0;
         });
       });
     }).then((value) {
@@ -393,7 +447,12 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
 
   void _onRefresh() async {
     // monitor network fetch
-    Future.wait([loadCounts(), loadInfos(), loadEquipmentOrderCounts()]);
+    Future.wait([
+      loadCounts(),
+      loadInfos(),
+      loadEquipmentOrderCounts(),
+      loadPatientCourseOrderCounts()
+    ]);
     _refreshController.refreshCompleted();
     _refreshController.loadComplete();
     // if failed,use refreshFailed()
@@ -1081,7 +1140,10 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
                                             height: 12,
                                           ),
                                           //面对面康复订单
-                                          const MineLiveCourseOrderMenu(),
+                                          MineLiveCourseOrderMenu(
+                                            learningCounts: learningCounts,
+                                            finishCounts: finishCounts,
+                                          ),
                                           const SizedBox(
                                             height: 12,
                                           ),

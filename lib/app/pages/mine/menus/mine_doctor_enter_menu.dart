@@ -37,9 +37,9 @@ class _MineDoctorEnterMenuState extends State<MineDoctorEnterMenu> {
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                     colors: [
-                      Color.fromRGBO(211, 66, 67, 1),
-                      Color.fromRGBO(211, 66, 67, 0.8),
-                      Color.fromRGBO(211, 66, 67, 0.7)
+                      Color.fromRGBO(0, 0, 0, 1),
+                      Color.fromRGBO(0, 0, 0, 0.9),
+                      Color.fromRGBO(0, 0, 0, 0.8)
                     ], // 渐变的起始和结束颜色
                   )),
               child: Row(
@@ -49,13 +49,13 @@ class _MineDoctorEnterMenuState extends State<MineDoctorEnterMenu> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Container(
-                        width: 24,
-                        height: 24,
+                        width: 20,
+                        height: 20,
                         margin: const EdgeInsets.only(right: 12),
                         child: Center(
                           child: IconFont(
                             IconNames.doctor_enter,
-                            size: 24,
+                            size: 20,
                             color: 'rgb(255, 255, 255)',
                           ),
                         ),

@@ -4,7 +4,11 @@ import '../../../../iconfont/icon_font.dart';
 import '../../../controllers/user_controller.dart';
 
 class MineLiveCourseOrderMenu extends StatefulWidget {
-  const MineLiveCourseOrderMenu({super.key});
+  const MineLiveCourseOrderMenu(
+      {super.key, required this.learningCounts, required this.finishCounts});
+
+  final int learningCounts;
+  final int finishCounts;
 
   @override
   State<MineLiveCourseOrderMenu> createState() =>
@@ -13,6 +17,10 @@ class MineLiveCourseOrderMenu extends StatefulWidget {
 
 class _MineLiveCourseOrderMenuState extends State<MineLiveCourseOrderMenu> {
   final UserController userController = Get.put(UserController());
+
+  void handleGotoPatientCoursePage() {
+    Get.toNamed('/center');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,119 +67,130 @@ class _MineLiveCourseOrderMenuState extends State<MineLiveCourseOrderMenu> {
               )
             ],
           ),
-          const SizedBox(
-            height: 12,
-          ),
-          Row(
+          Stack(
             children: [
-              SizedBox(
-                width: (mediaQuerySizeInfo.width - 24 - 24) / 4,
-                height: 54,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 6),
-                      width: 24,
-                      height: 24,
-                      child: Center(
-                        child: IconFont(
-                          IconNames.daixuexi,
-                          size: 24,
-                          color: 'rgb(0, 0, 0)',
+              Column(
+                children: [
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: handleGotoPatientCoursePage,
+                        child: Container(
+                          width: (mediaQuerySizeInfo.width - 24 - 24) / 4,
+                          height: 54,
+                          color: Colors.transparent,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 6),
+                                width: 24,
+                                height: 24,
+                                child: Center(
+                                  child: IconFont(
+                                    IconNames.xuexizhong,
+                                    size: 24,
+                                    color: 'rgb(0, 0, 0)',
+                                  ),
+                                ),
+                              ),
+                              const Text('学习中',
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.normal))
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    const Text('待学习',
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 13,
-                            fontWeight: FontWeight.normal))
-                  ],
-                ),
+                      Container(
+                        width: (mediaQuerySizeInfo.width - 24 - 24) / 4,
+                        height: 54,
+                        color: Colors.transparent,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 6),
+                              width: 24,
+                              height: 24,
+                              child: Center(
+                                child: IconFont(
+                                  IconNames.yiwancheng,
+                                  size: 24,
+                                  color: 'rgb(0, 0, 0)',
+                                ),
+                              ),
+                            ),
+                            const Text('已完成',
+                                style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.normal))
+                          ],
+                        ),
+                      )
+                    ],
+                  )
+                ],
               ),
-              SizedBox(
-                width: (mediaQuerySizeInfo.width - 24 - 24) / 4,
-                height: 54,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 6),
-                      width: 24,
-                      height: 24,
-                      child: Center(
-                        child: IconFont(
-                          IconNames.yiyuyue,
-                          size: 24,
-                          color: 'rgb(0, 0, 0)',
+              (widget.learningCounts >= 0
+                  ? Positioned(
+                      top: 4,
+                      left: ((mediaQuerySizeInfo.width - 24 - 24) / 4) / 2 +
+                          10 +
+                          ((mediaQuerySizeInfo.width - 24 - 24) / 4) * 0,
+                      child: GestureDetector(
+                        child: Container(
+                          width: 24,
+                          height: 24,
+                          decoration: const BoxDecoration(
+                              color: Color.fromRGBO(249, 81, 84, 1),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(24))),
+                          child: Center(
+                            child: Text(
+                              '${widget.learningCounts > 99 ? '99+' : widget.learningCounts}',
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    const Text('已预约',
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 13,
-                            fontWeight: FontWeight.normal))
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: (mediaQuerySizeInfo.width - 24 - 24) / 4,
-                height: 54,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 6),
-                      width: 24,
-                      height: 24,
-                      child: Center(
-                        child: IconFont(
-                          IconNames.xuexizhong,
-                          size: 24,
-                          color: 'rgb(0, 0, 0)',
+                      ))
+                  : const SizedBox.shrink()),
+              (widget.finishCounts >= 0
+                  ? Positioned(
+                      top: 4,
+                      left: ((mediaQuerySizeInfo.width - 24 - 24) / 4) / 2 +
+                          10 +
+                          ((mediaQuerySizeInfo.width - 24 - 24) / 4) * 1,
+                      child: GestureDetector(
+                        child: Container(
+                          width: 24,
+                          height: 24,
+                          decoration: const BoxDecoration(
+                              color: Color.fromRGBO(249, 81, 84, 1),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(24))),
+                          child: Center(
+                            child: Text(
+                              '${widget.finishCounts > 99 ? '99+' : widget.finishCounts}',
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    const Text('学习中',
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 13,
-                            fontWeight: FontWeight.normal))
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: (mediaQuerySizeInfo.width - 24 - 24) / 4,
-                height: 54,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 6),
-                      width: 24,
-                      height: 24,
-                      child: Center(
-                        child: IconFont(
-                          IconNames.yiwancheng,
-                          size: 24,
-                          color: 'rgb(0, 0, 0)',
-                        ),
-                      ),
-                    ),
-                    const Text('已完成',
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 13,
-                            fontWeight: FontWeight.normal))
-                  ],
-                ),
-              )
+                      ))
+                  : const SizedBox.shrink())
             ],
           )
         ],
