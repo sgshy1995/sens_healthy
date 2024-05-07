@@ -1,5 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../iconfont/icon_font.dart';
+import '../../controllers/user_controller.dart';
+import '../../providers/api/store_client_provider.dart';
+import '../../providers/api/appointment_client_provider.dart';
+import '../../providers/api/major_client_provider.dart';
+import '../../controllers/store_controller.dart';
 import './pain_question.dart';
 import './pain_consult.dart';
 import '../../../components/keep_alive_wrapper.dart';
@@ -11,7 +19,7 @@ class PainPage extends StatefulWidget {
   const PainPage({super.key});
 
   @override
-  _PainPageState createState() => _PainPageState();
+  State<PainPage> createState() => _PainPageState();
 }
 
 class _PainPageState extends State<PainPage>
@@ -20,6 +28,14 @@ class _PainPageState extends State<PainPage>
       GlobalKey<PainQuestionPageState>();
   final GlobalKey<PainConsultPageState> _painConsultPageState =
       GlobalKey<PainConsultPageState>();
+  final UserController userController = Get.put(UserController());
+  final StoreController storeController = Get.put(StoreController());
+  final StoreClientProvider storeClientProvider =
+      Get.put(StoreClientProvider());
+  final AppointmentClientProvider appointmentClientProvider =
+      Get.put(AppointmentClientProvider());
+  final MajorClientProvider majorClientProvider =
+      Get.put(MajorClientProvider());
 
   late TabController _tabController;
   double _opacity = 1.0; // 初始透明度
@@ -30,6 +46,7 @@ class _PainPageState extends State<PainPage>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabSelection);
+    loadGlobalDatas();
   }
 
   @override
@@ -55,7 +72,6 @@ class _PainPageState extends State<PainPage>
 
   void _handleTabSelection() {
     // 在这里处理标签的点击事件
-    print('Tab index: ${_tabController.index}');
     //scrollToTop();
   }
 
@@ -115,6 +131,171 @@ class _PainPageState extends State<PainPage>
   //   );
   // }
 
+  Future<int?> loadEquipmentWaitCounts(String userId) {
+    Completer<int?> completer = Completer();
+    storeClientProvider
+        .findManyEquipmentOrdersWithPaginationAction(userId: userId, status: 2)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<int?> loadEquipmentShippingCounts(String userId) {
+    Completer<int?> completer = Completer();
+    storeClientProvider
+        .findManyEquipmentOrdersWithPaginationAction(userId: userId, status: 3)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<int?> loadEquipmentReceivedCounts(String userId) {
+    Completer<int?> completer = Completer();
+    storeClientProvider
+        .findManyEquipmentOrdersWithPaginationAction(userId: userId, status: 4)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<int?> loadEquipmentCanceledCounts(String userId) {
+    Completer<int?> completer = Completer();
+    storeClientProvider
+        .findManyEquipmentOrdersWithPaginationAction(userId: userId, status: 0)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<int?> loadLearningCounts(String userId) {
+    Completer<int?> completer = Completer();
+    appointmentClientProvider
+        .getPatientCoursesPaginationAction(userId: userId, status: 1)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<int?> loadMajorCourseCounts(String userId) {
+    Completer<int?> completer = Completer();
+    majorClientProvider
+        .findManyMajorCoursesAction(userId: userId)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<String?> checkUserId() async {
+    Completer<String?> completer = Completer();
+    if (userController.userInfo.id.isEmpty) {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String? userId = prefs.getString('user_id');
+      if (userId != null) {
+        completer.complete(userId);
+      } else {
+        completer.completeError('error');
+      }
+    } else {
+      completer.complete(userController.userInfo.id);
+    }
+    return completer.future;
+  }
+
+  Future<String?> loadEquipmentOrderCounts() async {
+    Completer<String?> completer = Completer();
+    Future.delayed(const Duration(milliseconds: 100), () async {
+      final String? userId = await checkUserId();
+
+      // 等待所有异步任务完成
+      final List<int?> results = await Future.wait([
+        loadEquipmentWaitCounts(userId!),
+        loadEquipmentShippingCounts(userId),
+        loadEquipmentReceivedCounts(userId),
+        loadEquipmentCanceledCounts(userId)
+      ]);
+
+      results.asMap().forEach((index, value) {
+        storeController.setStoreEquipmentWaitCounts(results[0] ?? 0);
+        storeController.setStoreEquipmentShippingCounts(results[1] ?? 0);
+        storeController.setStoreEquipmentReceivedCounts(results[2] ?? 0);
+        storeController.setStoreEquipmentCanceledCounts(results[3] ?? 0);
+      });
+    }).then((value) {
+      completer.complete('success');
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<String?> loadPatientCourseOrderCounts() async {
+    Completer<String?> completer = Completer();
+    Future.delayed(const Duration(milliseconds: 100), () async {
+      final String? userId = await checkUserId();
+
+      // 等待所有异步任务完成
+      final List<int?> results =
+          await Future.wait([loadLearningCounts(userId!)]);
+      storeController.setLearningCounts(results[0] ?? 0);
+    }).then((value) {
+      completer.complete('success');
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<String?> loadMajorCourseOrderCounts() async {
+    Completer<String?> completer = Completer();
+    Future.delayed(const Duration(milliseconds: 100), () async {
+      final String? userId = await checkUserId();
+
+      // 等待所有异步任务完成
+      final List<int?> results =
+          await Future.wait([loadMajorCourseCounts(userId!)]);
+
+      storeController.setMajorCourseCounts(results[0] ?? 0);
+    }).then((value) {
+      completer.complete('success');
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  void loadGlobalDatas() {
+    Future.wait([
+      loadEquipmentOrderCounts(),
+      loadPatientCourseOrderCounts(),
+      loadMajorCourseOrderCounts()
+    ]);
+  }
+
+  void handleGotoEquipmentOrderPage() {
+    Get.toNamed('/mine_equipment_order', arguments: {'initialIndex': 0})!
+        .then((value) {
+      loadEquipmentOrderCounts();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final EdgeInsets mediaQuerySafeInfo = MediaQuery.of(context).padding;
@@ -149,100 +330,146 @@ class _PainPageState extends State<PainPage>
                   visible: true,
                   child: Column(
                     children: [
-                      Container(
-                        height: 36 + mediaQuerySafeInfo.top + 12,
-                        color: const Color.fromRGBO(255, 255, 255, 1),
-                        child: AnimatedOpacity(
-                          opacity: _opacity,
-                          duration: const Duration(milliseconds: 30),
-                          curve: Curves.linear, // 指定渐变方式
-                          child: Container(
+                      Stack(
+                        children: [
+                          Container(
                             height: 36 + mediaQuerySafeInfo.top + 12,
-                            padding: EdgeInsets.fromLTRB(
-                                12, mediaQuerySafeInfo.top + 12, 12, 0),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              border: Border(
-                                bottom: BorderSide(
-                                  color: Color.fromRGBO(
-                                      243, 243, 244, 1), // 底部边框颜色
-                                  width: 0, // 底部边框宽度
+                            color: const Color.fromRGBO(255, 255, 255, 1),
+                            child: AnimatedOpacity(
+                              opacity: _opacity,
+                              duration: const Duration(milliseconds: 30),
+                              curve: Curves.linear, // 指定渐变方式
+                              child: Container(
+                                height: 36 + mediaQuerySafeInfo.top + 12,
+                                padding: EdgeInsets.fromLTRB(
+                                    12, mediaQuerySafeInfo.top + 12, 12, 0),
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: Color.fromRGBO(
+                                          243, 243, 244, 1), // 底部边框颜色
+                                      width: 0, // 底部边框宽度
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                    child: Container(
-                                  height: 36,
-                                  padding:
-                                      const EdgeInsets.fromLTRB(12, 0, 12, 0),
-                                  decoration: const BoxDecoration(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(8)),
-                                      color: Color.fromRGBO(233, 234, 235, 1)),
-                                  child: GestureDetector(
-                                    onTap: handleGoToSearch,
-                                    child: Row(
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                        child: Container(
+                                      height: 36,
+                                      padding: const EdgeInsets.fromLTRB(
+                                          12, 0, 12, 0),
+                                      decoration: const BoxDecoration(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(8)),
+                                          color:
+                                              Color.fromRGBO(233, 234, 235, 1)),
+                                      child: GestureDetector(
+                                        onTap: handleGoToSearch,
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              width: 18,
+                                              height: 18,
+                                              margin: const EdgeInsets.only(
+                                                  right: 12),
+                                              child: Center(
+                                                child: IconFont(
+                                                  IconNames.sousuo,
+                                                  size: 18,
+                                                  color: 'rgb(75,77,81)',
+                                                ),
+                                              ),
+                                            ),
+                                            const Expanded(
+                                                child: Text(
+                                              '搜索话题 / 问答 ...',
+                                              style: TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      75, 77, 81, 1),
+                                                  fontSize: 14),
+                                            ))
+                                          ],
+                                        ),
+                                      ),
+                                    )),
+                                    Row(
                                       children: [
-                                        Container(
-                                          width: 18,
-                                          height: 18,
-                                          margin:
-                                              const EdgeInsets.only(right: 12),
-                                          child: Center(
-                                            child: IconFont(
-                                              IconNames.sousuo,
-                                              size: 18,
-                                              color: 'rgb(75,77,81)',
+                                        GestureDetector(
+                                          onTap: handleGotoEquipmentOrderPage,
+                                          child: Container(
+                                            width: 24,
+                                            height: 24,
+                                            color: Colors.transparent,
+                                            margin: const EdgeInsets.only(
+                                                right: 12, left: 18),
+                                            child: Center(
+                                              child: IconFont(
+                                                IconNames.kabao,
+                                                size: 20,
+                                                color: 'rgb(0,0,0)',
+                                              ),
                                             ),
                                           ),
                                         ),
-                                        const Expanded(
-                                            child: Text(
-                                          '搜索话题 / 问答 ...',
-                                          style: TextStyle(
-                                              color:
-                                                  Color.fromRGBO(75, 77, 81, 1),
-                                              fontSize: 14),
-                                        ))
+                                        Container(
+                                          width: 24,
+                                          height: 24,
+                                          margin:
+                                              const EdgeInsets.only(right: 6),
+                                          child: Center(
+                                            child: IconFont(
+                                              IconNames.xiaoxizhongxin,
+                                              size: 20,
+                                              color: 'rgb(0,0,0)',
+                                            ),
+                                          ),
+                                        )
                                       ],
-                                    ),
-                                  ),
-                                )),
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 24,
-                                      height: 24,
-                                      margin: const EdgeInsets.only(
-                                          right: 12, left: 18),
-                                      child: Center(
-                                        child: IconFont(
-                                          IconNames.kabao,
-                                          size: 20,
-                                          color: 'rgb(0,0,0)',
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      width: 24,
-                                      height: 24,
-                                      margin: const EdgeInsets.only(right: 6),
-                                      child: Center(
-                                        child: IconFont(
-                                          IconNames.xiaoxizhongxin,
-                                          size: 20,
-                                          color: 'rgb(0,0,0)',
-                                        ),
-                                      ),
                                     )
                                   ],
-                                )
-                              ],
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+                          GetBuilder<StoreController>(builder: (controller) {
+                            return ((controller.equipmentWaitCounts +
+                                        controller.equipmentShippingCounts) >=
+                                    0
+                                ? Positioned(
+                                    top: mediaQuerySafeInfo.top + 8,
+                                    right: 42,
+                                    child: AnimatedOpacity(
+                                      opacity: _opacity,
+                                      duration:
+                                          const Duration(milliseconds: 30),
+                                      curve: Curves.linear, // 指定渐变方式
+                                      child: GestureDetector(
+                                        onTap: handleGotoEquipmentOrderPage,
+                                        child: Container(
+                                          width: 24,
+                                          height: 24,
+                                          decoration: const BoxDecoration(
+                                              color: Color.fromRGBO(
+                                                  249, 81, 84, 1),
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(24))),
+                                          child: Center(
+                                            child: Text(
+                                              '${(controller.equipmentWaitCounts + controller.equipmentShippingCounts) > 99 ? '99+' : (controller.equipmentWaitCounts + controller.equipmentShippingCounts)}',
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ))
+                                : const SizedBox.shrink());
+                          })
+                        ],
                       ),
                       Container(
                         height: 50, // TabBar高度

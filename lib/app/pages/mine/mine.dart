@@ -8,6 +8,7 @@ import '../../../components/gallery_photo_view_item.dart';
 import '../../../iconfont/icon_font.dart';
 import '../../controllers/global_controller.dart';
 import '../../controllers/user_controller.dart';
+import '../../controllers/store_controller.dart';
 import '../../providers/api/pain_client_provider.dart';
 import '../../providers/api/user_client_provider.dart';
 import '../../providers/api/store_client_provider.dart';
@@ -34,6 +35,7 @@ class MinePage extends StatefulWidget {
 class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
   final UserController userController = Get.put(UserController());
   final GlobalController globalController = Get.put(GlobalController());
+  final StoreController storeController = Get.put(StoreController());
   final PainClientProvider painClientProvider = Get.put(PainClientProvider());
   final UserClientProvider userClientProvider = Get.put(UserClientProvider());
   final StoreClientProvider storeClientProvider =
@@ -276,13 +278,11 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
         loadMyLikeCounts(userId)
       ]);
 
-      results.asMap().forEach((index, value) {
-        setState(() {
-          myAskCounts = results[0] ?? 0;
-          myReplyCounts = results[1] ?? 0;
-          myCollectCounts = results[2] ?? 0;
-          myLikeCounts = results[3] ?? 0;
-        });
+      setState(() {
+        myAskCounts = results[0] ?? 0;
+        myReplyCounts = results[1] ?? 0;
+        myCollectCounts = results[2] ?? 0;
+        myLikeCounts = results[3] ?? 0;
       });
     }).then((value) {
       completer.complete('success');
@@ -305,14 +305,16 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
         loadEquipmentCanceledCounts(userId)
       ]);
 
-      results.asMap().forEach((index, value) {
-        setState(() {
-          equipmentWaitCounts = results[0] ?? 0;
-          equipmentShippingCounts = results[1] ?? 0;
-          equipmentReceivedCounts = results[2] ?? 0;
-          equipmentCanceledCounts = results[3] ?? 0;
-        });
+      setState(() {
+        equipmentWaitCounts = results[0] ?? 0;
+        equipmentShippingCounts = results[1] ?? 0;
+        equipmentReceivedCounts = results[2] ?? 0;
+        equipmentCanceledCounts = results[3] ?? 0;
       });
+      storeController.setStoreEquipmentWaitCounts(results[0] ?? 0);
+      storeController.setStoreEquipmentShippingCounts(results[1] ?? 0);
+      storeController.setStoreEquipmentReceivedCounts(results[2] ?? 0);
+      storeController.setStoreEquipmentCanceledCounts(results[3] ?? 0);
     }).then((value) {
       completer.complete('success');
     }).catchError((e) {
@@ -329,13 +331,11 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
       // 等待所有异步任务完成
       final List<int?> results = await Future.wait(
           [loadLearningCounts(userId!), loadFinishCounts(userId)]);
-
-      results.asMap().forEach((index, value) {
-        setState(() {
-          learningCounts = results[0] ?? 0;
-          finishCounts = results[1] ?? 0;
-        });
+      setState(() {
+        learningCounts = results[0] ?? 0;
+        finishCounts = results[1] ?? 0;
       });
+      storeController.setLearningCounts(results[0] ?? 0);
     }).then((value) {
       completer.complete('success');
     }).catchError((e) {
@@ -353,11 +353,10 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
       final List<int?> results =
           await Future.wait([loadMajorCourseCounts(userId!)]);
 
-      results.asMap().forEach((index, value) {
-        setState(() {
-          majorCourseCounts = results[0] ?? 0;
-        });
+      setState(() {
+        majorCourseCounts = results[0] ?? 0;
       });
+      storeController.setMajorCourseCounts(results[0] ?? 0);
     }).then((value) {
       completer.complete('success');
     }).catchError((e) {

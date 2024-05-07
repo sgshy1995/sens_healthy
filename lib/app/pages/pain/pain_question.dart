@@ -8,6 +8,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:sens_healthy/app/models/data_model.dart';
 import 'package:sens_healthy/components/toast.dart';
 import '../../../iconfont/icon_font.dart';
+import '../../controllers/store_controller.dart';
 import '../../providers/api/pain_client_provider.dart';
 import '../../models/pain_model.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -37,6 +38,7 @@ class PainQuestionPageState extends State<PainQuestionPage>
   final PainClientProvider painClientProvider = Get.put(PainClientProvider());
   final GlobalController globalController = Get.put(GlobalController());
   final UserController userController = Get.put(UserController());
+  final StoreController storeController = Get.put(StoreController());
 
   void scrollToTop() {
     _scrollController.animateTo(
@@ -342,6 +344,10 @@ class PainQuestionPageState extends State<PainQuestionPage>
 
   void handleGoToDetail(String questionId) {
     Get.toNamed('/pain_question_detail', arguments: {'questionId': questionId});
+  }
+
+  void handleGoToCenterPage() {
+    Get.toNamed('/center');
   }
 
   Widget buildHeader(BuildContext context, RefreshStatus? mode) {
@@ -871,85 +877,102 @@ class PainQuestionPageState extends State<PainQuestionPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                              width: itemWidth,
-                              height: itemHeight,
-                              decoration: const BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8))),
-                              child: Stack(
-                                children: [
-                                  Center(
-                                    child: ClipRRect(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(8)),
-                                      child: Image.asset(
-                                        'assets/images/pain_item_1.png',
-                                        fit: BoxFit.fitWidth,
-                                        width: itemWidth,
-                                        height: itemHeight,
+                            GestureDetector(
+                              onTap: handleGoToCenterPage,
+                              child: Container(
+                                width: itemWidth,
+                                height: itemHeight,
+                                decoration: const BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(8)),
+                                    color: Colors.transparent),
+                                child: Stack(
+                                  children: [
+                                    Center(
+                                      child: ClipRRect(
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(8)),
+                                        child: Image.asset(
+                                          'assets/images/pain_item_1.png',
+                                          fit: BoxFit.fitWidth,
+                                          width: itemWidth,
+                                          height: itemHeight,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  Positioned(
-                                      child: Container(
-                                    decoration: const BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            Color.fromRGBO(0, 0, 0, 0.4),
-                                            Color.fromRGBO(0, 0, 0, 0.6),
-                                            Color.fromRGBO(0, 0, 0, 0.7)
-                                          ], // 渐变的起始和结束颜色
-                                        ),
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(8))),
-                                    width: itemWidth,
-                                    height: itemHeight,
-                                  )),
-                                  const Positioned(
-                                      left: 0,
-                                      right: 0,
-                                      bottom: 12,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            '我的课程',
-                                            style: TextStyle(
-                                                letterSpacing: 2,
-                                                color: Colors.white,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold),
-                                          )
-                                        ],
-                                      )),
-                                  Positioned(
-                                      top: 4,
-                                      right: 4,
-                                      child: Container(
-                                        decoration: const BoxDecoration(
-                                            color:
-                                                Color.fromRGBO(105, 79, 228, 1),
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(18))),
-                                        width: 36,
-                                        height: 36,
-                                        child: Center(
-                                          child: Text(
-                                              _myCourseNum > 99
-                                                  ? '99+'
-                                                  : '$_myCourseNum',
-                                              style: const TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      255, 255, 255, 1),
+                                    Positioned(
+                                        child: Container(
+                                      decoration: const BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              Color.fromRGBO(0, 0, 0, 0.4),
+                                              Color.fromRGBO(0, 0, 0, 0.6),
+                                              Color.fromRGBO(0, 0, 0, 0.7)
+                                            ], // 渐变的起始和结束颜色
+                                          ),
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(8))),
+                                      width: itemWidth,
+                                      height: itemHeight,
+                                    )),
+                                    const Positioned(
+                                        left: 0,
+                                        right: 0,
+                                        bottom: 12,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              '我的课程',
+                                              style: TextStyle(
+                                                  letterSpacing: 2,
+                                                  color: Colors.white,
                                                   fontSize: 14,
-                                                  fontWeight: FontWeight.bold)),
-                                        ),
-                                      ))
-                                ],
+                                                  fontWeight: FontWeight.bold),
+                                            )
+                                          ],
+                                        )),
+                                    GetBuilder<StoreController>(
+                                        builder: (StoreController controller) {
+                                      return (controller.learningCounts +
+                                                  controller.majorCourseCounts >
+                                              0)
+                                          ? Positioned(
+                                              top: 4,
+                                              right: 4,
+                                              child: Container(
+                                                decoration: const BoxDecoration(
+                                                    color: Color.fromRGBO(
+                                                        105, 79, 228, 1),
+                                                    borderRadius:
+                                                        BorderRadius.all(
+                                                            Radius.circular(
+                                                                18))),
+                                                width: 36,
+                                                height: 36,
+                                                child: Center(
+                                                  child: Text(
+                                                      (controller.learningCounts +
+                                                                  controller
+                                                                      .majorCourseCounts >
+                                                              99)
+                                                          ? '99+'
+                                                          : '${controller.learningCounts + controller.majorCourseCounts}',
+                                                      style: const TextStyle(
+                                                          color: Color.fromRGBO(
+                                                              255, 255, 255, 1),
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                ),
+                                              ))
+                                          : const SizedBox.shrink();
+                                    })
+                                  ],
+                                ),
                               ),
                             ),
                             Container(
