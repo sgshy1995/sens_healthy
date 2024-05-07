@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
 
 enum IconNames {
-  sayhi, xuexizhongxin, qiehuan, yuyueshijian_doctor, shoukequanxian_doctor, shangwuhezuo_doctor, doctor_enter, renzhenglishi, fuzhi, apple, biangeng_1, yigoumai, zhuanyerenzheng_menu, kefuyushouhou, shiyongbangzhu, qicai_yifahuo, qicai_daifahuo, qicai_yiquxiao, qicai_yiqianshou, shouhuodizhi, kaitongshoukequanxian, shangwuhezuo, jizhu, guanjie, yiwancheng, daixuexi, xuexizhong, yiyuyue, chongzhi, morenxuanzhong, moren_fill, phone_fill, dizhi_fill, dizhiguanli, lianxi_yishouqing_copy, zhekou, remen, a_yinhangkadaizhifuzhifu, tubiaozhizuomoban, jianshenke, jianji, zixingche, xiaidekecheng, yue, jingshi, qingkong, shouqi, zuixingengxin, live_fill, live, video_fill, video, dingdan, kangfushigongju, kecheng, gouwuche, liebiaoxingshi, duigou, hot, nandu, yanjing, yanjing_fill, fenlei, cainixihuan, nan, nv, shanchu, shezhi, yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, qianjin, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, course_order, equipment_order, top_up_order, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
+  bofangzhong, shipinliebiao, guankanlishi, guankan, sayhi, xuexizhongxin, qiehuan, yuyueshijian_doctor, shoukequanxian_doctor, shangwuhezuo_doctor, doctor_enter, renzhenglishi, fuzhi, apple, biangeng_1, yigoumai, zhuanyerenzheng_menu, kefuyushouhou, shiyongbangzhu, qicai_yifahuo, qicai_daifahuo, qicai_yiquxiao, qicai_yiqianshou, shouhuodizhi, kaitongshoukequanxian, shangwuhezuo, jizhu, guanjie, yiwancheng, daixuexi, xuexizhong, yiyuyue, chongzhi, morenxuanzhong, moren_fill, phone_fill, dizhi_fill, dizhiguanli, lianxi_yishouqing_copy, zhekou, remen, a_yinhangkadaizhifuzhifu, tubiaozhizuomoban, jianshenke, jianji, zixingche, xiaidekecheng, yue, jingshi, qingkong, shouqi, zuixingengxin, live_fill, live, video_fill, video, dingdan, kangfushigongju, kecheng, gouwuche, liebiaoxingshi, duigou, hot, nandu, yanjing, yanjing_fill, fenlei, cainixihuan, nan, nv, shanchu, shezhi, yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, qianjin, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, course_order, equipment_order, top_up_order, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
 }
 
 extension parseString on IconNames {
@@ -36,6 +36,18 @@ class IconFont extends StatelessWidget {
 
   static IconNames getIconNames(dynamic iconName) {
     switch (iconName) {
+      case 'bofangzhong':
+        iconName = IconNames.bofangzhong;
+        break;
+      case 'shipinliebiao':
+        iconName = IconNames.shipinliebiao;
+        break;
+      case 'guankanlishi':
+        iconName = IconNames.guankanlishi;
+        break;
+      case 'guankan':
+        iconName = IconNames.guankan;
+        break;
       case 'sayhi':
         iconName = IconNames.sayhi;
         break;
@@ -376,6 +388,58 @@ class IconFont extends StatelessWidget {
     String svgXml;
 
     switch (this.name!) {
+      case IconNames.bofangzhong:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M544 128v768h-64V128h64z m-192 128v512H288V256h64z m384 0v512h-64V256h64zM160 384v256H96v-256h64z m768 0v256h-64v-256h64z"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
+      case IconNames.shipinliebiao:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M902.779659 795.440467c-6.179746-6.181793-14.304797-9.577123-22.950711-9.577123L129.341299 785.863345c-17.945721 0-32.540114 14.59644-32.540114 32.525788 0 17.962094 14.594393 32.555463 32.540114 32.555463l750.487649 0c17.931395 0 32.525788-14.594393 32.525788-32.555463C912.354735 809.745265 908.959406 801.61919 902.779659 795.440467"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+            <path
+              d="M879.828948 461.055724 129.341299 461.055724c-17.945721 0-32.525788 14.594393-32.525788 32.541137 0 17.930371 14.580067 32.525788 32.525788 32.525788l750.487649 0c17.931395 0 32.525788-14.594393 32.525788-32.525788 0-8.647961-3.39533-16.800641-9.575076-22.980387C896.599913 464.436728 888.474862 461.055724 879.828948 461.055724"
+              fill="''' + getColor(1, color, colors, '#333333') + '''"
+            />
+            <path
+              d="M902.779659 154.426115c-6.179746-6.179746-14.304797-9.574053-22.950711-9.574053L129.341299 144.852062c-17.945721 0-32.540114 14.594393-32.540114 32.540114 0 17.946744 14.594393 32.525788 32.540114 32.525788l750.487649 0c17.931395 0 32.525788-14.579043 32.525788-32.525788C912.354735 168.745239 908.959406 160.606885 902.779659 154.426115"
+              fill="''' + getColor(2, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
+      case IconNames.guankanlishi:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M511.998125 92C280.038125 92 92 280.038125 92 511.998125S280.038125 932 511.998125 932 932 743.958125 932 511.998125 743.958125 92 511.998125 92z m331.7353125 560.098125c-77.0765625 182.4825-287.4909375 267.931875-469.974375 190.8553125S105.8271875 555.4625 182.90375 372.9790625 470.3946875 105.0471875 652.878125 182.12375c157.5084375 66.5278125 246.159375 234.98625 211.805625 402.4809375a359.9953125 359.9953125 0 0 1-20.9503125 67.4934375z"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+            <path
+              d="M541.3540625 499.4740625V272.1134375c0-16.5534375-13.419375-29.971875-29.971875-29.971875s-29.971875 13.419375-29.971875 29.971875v252.1921875l188.8884375 188.8884375c11.7046875 11.7046875 30.6825 11.7046875 42.3871875 0s11.7046875-30.6825 0-42.3871875L541.3540625 499.4740625z"
+              fill="''' + getColor(1, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
+      case IconNames.guankan:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M166.632727 891.112727c-9.774545 0-19.549091-2.56-28.16-7.912727-13.730909-8.610909-22.109091-23.04-22.109091-38.632727V180.596364c0-15.592727 8.378182-30.021818 22.109091-38.632728 15.592727-9.774545 35.607273-10.705455 52.130909-2.327272l333.730909 165.934545c11.403636 5.818182 16.290909 19.781818 10.472728 31.185455-5.818182 11.403636-19.781818 16.290909-31.185455 10.472727L169.890909 181.294545c-3.258182-1.629091-6.749091 0-7.214545 0.698182L162.909091 844.567273c0.232727-0.465455 1.629091 0 3.258182 0 1.163636 0 2.327273-0.232727 3.490909-0.698182L835.490909 512.465455l-224.116364-111.709091c-11.403636-5.818182-16.290909-19.781818-10.472727-31.185455 5.818182-11.403636 19.781818-16.290909 31.185455-10.472727l225.745454 112.407273c16.290909 8.145455 26.298182 23.738182 26.298182 40.96s-10.007273 32.814545-26.298182 40.96L190.603636 885.527273c-7.68 3.723636-15.825455 5.585455-23.970909 5.585454z m671.650909-377.250909h0.232728-0.232728z"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
       case IconNames.sayhi:
         svgXml = '''
           <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">

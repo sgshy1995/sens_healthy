@@ -56,6 +56,7 @@ import './app/pages/mine/mine_doctor_time_explain.dart';
 import './app/pages/center/center.dart';
 import './app/pages/center/center_course_time.dart';
 import './app/pages/center/center_course_time_explain.dart';
+import './app/pages/center/center_major_detail.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env.dev"); // 加载开发环境配置
@@ -303,6 +304,11 @@ Future main() async {
           GetPage(
             name: '/center_course_time_explain',
             page: () => CenterCourseTimeExplainPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/center_major_detail',
+            page: () => const CenterMajorDetailPage(),
             middlewares: [AuthMiddleware()],
           ),
         ],

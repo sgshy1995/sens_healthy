@@ -4,7 +4,9 @@ import '../../../../iconfont/icon_font.dart';
 import '../../../controllers/user_controller.dart';
 
 class MineVideoCourseOrderMenu extends StatefulWidget {
-  const MineVideoCourseOrderMenu({super.key});
+  const MineVideoCourseOrderMenu({super.key, required this.majorCourseCounts});
+
+  final int majorCourseCounts;
 
   @override
   State<MineVideoCourseOrderMenu> createState() =>
@@ -13,6 +15,10 @@ class MineVideoCourseOrderMenu extends StatefulWidget {
 
 class _MineVideoCourseOrderMenuState extends State<MineVideoCourseOrderMenu> {
   final UserController userController = Get.put(UserController());
+
+  void handleGotoMajorCoursePage() {
+    Get.toNamed('/center', arguments: {'tab': 'major'});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,51 +52,84 @@ class _MineVideoCourseOrderMenuState extends State<MineVideoCourseOrderMenu> {
                           fontWeight: FontWeight.bold))
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 width: 16,
                 height: 16,
-                child: Center(
-                  child: IconFont(
-                    IconNames.qianjin,
-                    size: 16,
-                    color: 'rgb(156, 156, 156)',
-                  ),
-                ),
+                child: null,
               )
             ],
           ),
-          const SizedBox(
-            height: 12,
-          ),
-          Row(
+          Stack(
             children: [
-              SizedBox(
-                width: (mediaQuerySizeInfo.width - 24 - 24) / 4,
-                height: 54,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 6),
-                      width: 24,
-                      height: 24,
-                      child: Center(
-                        child: IconFont(
-                          IconNames.yigoumai,
-                          size: 24,
-                          color: 'rgb(0, 0, 0)',
+              Column(
+                children: [
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: handleGotoMajorCoursePage,
+                        child: Container(
+                          width: (mediaQuerySizeInfo.width - 24 - 24) / 4,
+                          height: 54,
+                          color: Colors.transparent,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 6),
+                                width: 24,
+                                height: 24,
+                                child: Center(
+                                  child: IconFont(
+                                    IconNames.yigoumai,
+                                    size: 24,
+                                    color: 'rgb(0, 0, 0)',
+                                  ),
+                                ),
+                              ),
+                              const Text('已购买',
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.normal))
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    const Text('已购买',
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 13,
-                            fontWeight: FontWeight.normal))
-                  ],
-                ),
+                    ],
+                  )
+                ],
               ),
+              (widget.majorCourseCounts >= 0
+                  ? Positioned(
+                      top: 4,
+                      left: ((mediaQuerySizeInfo.width - 24 - 24) / 4) / 2 +
+                          10 +
+                          ((mediaQuerySizeInfo.width - 24 - 24) / 4) * 0,
+                      child: GestureDetector(
+                        onTap: handleGotoMajorCoursePage,
+                        child: Container(
+                          width: 24,
+                          height: 24,
+                          decoration: const BoxDecoration(
+                              color: Color.fromRGBO(249, 81, 84, 1),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(24))),
+                          child: Center(
+                            child: Text(
+                              '${widget.majorCourseCounts > 99 ? '99+' : widget.majorCourseCounts}',
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      ))
+                  : const SizedBox.shrink()),
             ],
           )
         ],

@@ -168,6 +168,7 @@ class StoreCourseInVideoTypeModel {
   final String title; //视频标题
   final String cover; //视频封面
   final String description; //视频介绍
+  final String? gist; //视频要点
   final String source; //视频地址
   final String time_length; //视频时长
   final int sort; //视频排序
@@ -181,6 +182,7 @@ class StoreCourseInVideoTypeModel {
       required this.title,
       required this.cover,
       required this.description,
+      this.gist,
       required this.source,
       required this.time_length,
       required this.sort,
@@ -197,6 +199,7 @@ class StoreCourseInVideoTypeModel {
             title: json['title'],
             cover: json['cover'],
             description: json['description'],
+            gist: json['gist'],
             source: json['source'],
             time_length: json['time_length'],
             sort: json['sort'],
@@ -210,6 +213,7 @@ class StoreCourseInVideoTypeModel {
             title: '',
             cover: '',
             description: '',
+            gist: null,
             source: '',
             time_length: '',
             sort: 0,

@@ -18,6 +18,7 @@ import '../../providers/api/store_client_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import './center_course.dart';
+import './center_major.dart';
 
 class CenterPage extends StatefulWidget {
   const CenterPage({super.key});
@@ -36,6 +37,8 @@ class _CenterPageState extends State<CenterPage> with TickerProviderStateMixin {
 
   final GlobalKey<CenterCoursePageState> _centerCoursePageState =
       GlobalKey<CenterCoursePageState>();
+  final GlobalKey<CenterMajorPageState> _centerMajorPageState =
+      GlobalKey<CenterMajorPageState>();
 
   late TabController _tabController;
 
@@ -46,6 +49,8 @@ class _CenterPageState extends State<CenterPage> with TickerProviderStateMixin {
     setState(() {
       tabSelectionIndex = _tabController.index;
     });
+    _centerCoursePageState.currentState?.scrollToTop();
+    _centerMajorPageState.currentState?.scrollToTop();
   }
 
   void _handleTabViewScroll() {
@@ -54,6 +59,8 @@ class _CenterPageState extends State<CenterPage> with TickerProviderStateMixin {
       setState(() {
         tabSelectionIndex = index;
       });
+      _centerCoursePageState.currentState?.scrollToTop();
+      _centerMajorPageState.currentState?.scrollToTop();
     }
   }
 
@@ -104,6 +111,12 @@ class _CenterPageState extends State<CenterPage> with TickerProviderStateMixin {
     _tabController = TabController(length: 2, vsync: this);
     _tabController.animation!.addListener(_handleTabViewScroll);
     _tabController.addListener(_handleTabSelection);
+    if (Get.arguments != null && Get.arguments['tab'] != null) {
+      if (Get.arguments['tab'] == 'major') {
+        _tabController.animateTo(1);
+        tabSelectionIndex = 1;
+      }
+    }
     timeStringNow = getTimeOfDay();
   }
 
@@ -140,7 +153,10 @@ class _CenterPageState extends State<CenterPage> with TickerProviderStateMixin {
                     child: CenterCoursePage(
                         key: _centerCoursePageState,
                         scrollCallBack: scrollCallBack)),
-                KeepAliveWrapper(child: Container()),
+                KeepAliveWrapper(
+                    child: CenterMajorPage(
+                        key: _centerMajorPageState,
+                        scrollCallBack: scrollCallBack)),
               ],
             ))
           ])),

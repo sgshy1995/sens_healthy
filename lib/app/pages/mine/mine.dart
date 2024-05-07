@@ -12,6 +12,7 @@ import '../../providers/api/pain_client_provider.dart';
 import '../../providers/api/user_client_provider.dart';
 import '../../providers/api/store_client_provider.dart';
 import '../../providers/api/appointment_client_provider.dart';
+import '../../providers/api/major_client_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import './menus/mine_record_menu.dart';
 import './menus/mine_live_course_order_menu.dart';
@@ -39,6 +40,8 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
       Get.put(StoreClientProvider());
   final AppointmentClientProvider appointmentClientProvider =
       Get.put(AppointmentClientProvider());
+  final MajorClientProvider majorClientProvider =
+      Get.put(MajorClientProvider());
 
   late AnimationController _animationController;
   late Animation<Color?> _colorTween;
@@ -216,6 +219,21 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
     return completer.future;
   }
 
+  //专业能力提升订单信息
+  int majorCourseCounts = 0;
+
+  Future<int?> loadMajorCourseCounts(String userId) {
+    Completer<int?> completer = Completer();
+    majorClientProvider
+        .findManyMajorCoursesAction(userId: userId)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
   Future<String?> loadInfos() async {
     Completer<String?> completer = Completer();
     if (userController.token.isNotEmpty) {
@@ -316,6 +334,28 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
         setState(() {
           learningCounts = results[0] ?? 0;
           finishCounts = results[1] ?? 0;
+        });
+      });
+    }).then((value) {
+      completer.complete('success');
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<String?> loadMajorCourseOrderCounts() async {
+    Completer<String?> completer = Completer();
+    Future.delayed(const Duration(milliseconds: 100), () async {
+      final String? userId = await checkUserId();
+
+      // 等待所有异步任务完成
+      final List<int?> results =
+          await Future.wait([loadMajorCourseCounts(userId!)]);
+
+      results.asMap().forEach((index, value) {
+        setState(() {
+          majorCourseCounts = results[0] ?? 0;
         });
       });
     }).then((value) {
@@ -451,7 +491,8 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
       loadCounts(),
       loadInfos(),
       loadEquipmentOrderCounts(),
-      loadPatientCourseOrderCounts()
+      loadPatientCourseOrderCounts(),
+      loadMajorCourseOrderCounts()
     ]);
     _refreshController.refreshCompleted();
     _refreshController.loadComplete();
@@ -1148,7 +1189,9 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
                                             height: 12,
                                           ),
                                           //专业能力提升订单
-                                          const MineVideoCourseOrderMenu(),
+                                          MineVideoCourseOrderMenu(
+                                              majorCourseCounts:
+                                                  majorCourseCounts),
                                           const SizedBox(
                                             height: 12,
                                           ),

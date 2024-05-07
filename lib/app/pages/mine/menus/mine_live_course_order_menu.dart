@@ -54,16 +54,10 @@ class _MineLiveCourseOrderMenuState extends State<MineLiveCourseOrderMenu> {
                           fontWeight: FontWeight.bold))
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 width: 16,
                 height: 16,
-                child: Center(
-                  child: IconFont(
-                    IconNames.qianjin,
-                    size: 16,
-                    color: 'rgb(156, 156, 156)',
-                  ),
-                ),
+                child: null,
               )
             ],
           ),
@@ -146,6 +140,7 @@ class _MineLiveCourseOrderMenuState extends State<MineLiveCourseOrderMenu> {
                           10 +
                           ((mediaQuerySizeInfo.width - 24 - 24) / 4) * 0,
                       child: GestureDetector(
+                        onTap: handleGotoPatientCoursePage,
                         child: Container(
                           width: 24,
                           height: 24,
