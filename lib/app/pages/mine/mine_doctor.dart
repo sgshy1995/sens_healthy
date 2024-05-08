@@ -1,29 +1,22 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sens_healthy/app/models/appointment_model.dart';
 import 'package:sens_healthy/app/models/user_model.dart';
-import '../../../components/gallery_photo_view_wrapper.dart';
-import '../../../components/gallery_photo_view_item.dart';
+import 'package:sens_healthy/components/loading.dart';
+import 'package:sens_healthy/components/toast.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../iconfont/icon_font.dart';
 import '../../controllers/global_controller.dart';
 import '../../controllers/user_controller.dart';
 import '../../providers/api/pain_client_provider.dart';
 import '../../providers/api/user_client_provider.dart';
 import '../../providers/api/store_client_provider.dart';
+import '../../providers/api/appointment_client_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import './menus/mine_record_menu.dart';
-import './menus/mine_live_course_order_menu.dart';
-import './menus/mine_video_course_order_menu.dart';
-import './menus/mine_equipment_order_menu.dart';
-import './menus/mine_manage_menu.dart';
-import './menus/mine_doctor_menu.dart';
-import './menus/mine_professional_tool_menu.dart';
-import './menus/mine_help_menu.dart';
-import './menus/mine_doctor_enter_menu.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class MineDoctorPage extends StatefulWidget {
   const MineDoctorPage({super.key});
@@ -40,6 +33,8 @@ class _MineDoctorPageState extends State<MineDoctorPage>
   final UserClientProvider userClientProvider = Get.put(UserClientProvider());
   final StoreClientProvider storeClientProvider =
       Get.put(StoreClientProvider());
+  final AppointmentClientProvider appointmentClientProvider =
+      Get.put(AppointmentClientProvider());
 
   late AnimationController _rotateController;
   late Animation<double> _animation;
@@ -68,7 +63,10 @@ class _MineDoctorPageState extends State<MineDoctorPage>
     });
   }
 
-  List bookList = [];
+  //课程类型 0 运动康复 1 神经康复 2 产后康复 3 术后康复
+  final List<String> courseTypeList = ['运动康复', '神经康复', '产后康复', '术后康复'];
+
+  List<BookTypeModel> bookList = [];
 
   bool _readyLoad = false;
 
@@ -85,14 +83,28 @@ class _MineDoctorPageState extends State<MineDoctorPage>
       } else {
         completer.completeError('error');
       }
-      setState(() {
-        _readyLoad = true;
-      });
     }).catchError((e) {
       completer.completeError(e);
-      setState(() {
-        _readyLoad = true;
-      });
+    });
+
+    return completer.future;
+  }
+
+  Future<String?> loadBooks() async {
+    Completer<String?> completer = Completer();
+    appointmentClientProvider
+        .findManyBooksReadyBookedAction(userController.userInfo.id)
+        .then((result) {
+      if (result.code == 200) {
+        setState(() {
+          bookList = result.data!;
+        });
+        completer.complete('success');
+      } else {
+        completer.completeError('error');
+      }
+    }).catchError((e) {
+      completer.completeError(e);
     });
 
     return completer.future;
@@ -100,16 +112,22 @@ class _MineDoctorPageState extends State<MineDoctorPage>
 
   void _onRefresh() async {
     // monitor network fetch
-    String? result;
+    List<String?> result;
     try {
-      result = await loadInfo();
+      result = await Future.wait([loadInfo(), loadBooks()]);
+      setState(() {
+        _readyLoad = true;
+      });
       _refreshController.refreshCompleted();
-      if (result == 'success') {
+      if (result.every((element) => element == 'success')) {
         _refreshController.loadComplete();
       } else {
         _refreshController.loadNoData();
       }
     } catch (e) {
+      setState(() {
+        _readyLoad = true;
+      });
       _refreshController.refreshFailed();
     }
     // if failed,use refreshFailed()
@@ -121,6 +139,619 @@ class _MineDoctorPageState extends State<MineDoctorPage>
 
   void handleGotoTimeManage() {
     Get.toNamed('mine_doctor_time');
+  }
+
+  void handleShowDeleteDialog(BookTypeModel item) {
+    showLoading('请稍后...');
+    appointmentClientProvider.getOneBookByIdAction(item.id).then((result) {
+      if (result.code == 200 && result.data != null) {
+        final BookTypeModel bookInfo = result.data!;
+        final int findIndex =
+            bookList.indexWhere((element) => element.id == bookInfo.id);
+        setState(() {
+          bookList[findIndex] = bookInfo;
+        });
+        hideLoading();
+        if (bookInfo.room_info != null) {
+          showToast('该预约已开始，无法取消');
+          return;
+        }
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState) {
+              return AlertDialog(
+                surfaceTintColor: const Color.fromRGBO(255, 255, 255, 1),
+                backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
+                shadowColor: Colors.transparent,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(8), // 设置顶部边缘为直角
+                  ),
+                ),
+                title: null,
+                content: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(
+                      height: 12,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Center(
+                          child: Text(
+                            '取消预约',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 24,
+                        ),
+                        const Text(
+                          '您确定取消以下预约时间段吗?',
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal),
+                        ),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        Text(
+                          '${DateFormat('yyyy-MM-dd HH:mm').format(DateTime.parse(bookInfo.book_start_time))} - ${DateFormat('HH:mm').format(DateTime.parse(bookInfo.book_end_time))}',
+                          style: const TextStyle(
+                              color: Color.fromRGBO(0, 0, 0, 1),
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(
+                              height: 12,
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 18,
+                                  height: 18,
+                                  margin: const EdgeInsets.only(right: 4),
+                                  child: Center(
+                                    child: IconFont(
+                                      IconNames.jingshi,
+                                      size: 14,
+                                      color: 'rgb(255, 31, 47)',
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                    child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      '该时间段已被预约',
+                                      style: TextStyle(
+                                          color: Color.fromRGBO(255, 31, 47, 1),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(
+                                      height: 4,
+                                    ),
+                                    bookInfo.patient_course_info!
+                                                .outer_cancel_num <
+                                            1
+                                        ? Text(
+                                            '当前系列课程剩余 ${1 - bookInfo.patient_course_info!.outer_cancel_num} 次无责取消机会',
+                                            style: const TextStyle(
+                                                color: Color.fromRGBO(
+                                                    255, 31, 47, 1),
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold),
+                                          )
+                                        : RichText(
+                                            maxLines: 3,
+                                            overflow: TextOverflow.clip,
+                                            textAlign: TextAlign.left,
+                                            text: const TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text:
+                                                      '如您取消, 按约定您将额外承担一次该课程的直播',
+                                                  style: TextStyle(
+                                                      color: Color.fromRGBO(
+                                                          255, 31, 47, 1),
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )
+                                              ],
+                                            )),
+                                  ],
+                                ))
+                              ],
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                    // const SizedBox(
+                    //   height: 12,
+                    // ),
+                    // Row(
+                    //   crossAxisAlignment: CrossAxisAlignment.start,
+                    //   children: [
+                    //     Container(
+                    //       width: 18,
+                    //       height: 18,
+                    //       margin: const EdgeInsets.only(right: 4),
+                    //       child: Center(
+                    //         child: IconFont(
+                    //           IconNames.jingshi,
+                    //           size: 14,
+                    //           color: '#000',
+                    //         ),
+                    //       ),
+                    //     ),
+                    //     Column(
+                    //       crossAxisAlignment: CrossAxisAlignment.start,
+                    //       children: [
+                    //         const Text('请确认您已阅读并悉知',
+                    //             style: TextStyle(
+                    //                 color: Colors.black,
+                    //                 fontSize: 14,
+                    //                 fontWeight: FontWeight.bold)),
+                    //         GestureDetector(
+                    //           onTap: handleGotoExplain,
+                    //           child: const Text('《 面对面康复课程预约时间说明 》',
+                    //               style: TextStyle(
+                    //                   decoration: TextDecoration.underline,
+                    //                   decorationThickness: 2,
+                    //                   decorationColor:
+                    //                       Color.fromRGBO(211, 66, 67, 1),
+                    //                   color: Color.fromRGBO(211, 66, 67, 1),
+                    //                   fontSize: 14,
+                    //                   fontWeight: FontWeight.bold)),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ],
+                    // )
+                  ],
+                ),
+                actions: <Widget>[
+                  SizedBox(
+                    height: 32,
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          padding: MaterialStateProperty.all<EdgeInsets>(
+                              const EdgeInsets.fromLTRB(12, 0, 12, 0)),
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.black),
+                          shape: MaterialStateProperty.all(
+                              const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(4)),
+                                  side: BorderSide(
+                                      color: Colors.black, width: 1)))),
+                      onPressed: () {
+                        // 点击确认按钮时执行的操作
+                        Navigator.of(context).pop();
+                        // 在这里执行你的操作
+                        handleConfirmDeleteTime(item);
+                      },
+                      child: const Text(
+                        '我已知悉并确认',
+                        style: TextStyle(color: Colors.white, fontSize: 14),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 32,
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          padding: MaterialStateProperty.all<EdgeInsets>(
+                              const EdgeInsets.all(0)),
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.white),
+                          shape: MaterialStateProperty.all(
+                              const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(4)),
+                                  side: BorderSide(
+                                      color: Color.fromRGBO(0, 0, 0, 1),
+                                      width: 1)))),
+                      onPressed: () {
+                        // 点击确认按钮时执行的操作
+                        Navigator.of(context).pop();
+                        // 在这里执行你的操作
+                      },
+                      child: const Text(
+                        '取消',
+                        style: TextStyle(color: Colors.black, fontSize: 14),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            });
+          },
+        );
+      } else {
+        showToast(result.message);
+        hideLoading();
+      }
+    }).catchError((e) {
+      showToast('获取信息失败, 请稍后再试');
+      hideLoading();
+    });
+  }
+
+  void handleConfirmDeleteTime(BookTypeModel item) {
+    showLoading('请稍后...');
+    appointmentClientProvider
+        .deleteOneLecturerTimeAction(id: item.lecturer_time_id)
+        .then((result) {
+      if (result.code == 200) {
+        loadBooks().then((resultIn) {
+          hideLoading();
+          showToast('预约时间已取消');
+        }).catchError((eIn) {
+          hideLoading();
+        });
+      } else {
+        hideLoading();
+        showToast(result.message);
+      }
+    }).catchError((e) {
+      hideLoading();
+      showToast('操作失败, 请稍后再试');
+    });
+  }
+
+  void handleShowPatientUserInfoDialog(BookTypeModel item) {
+    showLoading('请稍后...');
+    userClientProvider
+        .getInfoByUserIdAction(item.patient_user_info!.id)
+        .then((result) {
+      if (result.code == 200 && result.data != null) {
+        final UserInfoTypeModel userInfo = result.data!;
+        hideLoading();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState) {
+              return AlertDialog(
+                surfaceTintColor: const Color.fromRGBO(255, 255, 255, 1),
+                backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
+                shadowColor: Colors.transparent,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(8), // 设置顶部边缘为直角
+                  ),
+                ),
+                title: null,
+                content: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(
+                      height: 12,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Center(
+                          child: Text(
+                            '患者信息',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 24,
+                        ),
+                        SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: (item.patient_user_info!.avatar == null)
+                              ? const CircleAvatar(
+                                  radius: 16,
+                                  backgroundImage:
+                                      AssetImage('assets/images/avatar.webp'),
+                                )
+                              : CircleAvatar(
+                                  backgroundColor:
+                                      const Color.fromRGBO(254, 251, 254, 1),
+                                  radius: 16,
+                                  backgroundImage: CachedNetworkImageProvider(
+                                      '${globalController.cdnBaseUrl}/${item.patient_user_info!.avatar}'),
+                                ),
+                        ),
+                        const SizedBox(
+                          height: 12,
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                RichText(
+                                    maxLines: 3,
+                                    overflow: TextOverflow.clip,
+                                    textAlign: TextAlign.left,
+                                    text: TextSpan(
+                                      children: [
+                                        const TextSpan(
+                                          text: '姓名/昵称',
+                                          style: TextStyle(
+                                              color: Color.fromRGBO(0, 0, 0, 1),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.normal),
+                                        ),
+                                        const WidgetSpan(
+                                            child: SizedBox(
+                                          width: 4,
+                                        )),
+                                        TextSpan(
+                                          text: item.patient_user_info!.name,
+                                          style: const TextStyle(
+                                              color: Color.fromRGBO(0, 0, 0, 1),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ))
+                              ],
+                            ))
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 6,
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                RichText(
+                                    maxLines: 3,
+                                    overflow: TextOverflow.clip,
+                                    textAlign: TextAlign.left,
+                                    text: TextSpan(
+                                      children: [
+                                        const TextSpan(
+                                          text: '性别',
+                                          style: TextStyle(
+                                              color: Color.fromRGBO(0, 0, 0, 1),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.normal),
+                                        ),
+                                        const WidgetSpan(
+                                            child: SizedBox(
+                                          width: 4,
+                                        )),
+                                        TextSpan(
+                                          text:
+                                              item.patient_user_info!.gender ==
+                                                      1
+                                                  ? '男'
+                                                  : item.patient_user_info!
+                                                              .gender ==
+                                                          0
+                                                      ? '女'
+                                                      : '未知',
+                                          style: const TextStyle(
+                                              color: Color.fromRGBO(0, 0, 0, 1),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ))
+                              ],
+                            ))
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 6,
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                RichText(
+                                    maxLines: 3,
+                                    overflow: TextOverflow.clip,
+                                    textAlign: TextAlign.left,
+                                    text: TextSpan(
+                                      children: [
+                                        const TextSpan(
+                                          text: '年龄',
+                                          style: TextStyle(
+                                              color: Color.fromRGBO(0, 0, 0, 1),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.normal),
+                                        ),
+                                        const WidgetSpan(
+                                            child: SizedBox(
+                                          width: 4,
+                                        )),
+                                        TextSpan(
+                                          text: '${userInfo.age ?? '未知'}',
+                                          style: const TextStyle(
+                                              color: Color.fromRGBO(0, 0, 0, 1),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ))
+                              ],
+                            ))
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 12,
+                        ),
+                        userInfo.injury_history == null
+                            ? const Text(
+                                '伤痛档案未维护',
+                                style: TextStyle(
+                                    color: Color.fromRGBO(200, 200, 200, 1),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold),
+                              )
+                            : GestureDetector(
+                                onTap: () =>
+                                    handleGotoPatientRecord(item.user_id),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      height: 32,
+                                      padding: const EdgeInsets.fromLTRB(
+                                          12, 0, 12, 0),
+                                      decoration: BoxDecoration(
+                                          color: Colors.transparent,
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(10)),
+                                          border: Border.all(
+                                              width: 1, color: Colors.black)),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          const Text('查看伤痛档案',
+                                              style: TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      0, 0, 0, 1),
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold)),
+                                          Container(
+                                            width: 14,
+                                            height: 14,
+                                            margin:
+                                                const EdgeInsets.only(left: 4),
+                                            child: Center(
+                                              child: IconFont(
+                                                IconNames.qianjin,
+                                                size: 14,
+                                                color: '#000',
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              )
+                      ],
+                    ),
+                    // const SizedBox(
+                    //   height: 12,
+                    // ),
+                    // Row(
+                    //   crossAxisAlignment: CrossAxisAlignment.start,
+                    //   children: [
+                    //     Container(
+                    //       width: 18,
+                    //       height: 18,
+                    //       margin: const EdgeInsets.only(right: 4),
+                    //       child: Center(
+                    //         child: IconFont(
+                    //           IconNames.jingshi,
+                    //           size: 14,
+                    //           color: '#000',
+                    //         ),
+                    //       ),
+                    //     ),
+                    //     Column(
+                    //       crossAxisAlignment: CrossAxisAlignment.start,
+                    //       children: [
+                    //         const Text('请确认您已阅读并悉知',
+                    //             style: TextStyle(
+                    //                 color: Colors.black,
+                    //                 fontSize: 14,
+                    //                 fontWeight: FontWeight.bold)),
+                    //         GestureDetector(
+                    //           onTap: handleGotoExplain,
+                    //           child: const Text('《 面对面康复课程预约时间说明 》',
+                    //               style: TextStyle(
+                    //                   decoration: TextDecoration.underline,
+                    //                   decorationThickness: 2,
+                    //                   decorationColor:
+                    //                       Color.fromRGBO(211, 66, 67, 1),
+                    //                   color: Color.fromRGBO(211, 66, 67, 1),
+                    //                   fontSize: 14,
+                    //                   fontWeight: FontWeight.bold)),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ],
+                    // )
+                  ],
+                ),
+                actions: <Widget>[
+                  SizedBox(
+                    height: 32,
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          padding: MaterialStateProperty.all<EdgeInsets>(
+                              const EdgeInsets.fromLTRB(12, 0, 12, 0)),
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.black),
+                          shape: MaterialStateProperty.all(
+                              const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(4)),
+                                  side: BorderSide(
+                                      color: Colors.black, width: 1)))),
+                      onPressed: () {
+                        // 点击确认按钮时执行的操作
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text(
+                        '确认',
+                        style: TextStyle(color: Colors.white, fontSize: 14),
+                      ),
+                    ),
+                  )
+                ],
+              );
+            });
+          },
+        );
+      } else {
+        showToast(result.message);
+        hideLoading();
+      }
+    }).catchError((e) {
+      showToast('获取信息失败, 请稍后再试');
+      hideLoading();
+    });
+  }
+
+  void handleGotoPatientRecord(String userId) {
+    Get.toNamed('/mine_doctor_patient_record', arguments: {'userId': userId});
   }
 
   @override
@@ -191,6 +822,43 @@ class _MineDoctorPageState extends State<MineDoctorPage>
   Widget build(BuildContext context) {
     final EdgeInsets mediaQuerySafeInfo = MediaQuery.of(context).padding;
     final Size mediaQuerySizeInfo = MediaQuery.of(context).size;
+
+    Widget skeleton() {
+      return Column(
+        children: List.generate(10, (int index) {
+          return Container(
+            decoration: const BoxDecoration(color: Colors.transparent),
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(
+                  height: 12,
+                ),
+                Container(
+                  height: 160,
+                  width: mediaQuerySizeInfo.width - 24,
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(6))),
+                  child: Shimmer.fromColors(
+                    baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      height: 240,
+                      width: mediaQuerySizeInfo.width - 24,
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          );
+        }),
+      );
+    }
 
     return Scaffold(
         body: Stack(children: [
@@ -521,32 +1189,425 @@ class _MineDoctorPageState extends State<MineDoctorPage>
                                           const SizedBox(
                                             height: 24,
                                           ),
-                                          Container(
-                                            width: double.infinity,
-                                            margin:
-                                                const EdgeInsets.only(top: 48),
-                                            child: Center(
-                                              child: Column(
-                                                children: [
-                                                  SizedBox(
-                                                    width: 100,
-                                                    height: 100,
-                                                    child: Image.asset(
-                                                      'assets/images/empty.png',
-                                                      fit: BoxFit.contain,
-                                                    ),
-                                                  ),
-                                                  const Text(
-                                                    '您没有被预约的课程哦~',
-                                                    style: TextStyle(
-                                                        color: Color.fromRGBO(
-                                                            224, 222, 223, 1),
-                                                        fontSize: 14),
-                                                  )
-                                                ],
-                                              ),
-                                            ),
-                                          )
+                                          !_readyLoad
+                                              ? skeleton()
+                                              : bookList.isNotEmpty
+                                                  ? Column(
+                                                      children: List.generate(
+                                                          bookList.length,
+                                                          (index) {
+                                                        return Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(12),
+                                                          decoration: const BoxDecoration(
+                                                              color:
+                                                                  Colors.white,
+                                                              borderRadius: BorderRadius
+                                                                  .all(Radius
+                                                                      .circular(
+                                                                          10))),
+                                                          child: Column(
+                                                            children: [
+                                                              Row(
+                                                                children: [
+                                                                  Row(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      Container(
+                                                                        width:
+                                                                            18,
+                                                                        height:
+                                                                            18,
+                                                                        margin: const EdgeInsets
+                                                                            .only(
+                                                                            right:
+                                                                                4),
+                                                                        child:
+                                                                            Center(
+                                                                          child:
+                                                                              IconFont(
+                                                                            IconNames.zuixingengxin,
+                                                                            size:
+                                                                                18,
+                                                                            color:
+                                                                                'rgb(195,77,73)',
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                      RichText(
+                                                                          maxLines:
+                                                                              1,
+                                                                          textAlign: TextAlign
+                                                                              .left,
+                                                                          text:
+                                                                              TextSpan(
+                                                                            children: [
+                                                                              const TextSpan(
+                                                                                text: '时间:',
+                                                                                style: TextStyle(color: Color.fromRGBO(195, 77, 73, 1), fontSize: 14, fontWeight: FontWeight.normal),
+                                                                              ),
+                                                                              const WidgetSpan(
+                                                                                  child: SizedBox(
+                                                                                width: 6,
+                                                                              )),
+                                                                              TextSpan(
+                                                                                text: '${DateFormat('yyyy-MM-dd HH:mm').format(DateTime.parse(bookList[index].book_start_time))} - ${DateFormat('HH:mm').format(DateTime.parse(bookList[index].book_end_time))}',
+                                                                                style: const TextStyle(color: Color.fromRGBO(195, 77, 73, 1), fontSize: 15, fontWeight: FontWeight.bold),
+                                                                              ),
+                                                                            ],
+                                                                          ))
+                                                                    ],
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 12,
+                                                              ),
+                                                              Container(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                        12),
+                                                                decoration: const BoxDecoration(
+                                                                    color: Color
+                                                                        .fromRGBO(
+                                                                            233,
+                                                                            233,
+                                                                            233,
+                                                                            1),
+                                                                    borderRadius:
+                                                                        BorderRadius.all(
+                                                                            Radius.circular(10))),
+                                                                child: Row(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    SizedBox(
+                                                                      width:
+                                                                          100,
+                                                                      height:
+                                                                          100 /
+                                                                              4 *
+                                                                              3,
+                                                                      child:
+                                                                          CachedNetworkImage(
+                                                                        imageBuilder:
+                                                                            (context, imageProvider) =>
+                                                                                ClipRRect(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(8), // 设置圆角
+                                                                          child:
+                                                                              Image(
+                                                                            image:
+                                                                                imageProvider,
+                                                                            fit:
+                                                                                BoxFit.cover,
+                                                                          ),
+                                                                        ),
+                                                                        width:
+                                                                            100,
+                                                                        height: 100 /
+                                                                            4 *
+                                                                            3,
+                                                                        imageUrl:
+                                                                            '${globalController.cdnBaseUrl}/${bookList[index].course_info!.cover}',
+                                                                        fit: BoxFit
+                                                                            .cover,
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      width: 12,
+                                                                    ),
+                                                                    Expanded(
+                                                                        child:
+                                                                            Column(
+                                                                      crossAxisAlignment:
+                                                                          CrossAxisAlignment
+                                                                              .start,
+                                                                      children: [
+                                                                        RichText(
+                                                                            maxLines:
+                                                                                1,
+                                                                            overflow:
+                                                                                TextOverflow.ellipsis,
+                                                                            textAlign: TextAlign.left,
+                                                                            text: TextSpan(
+                                                                              children: [
+                                                                                TextSpan(
+                                                                                  text: bookList[index].course_info!.title,
+                                                                                  style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold),
+                                                                                ),
+                                                                              ],
+                                                                            )),
+                                                                        const SizedBox(
+                                                                          height:
+                                                                              6,
+                                                                        ),
+                                                                        RichText(
+                                                                            maxLines:
+                                                                                1,
+                                                                            overflow:
+                                                                                TextOverflow.ellipsis,
+                                                                            textAlign: TextAlign.left,
+                                                                            text: TextSpan(
+                                                                              children: [
+                                                                                TextSpan(
+                                                                                  text: courseTypeList[bookList[index].course_info!.course_type],
+                                                                                  style: const TextStyle(color: Color.fromRGBO(33, 33, 33, 1), fontSize: 14, fontWeight: FontWeight.normal),
+                                                                                )
+                                                                              ],
+                                                                            )),
+                                                                        const SizedBox(
+                                                                          height:
+                                                                              6,
+                                                                        ),
+                                                                        RichText(
+                                                                            maxLines:
+                                                                                1,
+                                                                            overflow:
+                                                                                TextOverflow.ellipsis,
+                                                                            textAlign: TextAlign.left,
+                                                                            text: TextSpan(
+                                                                              children: [
+                                                                                const TextSpan(
+                                                                                  text: '课程次数:',
+                                                                                  style: TextStyle(color: Color.fromRGBO(33, 33, 33, 1), fontSize: 14, fontWeight: FontWeight.normal),
+                                                                                ),
+                                                                                const WidgetSpan(
+                                                                                    child: SizedBox(
+                                                                                  width: 6,
+                                                                                )),
+                                                                                TextSpan(
+                                                                                  text: '${bookList[index].patient_course_info!.learn_num} / ${bookList[index].patient_course_info!.course_live_num}',
+                                                                                  style: const TextStyle(color: Color.fromRGBO(33, 33, 33, 1), fontSize: 14, fontWeight: FontWeight.bold),
+                                                                                )
+                                                                              ],
+                                                                            ))
+                                                                      ],
+                                                                    ))
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 12,
+                                                              ),
+                                                              Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .spaceBetween,
+                                                                children: [
+                                                                  Row(
+                                                                    children: [
+                                                                      Container(
+                                                                        width:
+                                                                            24,
+                                                                        height:
+                                                                            24,
+                                                                        margin: const EdgeInsets
+                                                                            .only(
+                                                                            right:
+                                                                                8),
+                                                                        child: (bookList[index].patient_user_info!.avatar ==
+                                                                                null)
+                                                                            ? const CircleAvatar(
+                                                                                radius: 12,
+                                                                                backgroundImage: AssetImage('assets/images/avatar.webp'),
+                                                                              )
+                                                                            : CircleAvatar(
+                                                                                backgroundColor: const Color.fromRGBO(254, 251, 254, 1),
+                                                                                radius: 12,
+                                                                                backgroundImage: CachedNetworkImageProvider('${globalController.cdnBaseUrl}/${bookList[index].patient_user_info!.avatar}'),
+                                                                              ),
+                                                                      ),
+                                                                      Text(
+                                                                        bookList[index].patient_user_info!.name ??
+                                                                            '赴康云用户',
+                                                                        style:
+                                                                            const TextStyle(
+                                                                          color:
+                                                                              Colors.black,
+                                                                          fontSize:
+                                                                              13,
+                                                                        ),
+                                                                      )
+                                                                    ],
+                                                                  ),
+                                                                  //handleShowPatientUserInfoDialog
+                                                                  GestureDetector(
+                                                                    onTap: () =>
+                                                                        handleShowPatientUserInfoDialog(
+                                                                            bookList[index]),
+                                                                    child:
+                                                                        Container(
+                                                                      height:
+                                                                          24,
+                                                                      padding: const EdgeInsets
+                                                                          .fromLTRB(
+                                                                          8,
+                                                                          0,
+                                                                          8,
+                                                                          0),
+                                                                      decoration: const BoxDecoration(
+                                                                          color: Color.fromRGBO(
+                                                                              233,
+                                                                              233,
+                                                                              233,
+                                                                              1),
+                                                                          borderRadius:
+                                                                              BorderRadius.all(Radius.circular(10))),
+                                                                      child:
+                                                                          Row(
+                                                                        children: [
+                                                                          Container(
+                                                                            width:
+                                                                                14,
+                                                                            height:
+                                                                                14,
+                                                                            margin:
+                                                                                const EdgeInsets.only(right: 4),
+                                                                            child:
+                                                                                Center(
+                                                                              child: IconFont(
+                                                                                IconNames.jingshi,
+                                                                                size: 14,
+                                                                                color: '#000',
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                          const Text(
+                                                                            '患者信息',
+                                                                            style:
+                                                                                TextStyle(color: Colors.black, fontSize: 13),
+                                                                          )
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                  )
+                                                                ],
+                                                              ),
+                                                              bookList[index]
+                                                                          .room_info ==
+                                                                      null
+                                                                  ? Column(
+                                                                      children: [
+                                                                        const SizedBox(
+                                                                          height:
+                                                                              12,
+                                                                        ),
+                                                                        Row(
+                                                                          children: [
+                                                                            //handleShowDeleteDialog
+                                                                            GestureDetector(
+                                                                              onTap: () => handleShowDeleteDialog(bookList[index]),
+                                                                              child: Container(
+                                                                                height: 32,
+                                                                                padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                                                                                decoration: const BoxDecoration(color: Color.fromRGBO(230, 65, 57, 1), borderRadius: BorderRadius.all(Radius.circular(10))),
+                                                                                child: Row(
+                                                                                  children: [
+                                                                                    Container(
+                                                                                      width: 18,
+                                                                                      height: 18,
+                                                                                      margin: const EdgeInsets.only(right: 4),
+                                                                                      child: Center(
+                                                                                        child: IconFont(
+                                                                                          IconNames.quxiao_circle,
+                                                                                          size: 18,
+                                                                                          color: '#fff',
+                                                                                        ),
+                                                                                      ),
+                                                                                    ),
+                                                                                    const Text(
+                                                                                      '取消预约',
+                                                                                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                                                                    )
+                                                                                  ],
+                                                                                ),
+                                                                              ),
+                                                                            )
+                                                                          ],
+                                                                        )
+                                                                      ],
+                                                                    )
+                                                                  : Column(
+                                                                      children: [
+                                                                        const SizedBox(
+                                                                          height:
+                                                                              12,
+                                                                        ),
+                                                                        Row(
+                                                                          children: [
+                                                                            Container(
+                                                                              height: 32,
+                                                                              padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                                                                              decoration: const BoxDecoration(color: Color.fromRGBO(140, 68, 238, 1), borderRadius: BorderRadius.all(Radius.circular(10))),
+                                                                              child: Row(
+                                                                                children: [
+                                                                                  Container(
+                                                                                    width: 18,
+                                                                                    height: 18,
+                                                                                    margin: const EdgeInsets.only(right: 4),
+                                                                                    child: Center(
+                                                                                      child: IconFont(
+                                                                                        IconNames.live_fill,
+                                                                                        size: 18,
+                                                                                        color: '#fff',
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
+                                                                                  const Text(
+                                                                                    '进入直播间',
+                                                                                    style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                                                                  )
+                                                                                ],
+                                                                              ),
+                                                                            )
+                                                                          ],
+                                                                        )
+                                                                      ],
+                                                                    )
+                                                            ],
+                                                          ),
+                                                        );
+                                                      }),
+                                                    )
+                                                  : Container(
+                                                      width: double.infinity,
+                                                      margin:
+                                                          const EdgeInsets.only(
+                                                              top: 48),
+                                                      child: Center(
+                                                        child: Column(
+                                                          children: [
+                                                            SizedBox(
+                                                              width: 100,
+                                                              height: 100,
+                                                              child:
+                                                                  Image.asset(
+                                                                'assets/images/empty.png',
+                                                                fit: BoxFit
+                                                                    .contain,
+                                                              ),
+                                                            ),
+                                                            const Text(
+                                                              '您没有被预约的课程哦~',
+                                                              style: TextStyle(
+                                                                  color: Color
+                                                                      .fromRGBO(
+                                                                          224,
+                                                                          222,
+                                                                          223,
+                                                                          1),
+                                                                  fontSize: 14),
+                                                            )
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    )
                                         ]),
                                     Positioned(
                                         top: 18,

@@ -67,6 +67,31 @@ class UserTypeModel {
   }
 }
 
+class UserOnlyNeedTypeModel {
+  final String id;
+  final String? name;
+  final String? avatar;
+  final int? gender;
+  final String phone;
+  UserOnlyNeedTypeModel(
+      {required this.id,
+      this.name,
+      this.avatar,
+      this.gender,
+      required this.phone});
+  factory UserOnlyNeedTypeModel.fromJson(Map<String, dynamic>? json) {
+    return json != null
+        ? UserOnlyNeedTypeModel(
+            id: json['id'],
+            name: json['name'],
+            phone: json['phone'],
+            avatar: json['avatar'],
+            gender: json['gender'])
+        : UserOnlyNeedTypeModel(
+            id: '', name: null, phone: '', avatar: null, gender: null);
+  }
+}
+
 class UserInfoTypeModel {
   final String id; //id
   final String user_id; //用户id

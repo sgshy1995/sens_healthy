@@ -236,189 +236,6 @@ class _CenterCourseTimePageState extends State<CenterCourseTimePage> {
     Get.toNamed('/center_course_time_explain');
   }
 
-  void handleAddTime() {
-    showBoardDateTimePicker(
-      context: context,
-      pickerType: DateTimePickerType.datetime,
-      options: const BoardDateTimeOptions(
-          boardTitle: '添加预约时间',
-          pickerSubTitles: BoardDateTimeItemTitles(
-              year: '年', month: '月', day: '日', hour: '时', minute: '分'),
-          backgroundDecoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: <Color>[
-                Colors.white,
-                Colors.white,
-              ],
-            ),
-          ),
-          languages: BoardPickerLanguages(
-            locale: 'zh',
-            today: '今天',
-            tomorrow: '明天',
-            now: '现在',
-          )),
-    ).then((value) {
-      if (value != null) {
-        String formattedDateStart = DateFormat('yyyy-MM-dd HH:mm:ss').format(
-            DateTime.parse(DateFormat('yyyy-MM-dd HH:mm').format(value)));
-        String formattedDateEnd = DateFormat('yyyy-MM-dd HH:mm:ss').format(
-            DateTime.parse(DateFormat('yyyy-MM-dd HH:mm')
-                .format(value.add(const Duration(hours: 1)))));
-        handleShowReceiveDialog(
-            startTime: formattedDateStart, endTime: formattedDateEnd);
-      }
-    });
-  }
-
-  void handleShowReceiveDialog(
-      {required String startTime, required String endTime}) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-          return AlertDialog(
-            surfaceTintColor: const Color.fromRGBO(255, 255, 255, 1),
-            backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
-            shadowColor: Colors.transparent,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(8), // 设置顶部边缘为直角
-              ),
-            ),
-            title: null,
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(
-                  height: 12,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '您即将添加的预约时间段为',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontWeight: FontWeight.normal),
-                    ),
-                    const SizedBox(
-                      height: 4,
-                    ),
-                    Text(
-                      '${DateFormat('yyyy-MM-dd HH:mm').format(DateTime.parse(startTime))} - ${DateFormat('HH:mm').format(DateTime.parse(endTime))}',
-                      style: const TextStyle(
-                          color: Color.fromRGBO(0, 0, 0, 1),
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 12,
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 18,
-                      height: 18,
-                      margin: const EdgeInsets.only(right: 4),
-                      child: Center(
-                        child: IconFont(
-                          IconNames.jingshi,
-                          size: 14,
-                          color: '#000',
-                        ),
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('请确认您已阅读并悉知',
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold)),
-                        GestureDetector(
-                          onTap: handleGotoExplain,
-                          child: const Text('《 面对面康复课程预约时间说明 》',
-                              style: TextStyle(
-                                  decoration: TextDecoration.underline,
-                                  decorationThickness: 2,
-                                  decorationColor:
-                                      Color.fromRGBO(211, 66, 67, 1),
-                                  color: Color.fromRGBO(211, 66, 67, 1),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-                    ),
-                  ],
-                )
-              ],
-            ),
-            actions: <Widget>[
-              SizedBox(
-                height: 32,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                      padding: MaterialStateProperty.all<EdgeInsets>(
-                          const EdgeInsets.fromLTRB(12, 0, 12, 0)),
-                      backgroundColor: MaterialStateProperty.all(Colors.black),
-                      shape: MaterialStateProperty.all(
-                          const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(4)),
-                              side:
-                                  BorderSide(color: Colors.black, width: 1)))),
-                  onPressed: () {
-                    // 点击确认按钮时执行的操作
-                    Navigator.of(context).pop();
-                    // 在这里执行你的操作
-                  },
-                  child: const Text(
-                    '我已悉知并确认',
-                    style: TextStyle(color: Colors.white, fontSize: 14),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 32,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                      padding: MaterialStateProperty.all<EdgeInsets>(
-                          const EdgeInsets.all(0)),
-                      backgroundColor: MaterialStateProperty.all(Colors.white),
-                      shape: MaterialStateProperty.all(
-                          const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(4)),
-                              side: BorderSide(
-                                  color: Color.fromRGBO(0, 0, 0, 1),
-                                  width: 1)))),
-                  onPressed: () {
-                    // 点击确认按钮时执行的操作
-                    Navigator.of(context).pop();
-                    // 在这里执行你的操作
-                  },
-                  child: const Text(
-                    '取消',
-                    style: TextStyle(color: Colors.black, fontSize: 14),
-                  ),
-                ),
-              ),
-            ],
-          );
-        });
-      },
-    );
-  }
-
   void handleConfirmAddTime(Appointment item) {
     showLoading('请稍后...');
     final Map<String, dynamic> form = {
@@ -489,6 +306,19 @@ class _CenterCourseTimePageState extends State<CenterCourseTimePage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const Center(
+                      child: Text(
+                        '确认预约',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 24,
+                    ),
                     const Text(
                       '您选择的预约时间段为',
                       style: TextStyle(
@@ -641,12 +471,25 @@ class _CenterCourseTimePageState extends State<CenterCourseTimePage> {
               mainAxisAlignment: MainAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(
-                  height: 12,
-                ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const SizedBox(
+                      height: 12,
+                    ),
+                    const Center(
+                      child: Text(
+                        '修改预约',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 24,
+                    ),
                     const Text(
                       '您选择的预约时间段为',
                       style: TextStyle(

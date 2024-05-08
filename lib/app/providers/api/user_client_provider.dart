@@ -165,6 +165,20 @@ class UserClientProvider extends GlobalClientProvider {
     return dataFinalUserTypeModel;
   }
 
+  // 根据 user_id 获取用户信息
+  Future<DataFinalModel<UserTypeModel>> getUserInfoByUserIdAction(
+      String userId) async {
+    final jsonData = await get('/user/id/$userId');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel<UserTypeModel> dataFinalUserInfoTypeModel =
+        DataFinalModel(
+            code: jsonMap['code'],
+            message: jsonMap['message'],
+            data: UserTypeModel.fromJson(jsonMap['data']));
+    return dataFinalUserInfoTypeModel;
+  }
+
   // 根据 jwt 更新用户信息
   Future<DataFinalModel> updateUserByJwtAction(Map<String, dynamic> user,
       {String? deviceId, String? phoneCapture}) async {
@@ -192,12 +206,26 @@ class UserClientProvider extends GlobalClientProvider {
     final jsonData = await get('/user_info/user');
     final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
 
-    final DataFinalModel<UserInfoTypeModel> dataFinalUserInfoTypeModel =
+    final DataFinalModel<UserInfoTypeModel> dataFinalInfoTypeModel =
         DataFinalModel(
             code: jsonMap['code'],
             message: jsonMap['message'],
             data: UserInfoTypeModel.fromJson(jsonMap['data']));
-    return dataFinalUserInfoTypeModel;
+    return dataFinalInfoTypeModel;
+  }
+
+  // 根据 user_id 获取个人信息
+  Future<DataFinalModel<UserInfoTypeModel>> getInfoByUserIdAction(
+      String userId) async {
+    final jsonData = await get('/user_info/user/$userId');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel<UserInfoTypeModel> dataFinalInfoTypeModel =
+        DataFinalModel(
+            code: jsonMap['code'],
+            message: jsonMap['message'],
+            data: UserInfoTypeModel.fromJson(jsonMap['data']));
+    return dataFinalInfoTypeModel;
   }
 
   // 根据 jwt 更新个人信息

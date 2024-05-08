@@ -1,4 +1,5 @@
 import 'package:sens_healthy/app/models/store_model.dart';
+import 'package:sens_healthy/app/models/user_model.dart';
 
 class LecturerTimeTypeModel {
   final String id; //时间表id
@@ -168,6 +169,10 @@ class BookTypeModel {
   final int status; //预约状态 2 已完成 1 已预约 0 取消
   final String created_at;
   final String updated_at;
+  final StoreLiveCourseTypeModel? course_info;
+  final PatientCourseTypeModel? patient_course_info;
+  final UserOnlyNeedTypeModel? patient_user_info;
+  final RoomTypeModel? room_info;
   BookTypeModel(
       {required this.id,
       required this.user_id,
@@ -181,7 +186,11 @@ class BookTypeModel {
       this.outer_canceled_reason,
       required this.status,
       required this.created_at,
-      required this.updated_at});
+      required this.updated_at,
+      this.course_info,
+      this.patient_course_info,
+      this.patient_user_info,
+      this.room_info});
 
   factory BookTypeModel.fromJson(Map<String, dynamic>? json) {
     return json != null
@@ -198,7 +207,20 @@ class BookTypeModel {
             outer_canceled_reason: json['outer_canceled_reason'],
             status: json['status'],
             created_at: json['created_at'],
-            updated_at: json['updated_at'])
+            updated_at: json['updated_at'],
+            course_info: json['course_info'] != null
+                ? StoreLiveCourseTypeModel.fromJson(json['course_info'])
+                : null,
+            patient_course_info: json['patient_course_info'] != null
+                ? PatientCourseTypeModel.fromJson(json['patient_course_info'])
+                : null,
+            patient_user_info: json['patient_user_info'] != null
+                ? UserOnlyNeedTypeModel.fromJson(json['patient_user_info'])
+                : null,
+            room_info: json['room_info'] != null
+                ? RoomTypeModel.fromJson(json['patient_user_info'])
+                : null,
+          )
         : BookTypeModel(
             id: '',
             user_id: '',
@@ -212,7 +234,11 @@ class BookTypeModel {
             outer_canceled_reason: null,
             status: 0,
             created_at: '',
-            updated_at: '');
+            updated_at: '',
+            course_info: null,
+            patient_course_info: null,
+            patient_user_info: null,
+            room_info: null);
   }
 }
 

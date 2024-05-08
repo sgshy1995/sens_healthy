@@ -291,6 +291,19 @@ class _MineDoctorTimePageState extends State<MineDoctorTimePage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const Center(
+                      child: Text(
+                        '添加预约时间',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 24,
+                    ),
                     const Text(
                       '您即将添加的预约时间段为',
                       style: TextStyle(
@@ -475,6 +488,19 @@ class _MineDoctorTimePageState extends State<MineDoctorTimePage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Center(
+                          child: Text(
+                            lecturerTimeInfo.if_booked == 1 ? '取消预约' : '取消预约时间',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 24,
+                        ),
                         const Text(
                           '您确定取消以下预约时间段吗?',
                           style: TextStyle(

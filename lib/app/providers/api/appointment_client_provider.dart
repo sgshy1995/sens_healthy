@@ -19,6 +19,10 @@ class AppointmentClientProvider extends GlobalClientProvider {
         .toList();
   }
 
+  static List<BookTypeModel> fromJsonListBook(List<dynamic> jsonList) {
+    return jsonList.map((json) => BookTypeModel.fromJson(json)).toList();
+  }
+
   // 根据JWT获取预约时间列表
   Future<DataFinalModel<List<LecturerTimeTypeModel>>>
       findManyLecturerTimesByJwtAction({int? ifBooked}) async {
@@ -204,6 +208,32 @@ class AppointmentClientProvider extends GlobalClientProvider {
       code: jsonMap['code'],
       message: jsonMap['message'],
     );
+    return dataFinalModel;
+  }
+
+  // 根据ID获取约预约信息
+  Future<DataFinalModel<BookTypeModel>> getOneBookByIdAction(String id) async {
+    final jsonData = await get('/book/id/$id');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel<BookTypeModel> dataFinalModel = DataFinalModel(
+        code: jsonMap['code'],
+        message: jsonMap['message'],
+        data: BookTypeModel.fromJson(jsonMap['data']));
+    return dataFinalModel;
+  }
+
+  // 获取属于自己的预约
+  Future<DataFinalModel<List<BookTypeModel>>> findManyBooksReadyBookedAction(
+      String bookedUserId) async {
+    final Map<String, dynamic> query = {'booked_user_id': bookedUserId};
+    final jsonData = await get('/book/ready', query: query);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    late List<BookTypeModel> list = fromJsonListBook(jsonMap['data']);
+
+    final DataFinalModel<List<BookTypeModel>> dataFinalModel = DataFinalModel(
+        code: jsonMap['code'], message: jsonMap['message'], data: list);
     return dataFinalModel;
   }
 }

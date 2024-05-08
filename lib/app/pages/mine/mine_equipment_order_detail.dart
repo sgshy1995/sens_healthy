@@ -306,6 +306,19 @@ class _MineEquipmentOrderDetailPageState
                 const SizedBox(
                   height: 12,
                 ),
+                const Center(
+                  child: Text(
+                    '确认收货',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(
+                  height: 24,
+                ),
                 (storeEquipmentOrderDetail.courier_info!.status != 3
                     ? const Text(
                         '注意: 物流信息显示快件还未签收。',

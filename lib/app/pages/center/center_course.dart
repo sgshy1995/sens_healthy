@@ -267,6 +267,19 @@ class CenterCoursePageState extends State<CenterCoursePage>
                 const SizedBox(
                   height: 12,
                 ),
+                const Center(
+                  child: Text(
+                    '取消预约',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(
+                  height: 24,
+                ),
                 Row(
                   children: [
                     Container(
