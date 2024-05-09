@@ -6,6 +6,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:sens_healthy/components/loading.dart';
 import 'package:sens_healthy/components/toast.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'dart:math';
@@ -165,15 +166,15 @@ class Line2 extends Line {
   Line2(super.startPoint, super.endPoint, {required super.paintColor});
 }
 
-class MinePrefessinalJointPage extends StatefulWidget {
-  const MinePrefessinalJointPage({super.key});
+class MineProfessinalJointPage extends StatefulWidget {
+  const MineProfessinalJointPage({super.key});
 
   @override
-  State<MinePrefessinalJointPage> createState() =>
-      _MinePrefessinalJointPageState();
+  State<MineProfessinalJointPage> createState() =>
+      _MineProfessinalJointPageState();
 }
 
-class _MinePrefessinalJointPageState extends State<MinePrefessinalJointPage> {
+class _MineProfessinalJointPageState extends State<MineProfessinalJointPage> {
   final GlobalKey _globalKeyRepaintBoundary = GlobalKey();
   final GlobalKey _customPaintState1 = GlobalKey();
   final GlobalKey _customPaintState2 = GlobalKey();
@@ -347,6 +348,7 @@ class _MinePrefessinalJointPageState extends State<MinePrefessinalJointPage> {
   void handleUseCamera() async {}
 
   void saveImage() async {
+    showLoading('请稍后...');
     RenderObject? boundary =
         _globalKeyRepaintBoundary.currentContext!.findRenderObject();
     RenderRepaintBoundary repaintBoundary =
@@ -357,6 +359,7 @@ class _MinePrefessinalJointPageState extends State<MinePrefessinalJointPage> {
     Uint8List pngBytes = byteData!.buffer.asUint8List();
 
     final result = await ImageGallerySaver.saveImage(pngBytes, quality: 400);
+    hideLoading();
     if (result['isSuccess']) {
       showToast('保存成功');
     } else {

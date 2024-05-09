@@ -18,6 +18,10 @@ class _MineProfessionalToolMenuState extends State<MineProfessionalToolMenu> {
     Get.toNamed('mine_professinal_joint');
   }
 
+  void handleGotoSpine() {
+    Get.toNamed('mine_professinal_spine');
+  }
+
   @override
   Widget build(BuildContext context) {
     final EdgeInsets mediaQuerySafeInfo = MediaQuery.of(context).padding;
@@ -89,6 +93,7 @@ class _MineProfessionalToolMenuState extends State<MineProfessionalToolMenu> {
                 ),
               ),
               GestureDetector(
+                onTap: handleGotoSpine,
                 child: Container(
                   width: (mediaQuerySizeInfo.width - 24 - 24) / 4,
                   height: 54,
