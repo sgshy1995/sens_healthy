@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
 
 enum IconNames {
-  quxiao_circle, bofangzhong, shipinliebiao, guankanlishi, guankan, sayhi, xuexizhongxin, qiehuan, yuyueshijian_doctor, shoukequanxian_doctor, shangwuhezuo_doctor, doctor_enter, renzhenglishi, fuzhi, apple, biangeng_1, yigoumai, zhuanyerenzheng_menu, kefuyushouhou, shiyongbangzhu, qicai_yifahuo, qicai_daifahuo, qicai_yiquxiao, qicai_yiqianshou, shouhuodizhi, kaitongshoukequanxian, shangwuhezuo, jizhu, guanjie, yiwancheng, daixuexi, xuexizhong, yiyuyue, chongzhi, morenxuanzhong, moren_fill, phone_fill, dizhi_fill, dizhiguanli, lianxi_yishouqing_copy, zhekou, remen, a_yinhangkadaizhifuzhifu, tubiaozhizuomoban, jianshenke, jianji, zixingche, xiaidekecheng, yue, jingshi, qingkong, shouqi, zuixingengxin, live_fill, live, video_fill, video, dingdan, kangfushigongju, kecheng, gouwuche, liebiaoxingshi, duigou, hot, nandu, yanjing, yanjing_fill, fenlei, cainixihuan, nan, nv, shanchu, shezhi, yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, qianjin, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, course_order, equipment_order, top_up_order, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
+  tuse, baocun, huizhiguiji, quxiao_circle, bofangzhong, shipinliebiao, guankanlishi, guankan, sayhi, xuexizhongxin, qiehuan, yuyueshijian_doctor, shoukequanxian_doctor, shangwuhezuo_doctor, doctor_enter, renzhenglishi, fuzhi, apple, biangeng_1, yigoumai, zhuanyerenzheng_menu, kefuyushouhou, shiyongbangzhu, qicai_yifahuo, qicai_daifahuo, qicai_yiquxiao, qicai_yiqianshou, shouhuodizhi, kaitongshoukequanxian, shangwuhezuo, jizhu, guanjie, yiwancheng, daixuexi, xuexizhong, yiyuyue, chongzhi, morenxuanzhong, moren_fill, phone_fill, dizhi_fill, dizhiguanli, lianxi_yishouqing_copy, zhekou, remen, a_yinhangkadaizhifuzhifu, tubiaozhizuomoban, jianshenke, jianji, zixingche, xiaidekecheng, yue, jingshi, qingkong, shouqi, zuixingengxin, live_fill, live, video_fill, video, dingdan, kangfushigongju, kecheng, gouwuche, liebiaoxingshi, duigou, hot, nandu, yanjing, yanjing_fill, fenlei, cainixihuan, nan, nv, shanchu, shezhi, yirenzheng, guanfangrenzheng, a_pinpaiyisheng, xiala, bianji, tupian, xiangji, xiazai, guanbi, gengduo, tanhao, qianjin, fanhui, fenxiang, tianjia, shuaxin_1, shuaxin, sousuo, dianzan, kabao, shoucang, xiaoxi, xiaoxizhongxin, dianzan_1, shoucang_1, turnback, dianhua, paihangbang, weixin, phone, pic_discount, course_order, equipment_order, top_up_order, zhifu_weixin, zhifu_zhifubao, live_copy_copy, shipin_1_copy_111111
 }
 
 extension parseString on IconNames {
@@ -36,6 +36,15 @@ class IconFont extends StatelessWidget {
 
   static IconNames getIconNames(dynamic iconName) {
     switch (iconName) {
+      case 'tuse':
+        iconName = IconNames.tuse;
+        break;
+      case 'baocun':
+        iconName = IconNames.baocun;
+        break;
+      case 'huizhiguiji':
+        iconName = IconNames.huizhiguiji;
+        break;
       case 'quxiao_circle':
         iconName = IconNames.quxiao_circle;
         break;
@@ -391,6 +400,36 @@ class IconFont extends StatelessWidget {
     String svgXml;
 
     switch (this.name!) {
+      case IconNames.tuse:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M200.71999971 932.00000029A78.59999971 78.59999971 0 0 1 122.00000029 853.28c0-43.44000029 78.72000029-183.96 78.71999942-183.96s78.72000029 140.51999971 78.72000029 183.96A78.77999971 78.77999971 0 0 1 200.71999971 932.00000029m708.66-390.48000029L568.61 878.90000029 227.6 541.76000029 568.61 204.62000029l340.80000029 336.89999971m-340.80000029-262.19999971l-236.54999971 232.29h472.86l-236.31000029-232.26000029m151.44000029-149.94l-113.52000058 112.5-37.91999971-37.41000029L682.12999971 91.99999971l37.92000058 37.41000029"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
+      case IconNames.baocun:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M834.992 102.4a54.59093333 54.59093333 0 0 1 54.59093333 54.59093333V866.144a54.59093333 54.59093333 0 0 1-54.59093333 54.56746667H180.4512a54.59093333 54.59093333 0 0 1-54.58986667-54.56746667V156.99093333A54.59093333 54.59093333 0 0 1 180.4512 102.4h654.56426667zM316.8256 429.6928a54.4992 54.4992 0 0 1-54.59093333-54.4992V156.96746667h-81.78346667v709.1776h654.67733333V156.99093333H753.30133333v218.112a54.59093333 54.59093333 0 0 1-54.59093333 54.58986667H316.8256z m0-54.4992h381.86133333V156.96746667H316.8256v218.22613333z m381.77066667 218.1344a27.2608 27.2608 0 1 1 0.09066666 54.4768H316.8256a27.2384 27.2384 0 1 1 0-54.4768h381.77066667z"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
+      case IconNames.huizhiguiji:
+        svgXml = '''
+          <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M828.66666667 631.66333334c-44.93 0.94-84.63 32.13-99.63 78.29-1.86 5.85-6.93 9.77-12.61 9.75H252.74666667c-44.57 0.27-81.04-38.56-81.84-87.1-0.2-23.5 8.22-46.11 23.4-62.81 15.17-16.7 35.84-26.1 57.41-26.12h484.71c35.8 0 69.54-15.33 95.1-43.11 25.37-27.39 39.62-64.7 39.57-103.61 0-39.06-14.07-75.76-39.57-103.61-25.16-27.6-59.4-43.1-95.1-43.05H298.67666667c-5.68 0.02-10.75-3.9-12.62-9.75-14.95-46.2-54.67-77.41-99.63-78.29C126.62666667 161.53333334 77.54666667 213.63333334 76.66666667 278.78333334c-0.39 57.33 37.29 106.58 89.12 116.47 51.83 9.89 102.64-22.46 120.15-76.53 1.92-5.86 7.01-9.76 12.72-9.75h436.73c44.47 0 81.4 38.65 81.83 87.1 0.2 23.5-8.22 46.11-23.4 62.81-15.18 16.7-35.84 26.1-57.41 26.11H251.71666667c-35.8 0-69.54 15.27-95.1 43.05-25.37 27.4-39.63 64.7-39.63 103.61s14.27 76.21 39.63 103.61c25.5 27.78 59.3 43.11 95.1 43.11h464.7c5.71 0 10.78 3.93 12.67 9.81 17.74 53.76 68.41 85.81 120.06 75.95 51.65-9.85 89.3-58.76 89.22-115.89-0.85-65.14-49.9-117.27-109.7-116.58zM184.43666667 338.28333334c-28.81-1.41-51.5-27.26-51.5-58.67 0-31.42 22.69-57.27 51.5-58.68 28.81 1.4 51.5 27.26 51.5 58.68 0 31.42-22.69 57.27-51.5 58.67z m646.22 469.41c-28.81-1.41-51.5-27.26-51.5-58.67s22.69-57.27 51.5-58.68c28.81 1.41 51.5 27.26 51.5 58.68s-22.69 57.26-51.5 58.67z m0 0"
+              fill="''' + getColor(0, color, colors, '#333333') + '''"
+            />
+          </svg>
+        ''';
+        break;
       case IconNames.quxiao_circle:
         svgXml = '''
           <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">

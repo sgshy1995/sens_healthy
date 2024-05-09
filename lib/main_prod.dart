@@ -58,6 +58,7 @@ import './app/pages/center/center_course_time.dart';
 import './app/pages/center/center_course_time_explain.dart';
 import './app/pages/center/center_major_detail.dart';
 import './app/pages/mine/mine_doctor_patient_record.dart';
+import './app/pages/mine/professinal/mine_professinal_ joint.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env.prod"); // 加载开发环境配置
@@ -315,6 +316,11 @@ Future main() async {
           GetPage(
             name: '/mine_doctor_patient_record',
             page: () => const MineDoctorPatientRecordPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/mine_professinal_joint',
+            page: () => const MinePrefessinalJointPage(),
             middlewares: [AuthMiddleware()],
           ),
         ],

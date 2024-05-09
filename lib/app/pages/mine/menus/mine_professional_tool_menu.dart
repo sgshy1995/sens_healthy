@@ -14,6 +14,10 @@ class MineProfessionalToolMenu extends StatefulWidget {
 class _MineProfessionalToolMenuState extends State<MineProfessionalToolMenu> {
   final UserController userController = Get.put(UserController());
 
+  void handleGotoJoint() {
+    Get.toNamed('mine_professinal_joint');
+  }
+
   @override
   Widget build(BuildContext context) {
     final EdgeInsets mediaQuerySafeInfo = MediaQuery.of(context).padding;
@@ -53,58 +57,65 @@ class _MineProfessionalToolMenuState extends State<MineProfessionalToolMenu> {
           ),
           Row(
             children: [
-              SizedBox(
-                width: (mediaQuerySizeInfo.width - 24 - 24) / 4,
-                height: 54,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 6),
-                      width: 24,
-                      height: 24,
-                      child: Center(
-                        child: IconFont(
-                          IconNames.guanjie,
-                          size: 24,
-                          color: 'rgb(0, 0, 0)',
+              GestureDetector(
+                onTap: handleGotoJoint,
+                child: Container(
+                  width: (mediaQuerySizeInfo.width - 24 - 24) / 4,
+                  height: 54,
+                  color: Colors.transparent,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 6),
+                        width: 24,
+                        height: 24,
+                        child: Center(
+                          child: IconFont(
+                            IconNames.guanjie,
+                            size: 24,
+                            color: 'rgb(0, 0, 0)',
+                          ),
                         ),
                       ),
-                    ),
-                    const Text('关节角度',
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 13,
-                            fontWeight: FontWeight.normal))
-                  ],
+                      const Text('关节角度',
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 13,
+                              fontWeight: FontWeight.normal))
+                    ],
+                  ),
                 ),
               ),
-              SizedBox(
-                width: (mediaQuerySizeInfo.width - 24 - 24) / 4,
-                height: 54,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 6),
-                      width: 24,
-                      height: 24,
-                      child: Center(
-                        child: IconFont(
-                          IconNames.jizhu,
-                          size: 24,
-                          color: 'rgb(0, 0, 0)',
+              GestureDetector(
+                child: Container(
+                  width: (mediaQuerySizeInfo.width - 24 - 24) / 4,
+                  height: 54,
+                  color: Colors.transparent,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 6),
+                        width: 24,
+                        height: 24,
+                        child: Center(
+                          child: IconFont(
+                            IconNames.jizhu,
+                            size: 24,
+                            color: 'rgb(0, 0, 0)',
+                          ),
                         ),
                       ),
-                    ),
-                    const Text('脊柱角度',
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 13,
-                            fontWeight: FontWeight.normal))
-                  ],
+                      const Text('脊柱角度',
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 13,
+                              fontWeight: FontWeight.normal))
+                    ],
+                  ),
                 ),
               )
             ],
