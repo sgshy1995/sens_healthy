@@ -322,6 +322,8 @@ class _MineProfessinalJointPageState extends State<MineProfessinalJointPage> {
     });
   }
 
+  AssetEntity? assetEntityGet;
+
   void handleChooseImage() async {
     Get.back();
 
@@ -336,12 +338,19 @@ class _MineProfessinalJointPageState extends State<MineProfessinalJointPage> {
 
     if (resultGet != null) {
       final AssetEntity assetEntity = resultGet[0];
+      if (GetPlatform.isAndroid) {
+        setState(() {
+          assetEntityGet = assetEntity;
+        });
+      }
       // 在此处处理异步操作，例如网络请求、文件读写等
       final fileGet = await assetEntity.file;
       final localPath = fileGet!.path;
-      setState(() {
-        localImage = localPath;
-      });
+      if (GetPlatform.isIOS) {
+        setState(() {
+          localImage = localPath;
+        });
+      }
     }
   }
 
@@ -358,7 +367,7 @@ class _MineProfessinalJointPageState extends State<MineProfessinalJointPage> {
     ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
     Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-    final result = await ImageGallerySaver.saveImage(pngBytes, quality: 400);
+    final result = await ImageGallerySaver.saveImage(pngBytes, quality: 100);
     hideLoading();
     if (result['isSuccess']) {
       showToast('保存成功');
@@ -573,12 +582,25 @@ class _MineProfessinalJointPageState extends State<MineProfessinalJointPage> {
                               fit: BoxFit.contain,
                             )
                           : null,
-                      color: localImage != null
+                      color: (localImage != null || assetEntityGet != null)
                           ? Colors.white
                           : const Color.fromRGBO(33, 33, 33, 1),
                     ),
                     child: Stack(
                       children: [
+                        assetEntityGet != null
+                            ? SizedBox(
+                                width: double.infinity,
+                                height: mediaQuerySizeInfo.height -
+                                    (mediaQuerySafeInfo.top + 12 + 12 + 36) -
+                                    2,
+                                child: AssetEntityImage(
+                                  assetEntityGet!,
+                                  isOriginal: true,
+                                  fit: BoxFit.fitWidth,
+                                ),
+                              )
+                            : const SizedBox.shrink(),
                         startPointsList.length >= 2
                             ? CustomPaint(
                                 key: _customPaintState1,
@@ -689,7 +711,7 @@ class _MineProfessinalJointPageState extends State<MineProfessinalJointPage> {
                                   ],
                                 ))
                             : const SizedBox.shrink(),
-                        localImage == null
+                        localImage == null && assetEntityGet == null
                             ? Center(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -741,7 +763,7 @@ class _MineProfessinalJointPageState extends State<MineProfessinalJointPage> {
               ))
             ],
           ),
-          localImage != null
+          localImage != null || assetEntityGet != null
               ? Positioned(
                   right: 12,
                   bottom: mediaQuerySafeInfo.bottom + 12,
@@ -763,7 +785,7 @@ class _MineProfessinalJointPageState extends State<MineProfessinalJointPage> {
                     ),
                   ))
               : const SizedBox.shrink(),
-          localImage != null
+          localImage != null || assetEntityGet != null
               ? Positioned(
                   right: 12 + 44 + 12,
                   bottom: mediaQuerySafeInfo.bottom + 12,
@@ -788,7 +810,7 @@ class _MineProfessinalJointPageState extends State<MineProfessinalJointPage> {
                     ),
                   ))
               : const SizedBox.shrink(),
-          (localImage != null)
+          (localImage != null || assetEntityGet != null)
               ? Positioned(
                   right: 12 + 44 + 12 + 44 + 12,
                   bottom: mediaQuerySafeInfo.bottom + 12,
@@ -811,7 +833,8 @@ class _MineProfessinalJointPageState extends State<MineProfessinalJointPage> {
                     ),
                   ))
               : const SizedBox.shrink(),
-          (localImage != null && startPointsList.length == 3)
+          ((localImage != null || assetEntityGet != null) &&
+                  startPointsList.length == 3)
               ? Positioned(
                   left: 12,
                   bottom: mediaQuerySafeInfo.bottom + 12,

@@ -22,6 +22,8 @@ import 'package:mime/mime.dart';
 
 import './mine_name_sheet.dart';
 
+import 'package:permission_handler/permission_handler.dart';
+
 class MyAssetPickerTextDelegate extends AssetPickerTextDelegate {
   @override
   String get languageCode => 'zh'; // 强制修改语言代码为汉语
@@ -43,8 +45,23 @@ class _MineDataPageState extends State<MineDataPage> {
     Get.back();
   }
 
+  bool _hasPermission = false;
+
   void handleChooseImage() async {
     Get.back();
+
+    PermissionStatus status = await Permission.storage.status;
+    if (!status.isGranted) {
+      await Permission.storage.request();
+      status = await Permission.storage.status;
+    }
+    setState(() {
+      _hasPermission = status.isGranted;
+    });
+
+    if (!_hasPermission) {
+      showToast('授权失败');
+    }
 
     final List<AssetEntity>? resultGet = await AssetPicker.pickAssets(
       context,
@@ -64,7 +81,7 @@ class _MineDataPageState extends State<MineDataPage> {
       ImageCropper().cropImage(
         sourcePath: localPath,
         aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-        aspectRatioPresets: [],
+        aspectRatioPresets: [CropAspectRatioPreset.original],
         uiSettings: [
           AndroidUiSettings(
               toolbarTitle: '头像裁剪',

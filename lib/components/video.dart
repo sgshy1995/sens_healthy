@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:chewie/chewie.dart';
+import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
 
@@ -64,6 +65,12 @@ class VideoPlayerModuleState extends State<VideoPlayerModule> {
         placeholder: Container(
           color: const Color.fromRGBO(0, 0, 0, 1),
         ),
+        optionsTranslation: OptionsTranslation(
+          playbackSpeedButtonText: '播放倍速',
+          cancelButtonText: '取消',
+        ),
+        customControls:
+            GetPlatform.isAndroid ? const MaterialDesktopControls() : null,
       );
       // 添加监听器
       _chewieController!.addListener(_chewieListener);

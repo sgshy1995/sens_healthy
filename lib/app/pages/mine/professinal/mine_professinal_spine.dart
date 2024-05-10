@@ -949,7 +949,7 @@ class _MineProfessinalSpinePageState extends State<MineProfessinalSpinePage>
     ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
     Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-    final result = await ImageGallerySaver.saveImage(pngBytes, quality: 400);
+    final result = await ImageGallerySaver.saveImage(pngBytes, quality: 100);
     hideLoading();
     if (result['isSuccess']) {
       showToast('保存成功');
@@ -957,6 +957,8 @@ class _MineProfessinalSpinePageState extends State<MineProfessinalSpinePage>
       showToast('保存失败，请重试');
     }
   }
+
+  AssetEntity? assetEntityGet;
 
   void handleChooseImage() async {
     Get.back();
@@ -972,12 +974,19 @@ class _MineProfessinalSpinePageState extends State<MineProfessinalSpinePage>
 
     if (resultGet != null) {
       final AssetEntity assetEntity = resultGet[0];
+      if (GetPlatform.isAndroid) {
+        setState(() {
+          assetEntityGet = assetEntity;
+        });
+      }
       // 在此处处理异步操作，例如网络请求、文件读写等
       final fileGet = await assetEntity.file;
       final localPath = fileGet!.path;
-      setState(() {
-        localImage = localPath;
-      });
+      if (GetPlatform.isIOS) {
+        setState(() {
+          localImage = localPath;
+        });
+      }
     }
   }
 
@@ -1173,12 +1182,25 @@ class _MineProfessinalSpinePageState extends State<MineProfessinalSpinePage>
                                 fit: BoxFit.fitWidth,
                               )
                             : null,
-                        color: localImage != null
+                        color: (localImage != null || assetEntityGet != null)
                             ? Colors.white
                             : const Color.fromRGBO(33, 33, 33, 1),
                       ),
                       child: Stack(children: [
-                        localImage != null
+                        assetEntityGet != null
+                            ? SizedBox(
+                                width: double.infinity,
+                                height: mediaQuerySizeInfo.height -
+                                    (mediaQuerySafeInfo.top + 12 + 12 + 36) -
+                                    2,
+                                child: AssetEntityImage(
+                                  assetEntityGet!,
+                                  isOriginal: true,
+                                  fit: BoxFit.fitWidth,
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                        localImage != null || assetEntityGet != null
                             ? CustomPaint(
                                 painter: Line(spineLine3PointsList[0],
                                     spineLine3PointsList[1],
@@ -1187,7 +1209,7 @@ class _MineProfessinalSpinePageState extends State<MineProfessinalSpinePage>
                                         const Color.fromRGBO(38, 221, 118, 1)),
                               )
                             : const SizedBox.shrink(),
-                        localImage != null
+                        localImage != null || assetEntityGet != null
                             ? CustomPaint(
                                 painter: Line(spineLine1PointsList[0],
                                     spineLine1PointsList[1],
@@ -1285,7 +1307,7 @@ class _MineProfessinalSpinePageState extends State<MineProfessinalSpinePage>
                                         const Color.fromRGBO(0, 40, 74, 1)),
                               )
                             : const SizedBox.shrink(),
-                        localImage != null
+                        localImage != null || assetEntityGet != null
                             ? Positioned(
                                 top: spineLine3PointsList[0].dy - 26,
                                 left: spineLine3PointsList[0].dx - 20,
@@ -1297,7 +1319,7 @@ class _MineProfessinalSpinePageState extends State<MineProfessinalSpinePage>
                                       color: Color.fromRGBO(38, 221, 118, 1)),
                                 ))
                             : const SizedBox.shrink(),
-                        localImage != null
+                        localImage != null || assetEntityGet != null
                             ? Positioned(
                                 top: spineLine1PointsList[0].dy - 26,
                                 left: spineLine1PointsList[0].dx - 20,
@@ -1871,7 +1893,7 @@ class _MineProfessinalSpinePageState extends State<MineProfessinalSpinePage>
                                               0, 40, 74, 1))),
                                 ))
                             : const SizedBox.shrink(),
-                        localImage == null
+                        localImage == null && assetEntityGet == null
                             ? Center(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -2150,7 +2172,7 @@ class _MineProfessinalSpinePageState extends State<MineProfessinalSpinePage>
             ))
           ]),
           //(localImage != null)
-          localImage != null
+          localImage != null || assetEntityGet != null
               ? Positioned(
                   left: 12,
                   bottom: mediaQuerySafeInfo.bottom + 12,
@@ -2172,7 +2194,7 @@ class _MineProfessinalSpinePageState extends State<MineProfessinalSpinePage>
                     ),
                   ))
               : const SizedBox.shrink(),
-          localImage != null
+          localImage != null || assetEntityGet != null
               ? Positioned(
                   right: 12,
                   bottom: mediaQuerySafeInfo.bottom + 12,
@@ -2195,7 +2217,7 @@ class _MineProfessinalSpinePageState extends State<MineProfessinalSpinePage>
                     ),
                   ))
               : const SizedBox.shrink(),
-          localImage != null
+          localImage != null || assetEntityGet != null
               ? Positioned(
                   right: 12 + 44 + 12,
                   bottom: mediaQuerySafeInfo.bottom + 12,
@@ -2233,7 +2255,7 @@ class _MineProfessinalSpinePageState extends State<MineProfessinalSpinePage>
                     ),
                   ))
               : const SizedBox.shrink(),
-          localImage != null
+          localImage != null || assetEntityGet != null
               ? Positioned(
                   right: 12 + 44 + 12 + 44 + 12,
                   bottom: mediaQuerySafeInfo.bottom + 12,
@@ -2271,7 +2293,7 @@ class _MineProfessinalSpinePageState extends State<MineProfessinalSpinePage>
                     ),
                   ))
               : const SizedBox.shrink(),
-          localImage != null
+          localImage != null || assetEntityGet != null
               ? Positioned(
                   right: 12 + 44 + 12 + 44 + 12 + 44 + 12,
                   bottom: mediaQuerySafeInfo.bottom + 12,
@@ -2309,7 +2331,7 @@ class _MineProfessinalSpinePageState extends State<MineProfessinalSpinePage>
                     ),
                   ))
               : const SizedBox.shrink(),
-          localImage != null
+          localImage != null || assetEntityGet != null
               ? Positioned(
                   right: 12 + 44 + 12 + 44 + 12 + 44 + 12 + 44 + 12,
                   bottom: mediaQuerySafeInfo.bottom + 12,
@@ -2347,7 +2369,7 @@ class _MineProfessinalSpinePageState extends State<MineProfessinalSpinePage>
                     ),
                   ))
               : const SizedBox.shrink(),
-          localImage != null
+          localImage != null || assetEntityGet != null
               ? Positioned(
                   right: 12,
                   bottom: mediaQuerySafeInfo.bottom + 12 + 44 + 12,

@@ -23,6 +23,9 @@ if (flutterVersionName == null) {
 }
 
 android {
+    // assets compine only set 33.
+    compileSdkVersion 33
+
     namespace "com.example.sens_healthy"
     compileSdk flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
@@ -47,9 +50,20 @@ android {
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         //minSdkVersion flutter.minSdkVersion
         minSdkVersion 21
-        targetSdkVersion flutter.targetSdkVersion
+        targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+    }
+
+    signingConfigs {
+        config {
+            keyAlias 'sens'
+            keyPassword '123456'
+            storeFile file('sens.keystore')
+            storePassword '123456'
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
     }
 
     buildTypes {

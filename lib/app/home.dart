@@ -76,9 +76,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.red, // 强制状态栏颜色为红色
-    ));
+    // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    //   statusBarColor: Colors.red, // 强制状态栏颜色为红色
+    // ));
     _animationHomeController = AnimationController(vsync: this)
       ..duration = const Duration(milliseconds: 700);
     _animationRecoveryController = AnimationController(vsync: this)
