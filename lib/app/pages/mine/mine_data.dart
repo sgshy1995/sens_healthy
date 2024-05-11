@@ -29,6 +29,11 @@ class MyAssetPickerTextDelegate extends AssetPickerTextDelegate {
   String get languageCode => 'zh'; // 强制修改语言代码为汉语
 }
 
+class MyCameraPickerTextDelegate extends CameraPickerTextDelegate {
+  @override
+  String get languageCode => 'zh'; // 强制修改语言代码为汉语
+}
+
 class MineDataPage extends StatefulWidget {
   const MineDataPage({super.key});
 
@@ -45,32 +50,49 @@ class _MineDataPageState extends State<MineDataPage> {
     Get.back();
   }
 
-  bool _hasPermission = false;
+  //bool _hasPermission = false;
 
-  void handleChooseImage() async {
+  void handleChooseImage(String type) async {
     Get.back();
 
-    PermissionStatus status = await Permission.storage.status;
-    if (!status.isGranted) {
-      await Permission.storage.request();
-      status = await Permission.storage.status;
-    }
-    setState(() {
-      _hasPermission = status.isGranted;
-    });
+    // PermissionStatus status = await Permission.storage.status;
+    // if (!status.isGranted) {
+    //   await Permission.storage.request();
+    //   status = await Permission.storage.status;
+    // }
+    // setState(() {
+    //   _hasPermission = status.isGranted;
+    // });
 
-    if (!_hasPermission) {
-      showToast('授权失败');
-    }
+    // if (!_hasPermission) {
+    //   showToast('授权失败');
+    // }
 
-    final List<AssetEntity>? resultGet = await AssetPicker.pickAssets(
-      context,
-      pickerConfig: AssetPickerConfig(
-          textDelegate: MyAssetPickerTextDelegate(),
-          requestType: RequestType.image,
-          themeColor: const Color.fromRGBO(211, 66, 67, 1),
-          maxAssets: 1),
-    );
+    List<AssetEntity>? resultGet;
+
+    if (type == 'assets') {
+      resultGet = await AssetPicker.pickAssets(
+        context,
+        pickerConfig: AssetPickerConfig(
+            textDelegate: MyAssetPickerTextDelegate(),
+            requestType: RequestType.image,
+            themeColor: const Color.fromRGBO(211, 66, 67, 1),
+            maxAssets: 1),
+      );
+    } else {
+      final AssetEntity? resultGetCamera = await CameraPicker.pickFromCamera(
+        context,
+        pickerConfig: CameraPickerConfig(
+            textDelegate: MyCameraPickerTextDelegate(),
+            enableRecording: false,
+            theme:
+                CameraPicker.themeData(const Color.fromRGBO(211, 66, 67, 1))),
+      );
+
+      if (resultGetCamera != null) {
+        resultGet = [resultGetCamera];
+      }
+    }
 
     if (resultGet != null) {
       final AssetEntity assetEntity = resultGet[0];
@@ -141,8 +163,6 @@ class _MineDataPageState extends State<MineDataPage> {
     }
   }
 
-  void handleUseCamera() async {}
-
   @override
   void initState() {
     super.initState();
@@ -198,7 +218,7 @@ class _MineDataPageState extends State<MineDataPage> {
                     child: Column(
                       children: [
                         InkWell(
-                          onTap: handleChooseImage,
+                          onTap: () => handleChooseImage('assets'),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
@@ -233,7 +253,7 @@ class _MineDataPageState extends State<MineDataPage> {
                           color: Color.fromRGBO(200, 200, 200, 1),
                         ),
                         InkWell(
-                          onTap: handleUseCamera,
+                          onTap: () => handleChooseImage('camera'),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [

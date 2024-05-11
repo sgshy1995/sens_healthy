@@ -9,10 +9,16 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:sens_healthy/components/loading.dart';
 import 'package:sens_healthy/components/toast.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
+import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import 'dart:math';
 import '../../../../iconfont/icon_font.dart';
 
 class MyAssetPickerTextDelegate extends AssetPickerTextDelegate {
+  @override
+  String get languageCode => 'zh'; // 强制修改语言代码为汉语
+}
+
+class MyCameraPickerTextDelegate extends CameraPickerTextDelegate {
   @override
   String get languageCode => 'zh'; // 强制修改语言代码为汉语
 }
@@ -337,24 +343,42 @@ class _MineProfessinalJointPageState extends State<MineProfessinalJointPage> {
     );
 
     if (resultGet != null) {
-      final AssetEntity assetEntity = resultGet[0];
-      if (GetPlatform.isAndroid) {
-        setState(() {
-          assetEntityGet = assetEntity;
-        });
-      }
-      // 在此处处理异步操作，例如网络请求、文件读写等
-      final fileGet = await assetEntity.file;
-      final localPath = fileGet!.path;
-      if (GetPlatform.isIOS) {
-        setState(() {
-          localImage = localPath;
-        });
-      }
+      handleGenerateAssetEntities(resultGet);
     }
   }
 
-  void handleUseCamera() async {}
+  void handleUseCamera() async {
+    Get.back();
+
+    final AssetEntity? resultGet = await CameraPicker.pickFromCamera(
+      context,
+      pickerConfig: CameraPickerConfig(
+          textDelegate: MyCameraPickerTextDelegate(),
+          enableRecording: false,
+          theme: CameraPicker.themeData(const Color.fromRGBO(211, 66, 67, 1))),
+    );
+
+    if (resultGet != null) {
+      handleGenerateAssetEntities([resultGet]);
+    }
+  }
+
+  void handleGenerateAssetEntities(List<AssetEntity> resultGet) async {
+    final AssetEntity assetEntity = resultGet[0];
+    if (GetPlatform.isAndroid) {
+      setState(() {
+        assetEntityGet = assetEntity;
+      });
+    }
+    // 在此处处理异步操作，例如网络请求、文件读写等
+    final fileGet = await assetEntity.file;
+    final localPath = fileGet!.path;
+    if (GetPlatform.isIOS) {
+      setState(() {
+        localImage = localPath;
+      });
+    }
+  }
 
   void saveImage() async {
     showLoading('请稍后...');

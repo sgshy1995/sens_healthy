@@ -152,10 +152,6 @@ class _MineAddressPublishPageState extends State<MineAddressPublishPage> {
     checkIfCanPublish();
   }
 
-  void handleUseCamera() async {
-    Get.back();
-  }
-
   void handleGoBack() {
     Get.back();
   }

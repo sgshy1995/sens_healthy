@@ -25,6 +25,11 @@ class MyAssetPickerTextDelegate extends AssetPickerTextDelegate {
   String get languageCode => 'zh'; // 强制修改语言代码为汉语
 }
 
+class MyCameraPickerTextDelegate extends CameraPickerTextDelegate {
+  @override
+  String get languageCode => 'zh'; // 强制修改语言代码为汉语
+}
+
 class PainQuestionPublishPage extends StatefulWidget {
   const PainQuestionPublishPage({super.key});
 
@@ -104,20 +109,37 @@ class _PainQuestionPublishPageState extends State<PainQuestionPublishPage> {
     checkIfCanPublish();
   }
 
-  void handleChooseImages() async {
+  void handleChooseImages(String type) async {
     setState(() {
       inputEnabled = false;
     });
     Get.back();
 
-    final List<AssetEntity>? resultGet = await AssetPicker.pickAssets(
-      context,
-      pickerConfig: AssetPickerConfig(
-          textDelegate: MyAssetPickerTextDelegate(),
-          requestType: RequestType.image,
-          themeColor: const Color.fromRGBO(211, 66, 67, 1),
-          maxAssets: 9 - imageDataList.length),
-    );
+    List<AssetEntity>? resultGet;
+
+    if (type == 'assets') {
+      resultGet = await AssetPicker.pickAssets(
+        context,
+        pickerConfig: AssetPickerConfig(
+            textDelegate: MyAssetPickerTextDelegate(),
+            requestType: RequestType.image,
+            themeColor: const Color.fromRGBO(211, 66, 67, 1),
+            maxAssets: 9 - imageDataList.length),
+      );
+    } else {
+      final AssetEntity? resultGetCamera = await CameraPicker.pickFromCamera(
+        context,
+        pickerConfig: CameraPickerConfig(
+            textDelegate: MyCameraPickerTextDelegate(),
+            enableRecording: false,
+            theme:
+                CameraPicker.themeData(const Color.fromRGBO(211, 66, 67, 1))),
+      );
+
+      if (resultGetCamera != null) {
+        resultGet = [resultGetCamera];
+      }
+    }
 
     setState(() {
       inputEnabled = true;
@@ -130,12 +152,12 @@ class _PainQuestionPublishPageState extends State<PainQuestionPublishPage> {
 
       Future.delayed(const Duration(milliseconds: 500), () async {
         setState(() {
-          imageDataList.addAll(resultGet);
+          imageDataList.addAll(resultGet!);
           _uploading = true;
         });
 
         List<PainFileUploadTypeModel> finalImagesListGet = [];
-        await Future.forEach(resultGet, (assetEntity) async {
+        await Future.forEach(resultGet!, (assetEntity) async {
           // 在此处处理异步操作，例如网络请求、文件读写等
           final String uuidGet = const Uuid().v4();
           final String id = '${assetEntity.id}-$uuidGet';
@@ -241,10 +263,6 @@ class _PainQuestionPublishPageState extends State<PainQuestionPublishPage> {
         finalImagesListGet.where((item) => item.status == 1).toList();
     final List<String> idsGet = listGet.map((item) => item.realKey!).toList();
     painClientProvider.removeUnnecessaryImagesAction(idsGet);
-  }
-
-  void handleUseCamera() async {
-    Get.back();
   }
 
   void handleGoBack() {
@@ -354,7 +372,7 @@ class _PainQuestionPublishPageState extends State<PainQuestionPublishPage> {
                     child: Column(
                       children: [
                         InkWell(
-                          onTap: handleChooseImages,
+                          onTap: () => handleChooseImages('assets'),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
@@ -389,7 +407,7 @@ class _PainQuestionPublishPageState extends State<PainQuestionPublishPage> {
                           color: Color.fromRGBO(200, 200, 200, 1),
                         ),
                         InkWell(
-                          onTap: handleUseCamera,
+                          onTap: () => handleChooseImages('camera'),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [

@@ -28,6 +28,11 @@ class MyAssetPickerTextDelegate extends AssetPickerTextDelegate {
   String get languageCode => 'zh'; // 强制修改语言代码为汉语
 }
 
+class MyCameraPickerTextDelegate extends CameraPickerTextDelegate {
+  @override
+  String get languageCode => 'zh'; // 强制修改语言代码为汉语
+}
+
 class MineAuthenticatePublishPage extends StatefulWidget {
   const MineAuthenticatePublishPage({super.key});
 
@@ -235,17 +240,34 @@ class _MineAuthenticatePublishPageState
   }
 
   ///身份证正面处理方法
-  void handleChooseImagesFront() async {
+  void handleChooseImagesFront(String type) async {
     Get.back();
 
-    final List<AssetEntity>? resultGet = await AssetPicker.pickAssets(
-      context,
-      pickerConfig: AssetPickerConfig(
-          textDelegate: MyAssetPickerTextDelegate(),
-          requestType: RequestType.image,
-          themeColor: const Color.fromRGBO(211, 66, 67, 1),
-          maxAssets: 1),
-    );
+    List<AssetEntity>? resultGet;
+
+    if (type == 'assets') {
+      resultGet = await AssetPicker.pickAssets(
+        context,
+        pickerConfig: AssetPickerConfig(
+            textDelegate: MyAssetPickerTextDelegate(),
+            requestType: RequestType.image,
+            themeColor: const Color.fromRGBO(211, 66, 67, 1),
+            maxAssets: 1),
+      );
+    } else {
+      final AssetEntity? resultGetCamera = await CameraPicker.pickFromCamera(
+        context,
+        pickerConfig: CameraPickerConfig(
+            textDelegate: MyCameraPickerTextDelegate(),
+            enableRecording: false,
+            theme:
+                CameraPicker.themeData(const Color.fromRGBO(211, 66, 67, 1))),
+      );
+
+      if (resultGetCamera != null) {
+        resultGet = [resultGetCamera];
+      }
+    }
 
     if (resultGet != null) {
       setState(() {
@@ -256,12 +278,12 @@ class _MineAuthenticatePublishPageState
 
       Future.delayed(const Duration(milliseconds: 500), () async {
         setState(() {
-          imageDataListFront.addAll(resultGet);
+          imageDataListFront.addAll(resultGet!);
           _uploading = true;
         });
 
         List<PainFileUploadTypeModel> finalImagesListGet = [];
-        await Future.forEach(resultGet, (assetEntity) async {
+        await Future.forEach(resultGet!, (assetEntity) async {
           // 在此处处理异步操作，例如网络请求、文件读写等
           final String uuidGet = const Uuid().v4();
           final String id = '${assetEntity.id}-$uuidGet';
@@ -373,17 +395,34 @@ class _MineAuthenticatePublishPageState
   }
 
   ///身份证反面处理方法
-  void handleChooseImagesBack() async {
+  void handleChooseImagesBack(String type) async {
     Get.back();
 
-    final List<AssetEntity>? resultGet = await AssetPicker.pickAssets(
-      context,
-      pickerConfig: AssetPickerConfig(
-          textDelegate: MyAssetPickerTextDelegate(),
-          requestType: RequestType.image,
-          themeColor: const Color.fromRGBO(211, 66, 67, 1),
-          maxAssets: 1),
-    );
+    List<AssetEntity>? resultGet;
+
+    if (type == 'assets') {
+      resultGet = await AssetPicker.pickAssets(
+        context,
+        pickerConfig: AssetPickerConfig(
+            textDelegate: MyAssetPickerTextDelegate(),
+            requestType: RequestType.image,
+            themeColor: const Color.fromRGBO(211, 66, 67, 1),
+            maxAssets: 1),
+      );
+    } else {
+      final AssetEntity? resultGetCamera = await CameraPicker.pickFromCamera(
+        context,
+        pickerConfig: CameraPickerConfig(
+            textDelegate: MyCameraPickerTextDelegate(),
+            enableRecording: false,
+            theme:
+                CameraPicker.themeData(const Color.fromRGBO(211, 66, 67, 1))),
+      );
+
+      if (resultGetCamera != null) {
+        resultGet = [resultGetCamera];
+      }
+    }
 
     if (resultGet != null) {
       setState(() {
@@ -394,12 +433,12 @@ class _MineAuthenticatePublishPageState
 
       Future.delayed(const Duration(milliseconds: 500), () async {
         setState(() {
-          imageDataListBack.addAll(resultGet);
+          imageDataListBack.addAll(resultGet!);
           _uploading = true;
         });
 
         List<PainFileUploadTypeModel> finalImagesListGet = [];
-        await Future.forEach(resultGet, (assetEntity) async {
+        await Future.forEach(resultGet!, (assetEntity) async {
           // 在此处处理异步操作，例如网络请求、文件读写等
           final String uuidGet = const Uuid().v4();
           final String id = '${assetEntity.id}-$uuidGet';
@@ -511,17 +550,34 @@ class _MineAuthenticatePublishPageState
   }
 
   ///执业证照处理方法
-  void handleChooseImagesPracticing() async {
+  void handleChooseImagesPracticing(String type) async {
     Get.back();
 
-    final List<AssetEntity>? resultGet = await AssetPicker.pickAssets(
-      context,
-      pickerConfig: AssetPickerConfig(
-          textDelegate: MyAssetPickerTextDelegate(),
-          requestType: RequestType.image,
-          themeColor: const Color.fromRGBO(211, 66, 67, 1),
-          maxAssets: 1),
-    );
+    List<AssetEntity>? resultGet;
+
+    if (type == 'assets') {
+      resultGet = await AssetPicker.pickAssets(
+        context,
+        pickerConfig: AssetPickerConfig(
+            textDelegate: MyAssetPickerTextDelegate(),
+            requestType: RequestType.image,
+            themeColor: const Color.fromRGBO(211, 66, 67, 1),
+            maxAssets: 1),
+      );
+    } else {
+      final AssetEntity? resultGetCamera = await CameraPicker.pickFromCamera(
+        context,
+        pickerConfig: CameraPickerConfig(
+            textDelegate: MyCameraPickerTextDelegate(),
+            enableRecording: false,
+            theme:
+                CameraPicker.themeData(const Color.fromRGBO(211, 66, 67, 1))),
+      );
+
+      if (resultGetCamera != null) {
+        resultGet = [resultGetCamera];
+      }
+    }
 
     if (resultGet != null) {
       setState(() {
@@ -532,12 +588,12 @@ class _MineAuthenticatePublishPageState
 
       Future.delayed(const Duration(milliseconds: 500), () async {
         setState(() {
-          imageDataListPracticing.addAll(resultGet);
+          imageDataListPracticing.addAll(resultGet!);
           _uploading = true;
         });
 
         List<PainFileUploadTypeModel> finalImagesListGet = [];
-        await Future.forEach(resultGet, (assetEntity) async {
+        await Future.forEach(resultGet!, (assetEntity) async {
           // 在此处处理异步操作，例如网络请求、文件读写等
           final String uuidGet = const Uuid().v4();
           final String id = '${assetEntity.id}-$uuidGet';
@@ -650,17 +706,34 @@ class _MineAuthenticatePublishPageState
   }
 
   ///工作证照处理方法
-  void handleChooseImagesEmployee() async {
+  void handleChooseImagesEmployee(String type) async {
     Get.back();
 
-    final List<AssetEntity>? resultGet = await AssetPicker.pickAssets(
-      context,
-      pickerConfig: AssetPickerConfig(
-          textDelegate: MyAssetPickerTextDelegate(),
-          requestType: RequestType.image,
-          themeColor: const Color.fromRGBO(211, 66, 67, 1),
-          maxAssets: 1),
-    );
+    List<AssetEntity>? resultGet;
+
+    if (type == 'assets') {
+      resultGet = await AssetPicker.pickAssets(
+        context,
+        pickerConfig: AssetPickerConfig(
+            textDelegate: MyAssetPickerTextDelegate(),
+            requestType: RequestType.image,
+            themeColor: const Color.fromRGBO(211, 66, 67, 1),
+            maxAssets: 1),
+      );
+    } else {
+      final AssetEntity? resultGetCamera = await CameraPicker.pickFromCamera(
+        context,
+        pickerConfig: CameraPickerConfig(
+            textDelegate: MyCameraPickerTextDelegate(),
+            enableRecording: false,
+            theme:
+                CameraPicker.themeData(const Color.fromRGBO(211, 66, 67, 1))),
+      );
+
+      if (resultGetCamera != null) {
+        resultGet = [resultGetCamera];
+      }
+    }
 
     if (resultGet != null) {
       setState(() {
@@ -671,12 +744,12 @@ class _MineAuthenticatePublishPageState
 
       Future.delayed(const Duration(milliseconds: 500), () async {
         setState(() {
-          imageDataListEmployee.addAll(resultGet);
+          imageDataListEmployee.addAll(resultGet!);
           _uploading = true;
         });
 
         List<PainFileUploadTypeModel> finalImagesListGet = [];
-        await Future.forEach(resultGet, (assetEntity) async {
+        await Future.forEach(resultGet!, (assetEntity) async {
           // 在此处处理异步操作，例如网络请求、文件读写等
           final String uuidGet = const Uuid().v4();
           final String id = '${assetEntity.id}-$uuidGet';
@@ -796,10 +869,6 @@ class _MineAuthenticatePublishPageState
     if (idsGet.isNotEmpty) {
       userClientProvider.removeUnnecessaryImagesAction(idsGet);
     }
-  }
-
-  void handleUseCamera() async {
-    Get.back();
   }
 
   void handleGoBack() {
@@ -1123,13 +1192,15 @@ class _MineAuthenticatePublishPageState
                       children: [
                         InkWell(
                           onTap: showType == 'front'
-                              ? handleChooseImagesFront
+                              ? () => handleChooseImagesFront('assets')
                               : showType == 'back'
-                                  ? handleChooseImagesBack
+                                  ? () => handleChooseImagesBack('assets')
                                   : showType == 'practicing'
-                                      ? handleChooseImagesPracticing
+                                      ? () =>
+                                          handleChooseImagesPracticing('assets')
                                       : showType == 'employee'
-                                          ? handleChooseImagesEmployee
+                                          ? () => handleChooseImagesEmployee(
+                                              'assets')
                                           : null,
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -1165,7 +1236,17 @@ class _MineAuthenticatePublishPageState
                           color: Color.fromRGBO(200, 200, 200, 1),
                         ),
                         InkWell(
-                          onTap: handleUseCamera,
+                          onTap: showType == 'front'
+                              ? () => handleChooseImagesFront('camera')
+                              : showType == 'back'
+                                  ? () => handleChooseImagesBack('camera')
+                                  : showType == 'practicing'
+                                      ? () =>
+                                          handleChooseImagesPracticing('camera')
+                                      : showType == 'employee'
+                                          ? () => handleChooseImagesEmployee(
+                                              'camera')
+                                          : null,
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
