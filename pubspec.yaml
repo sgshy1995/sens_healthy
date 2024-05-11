@@ -73,6 +73,7 @@ dependencies:
   flutter_localization: ^0.2.0
   board_datetime_picker: ^1.6.4
   permission_handler: ^11.3.1
+  tencent_trtc_cloud: ^2.7.8
 
 dev_dependencies:
   flutter_test:
