@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:get/get.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:jpush_flutter/jpush_flutter.dart';
 
 import '../../../iconfont/icon_font.dart';
 import '../../controllers/user_controller.dart';
@@ -12,6 +15,9 @@ import '../../../components/toast.dart';
 
 import '../../../utils/get_device_id.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../providers/api/notification_client_provider.dart';
+import '../../controllers/notification_controller.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -25,6 +31,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   /// 如果是从退出登录过来的，会导致这里的 userController 找不到 报错
   final UserController userController = Get.put(UserController());
   final UserClientProvider userClientProvider = Get.put(UserClientProvider());
+  final NotificationController notificationController =
+      Get.put(NotificationController());
+  final NotificationClientProvider notificationClientProvider =
+      Get.put(NotificationClientProvider());
 
   late AnimationController _controller1;
   late AnimationController _controller2;
@@ -43,6 +53,83 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     prefs.remove('token');
     prefs.remove('user_id');
     prefs.remove('user_info_id');
+  }
+
+  final JPush jpush = JPush();
+
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> initPlatformState() async {
+    String? platformVersion;
+
+    try {
+      jpush.addEventHandler(
+          onReceiveNotification: (Map<String, dynamic> message) async {
+        print("flutter onReceiveNotification: $message");
+      }, onOpenNotification: (Map<String, dynamic> message) async {
+        print("flutter onOpenNotification: $message");
+      }, onReceiveMessage: (Map<String, dynamic> message) async {
+        print("flutter onReceiveMessage: $message");
+      }, onReceiveNotificationAuthorization:
+              (Map<String, dynamic> message) async {
+        print("flutter onReceiveNotificationAuthorization: $message");
+      }, onNotifyMessageUnShow: (Map<String, dynamic> message) async {
+        print("flutter onNotifyMessageUnShow: $message");
+      }, onInAppMessageShow: (Map<String, dynamic> message) async {
+        print("flutter onInAppMessageShow: $message");
+      }, onInAppMessageClick: (Map<String, dynamic> message) async {
+        print("flutter onInAppMessageClick: $message");
+      }, onConnected: (Map<String, dynamic> message) async {
+        print("flutter onConnected: $message");
+      });
+    } on PlatformException {
+      platformVersion = 'Failed to get platform version.';
+    }
+
+    jpush.setAuth(enable: true);
+    // Key
+    String appKey = dotenv.env['JPUSH_APP_KEY'] ?? '';
+    print('appKey is $appKey');
+    jpush.setup(
+      appKey: appKey, //你自己应用的 AppKey
+      channel: "",
+      production: false,
+      debug: true,
+    );
+    jpush.applyPushAuthority(
+        const NotificationSettingsIOS(sound: true, alert: true, badge: true));
+
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    jpush.getRegistrationID().then((rid) {
+      print("flutter get registration id : $rid");
+      if (rid.isNotEmpty) {
+        notificationController.setRid(rid);
+        notificationClientProvider.createPushRegistrationAction({
+          'registration_id': rid,
+          'platform': GetPlatform.isAndroid
+              ? 1
+              : GetPlatform.isIOS
+                  ? 0
+                  : 5
+        }).then((result) {
+          if (result.code == 200) {
+            print('rid 已保存');
+            notificationClientProvider.addHistoryUserIdInfo({
+              'registration_id': notificationController.rid
+            }).then((resultIn) {});
+          } else {
+            print(result.message);
+          }
+        });
+      }
+    });
+
+    // iOS要是使用应用内消息，请在页面进入离开的时候配置pageEnterTo 和  pageLeave 函数，参数为页面名。
+    jpush.pageEnterTo("LoginPage"); // 在离开页面的时候请调用 jpush.pageLeave("HomePage");
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
   }
 
   @override
@@ -112,6 +199,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    jpush.pageLeave("LoginPage");
     super.dispose();
     _controller1.dispose();
     _controller2.dispose();

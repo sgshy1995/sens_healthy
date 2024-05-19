@@ -96,8 +96,8 @@ class PainReplyTypeModel {
   final String user_id; //用户id
   final String? avatar; //用户头像
   final String? name; //用户名字
-  final int authenticate; //用户认证
-  final int identity; // 用户身份 0 患者 1 医师
+  final int? authenticate; //用户认证
+  final int? identity; // 用户身份 0 患者 1 医师
   final int is_major; //是否专业回答 1 是 0 否
   final String question_id; //问题id
   final String reply_time; //答复时间
@@ -118,8 +118,8 @@ class PainReplyTypeModel {
       required this.user_id,
       this.avatar,
       this.name,
-      required this.authenticate,
-      required this.identity,
+      this.authenticate,
+      this.identity,
       required this.is_major,
       required this.question_id,
       required this.reply_time,
@@ -197,8 +197,8 @@ class PainCommentTypeModel {
   final String user_id; //用户id
   final String? avatar; //用户头像
   final String? name; //用户名字
-  final int authenticate; //用户认证
-  final int identity; // 用户身份 0 患者 1 医师
+  final int? authenticate; //用户认证
+  final int? identity; // 用户身份 0 患者 1 医师
   final String reply_id; //答复id
   final String question_id; //问题id
   final String? comment_id; //评论id 如果存在，表示的是回复的是评论
@@ -218,8 +218,8 @@ class PainCommentTypeModel {
       required this.user_id,
       this.avatar,
       this.name,
-      required this.authenticate,
-      required this.identity,
+      this.authenticate,
+      this.identity,
       required this.reply_id,
       required this.question_id,
       this.comment_id,

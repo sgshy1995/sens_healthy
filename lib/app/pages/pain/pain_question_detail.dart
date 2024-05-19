@@ -1,4 +1,5 @@
 import 'package:carousel_slider/carousel_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import './pain_reply_sheet.dart';
 import './pain_comment_sheet.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,8 @@ import '../../../components/gallery_photo_view_wrapper.dart';
 import '../../../components/gallery_photo_view_item.dart';
 import 'dart:async';
 import 'package:shimmer/shimmer.dart';
+import '../../controllers/notification_controller.dart';
+import '../../providers/api/notification_client_provider.dart';
 
 class CustomScrollPhysics extends ScrollPhysics {
   const CustomScrollPhysics({ScrollPhysics? parent}) : super(parent: parent);
@@ -48,8 +51,13 @@ class PainQuestionDetailPage extends StatefulWidget {
 
 class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
   final PainClientProvider painClientProvider = Get.put(PainClientProvider());
+  final NotificationClientProvider notificationClientProvider =
+      Get.put(NotificationClientProvider());
+
   final GlobalController globalController = Get.put(GlobalController());
   final UserController userController = Get.put(UserController());
+  final NotificationController notificationController =
+      Get.put(NotificationController());
 
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
@@ -60,6 +68,8 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
   bool _readyLoadReply = false;
 
   String dataId = '';
+
+  String painNotificationId = '';
 
   PainQuestionTypeModel painQuestionDetail = PainQuestionTypeModel(
       id: '',
@@ -108,15 +118,39 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
     }
   }
 
-  void getDetailData() {
+  Future<String?> checkUserId() async {
+    Completer<String?> completer = Completer();
+    if (userController.userInfo.id.isEmpty) {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String? userId = prefs.getString('user_id');
+      if (userId != null) {
+        completer.complete(userId);
+      } else {
+        completer.completeError('error');
+      }
+    } else {
+      completer.complete(userController.userInfo.id);
+    }
+    return completer.future;
+  }
+
+  void getDetailData() async {
+    if (painNotificationId.isNotEmpty) {
+      await notificationClientProvider
+          .readOnePainNotificationByIdAction(painNotificationId);
+      final String? userId = await checkUserId();
+      final int? painNotificationsNum =
+          await loadPainNotificationCounts(userId!);
+      if (painNotificationsNum != null) {
+        notificationController.setPainNotiicationNum(painNotificationsNum);
+      }
+    }
     painClientProvider.getQuestionByIdAction(dataId).then((result) {
       if (result.code == 200) {
         final painQuestionNew = result.data!;
         setState(() {
           painQuestionDetail = painQuestionNew;
-          setState(() {
-            _readyLoad = true;
-          });
+
           getPainReplies(page: 1);
         });
       }
@@ -428,6 +462,7 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
       final totalPage = value.data.totalPage;
       final totalCount = value.data.totalCount;
       setState(() {
+        _readyLoad = true;
         _currentPageNo = pageNo;
         if (pageNo == 1) {
           painReplyDataPagination.data = valueGet;
@@ -457,15 +492,16 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     dataId = Get.arguments['questionId'];
+    if (Get.arguments['painNotificationId'] != null) {
+      painNotificationId = Get.arguments['painNotificationId'];
+    }
     getDetailData();
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     _refreshController.dispose();
   }
@@ -496,6 +532,18 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
       showTime = formattedYearsAndMonthsAndMinutesDateQuestion;
     }
     return showTime;
+  }
+
+  Future<int?> loadPainNotificationCounts(String userId) {
+    Completer<int?> completer = Completer();
+    notificationClientProvider
+        .findManyPainNotifications(userId: userId, read: 0)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
   }
 
   @override
@@ -767,36 +815,38 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
     }
 
     Widget skeleton() {
-      return Padding(
-          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-          child: SingleChildScrollView(
-            physics: const NeverScrollableScrollPhysics(),
+      return Column(
+        children: [
+          const SizedBox(
+            height: 12,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: const BoxDecoration(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.all(Radius.circular(22))),
-                      margin: const EdgeInsets.only(right: 12),
-                      child: Shimmer.fromColors(
-                        baseColor: const Color.fromRGBO(229, 229, 229, 1),
-                        highlightColor: Colors.grey[100]!,
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                          ),
+                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.all(Radius.circular(22))),
+                    margin: const EdgeInsets.only(right: 12),
+                    child: Shimmer.fromColors(
+                      baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
                         ),
                       ),
                     ),
-                    Column(
+                  ),
+                  Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -845,248 +895,281 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                             ),
                           ),
                         ),
-                        Container(
-                          width: mediaQuerySizeInfo.width - 24 - 44 - 12,
-                          height: 100,
-                          decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(6))),
-                          margin: const EdgeInsets.only(top: 12),
-                          child: Shimmer.fromColors(
-                            baseColor: const Color.fromRGBO(229, 229, 229, 1),
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              width: 60,
-                              height: 14,
-                              decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(6)),
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: 60,
-                          height: 14,
-                          decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(6))),
-                          margin: const EdgeInsets.only(top: 12, bottom: 12),
-                          child: Shimmer.fromColors(
-                            baseColor: const Color.fromRGBO(229, 229, 229, 1),
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              width: 60,
-                              height: 14,
-                              decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(6)),
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: const BoxDecoration(
-                                  color: Colors.transparent,
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(16))),
-                              margin: const EdgeInsets.only(right: 12),
-                              child: Shimmer.fromColors(
-                                baseColor:
-                                    const Color.fromRGBO(229, 229, 229, 1),
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Container(
-                              width: 130,
-                              height: 32,
-                              decoration: const BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(6))),
-                              margin: const EdgeInsets.only(top: 0),
-                              child: Shimmer.fromColors(
-                                baseColor:
-                                    const Color.fromRGBO(229, 229, 229, 1),
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  width: 60,
-                                  height: 14,
-                                  decoration: const BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(6)),
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            )
-                          ],
-                        )
-                      ],
-                    )
-                  ],
+                      ])
+                ]),
+                const SizedBox(
+                  height: 24,
+                ),
+                Container(
+                  width: 60,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(6))),
+                  margin: const EdgeInsets.only(right: 12),
+                  child: Shimmer.fromColors(
+                    baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      width: 60,
+                      height: 14,
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 12,
+                ),
+                Container(
+                  width: mediaQuerySizeInfo.width - 24,
+                  height: 80,
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(6))),
+                  margin: const EdgeInsets.only(right: 12),
+                  child: Shimmer.fromColors(
+                    baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      width: 60,
+                      height: 14,
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 12,
+                ),
+                Container(
+                  width: 60,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(6))),
+                  margin: const EdgeInsets.only(right: 12),
+                  child: Shimmer.fromColors(
+                    baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      width: 60,
+                      height: 14,
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 12,
+                ),
+                Container(
+                  width: mediaQuerySizeInfo.width - 24,
+                  height: 80,
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(6))),
+                  margin: const EdgeInsets.only(right: 12),
+                  child: Shimmer.fromColors(
+                    baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      width: 60,
+                      height: 14,
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 12,
+                ),
+                Container(
+                  width: 60,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(6))),
+                  margin: const EdgeInsets.only(right: 12),
+                  child: Shimmer.fromColors(
+                    baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      width: 60,
+                      height: 14,
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 12,
+                ),
+                Container(
+                  width: mediaQuerySizeInfo.width - 24,
+                  height: 80,
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(6))),
+                  margin: const EdgeInsets.only(right: 12),
+                  child: Shimmer.fromColors(
+                    baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      width: 60,
+                      height: 14,
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 12,
+                ),
+                Container(
+                  width: 60,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(6))),
+                  margin: const EdgeInsets.only(right: 12),
+                  child: Shimmer.fromColors(
+                    baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      width: 60,
+                      height: 14,
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 12,
+                ),
+                Container(
+                  width: mediaQuerySizeInfo.width - 24,
+                  height: 200,
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(6))),
+                  margin: const EdgeInsets.only(right: 12),
+                  child: Shimmer.fromColors(
+                    baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      width: 60,
+                      height: 14,
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(
                   height: 24,
                 ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
+                Container(
+                  width: 60,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(6))),
+                  margin: const EdgeInsets.only(right: 12),
+                  child: Shimmer.fromColors(
+                    baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      width: 60,
+                      height: 14,
                       decoration: const BoxDecoration(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.all(Radius.circular(22))),
-                      margin: const EdgeInsets.only(right: 12),
-                      child: Shimmer.fromColors(
-                        baseColor: const Color.fromRGBO(229, 229, 229, 1),
-                        highlightColor: Colors.grey[100]!,
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                          ),
-                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        color: Colors.white,
                       ),
                     ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                  ),
+                ),
+                const SizedBox(
+                  height: 24,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(
+            height: 12,
+          ),
+          Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
+              child: SingleChildScrollView(
+                physics: const NeverScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          margin: const EdgeInsets.only(bottom: 6),
-                          child: Container(
-                            width: 44,
-                            height: 14,
-                            decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(6))),
-                            margin: const EdgeInsets.only(right: 12),
-                            child: Shimmer.fromColors(
-                              baseColor: const Color.fromRGBO(229, 229, 229, 1),
-                              highlightColor: Colors.grey[100]!,
-                              child: Container(
-                                width: 44,
-                                height: 14,
-                                decoration: const BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(6)),
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: 60,
-                          height: 14,
+                          width: 44,
+                          height: 44,
                           decoration: const BoxDecoration(
+                              color: Colors.transparent,
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(6))),
+                                  BorderRadius.all(Radius.circular(22))),
                           margin: const EdgeInsets.only(right: 12),
                           child: Shimmer.fromColors(
                             baseColor: const Color.fromRGBO(229, 229, 229, 1),
                             highlightColor: Colors.grey[100]!,
                             child: Container(
-                              width: 60,
-                              height: 14,
+                              width: 44,
+                              height: 44,
                               decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(6)),
+                                shape: BoxShape.circle,
                                 color: Colors.white,
                               ),
                             ),
                           ),
                         ),
-                        Container(
-                          width: mediaQuerySizeInfo.width - 24 - 44 - 12,
-                          height: 100,
-                          decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(6))),
-                          margin: const EdgeInsets.only(top: 12),
-                          child: Shimmer.fromColors(
-                            baseColor: const Color.fromRGBO(229, 229, 229, 1),
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              width: 60,
-                              height: 14,
-                              decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(6)),
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: 60,
-                          height: 14,
-                          decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(6))),
-                          margin: const EdgeInsets.only(top: 12, bottom: 12),
-                          child: Shimmer.fromColors(
-                            baseColor: const Color.fromRGBO(229, 229, 229, 1),
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              width: 60,
-                              height: 14,
-                              decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(6)),
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Row(
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              width: 32,
-                              height: 32,
-                              decoration: const BoxDecoration(
-                                  color: Colors.transparent,
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(16))),
-                              margin: const EdgeInsets.only(right: 12),
-                              child: Shimmer.fromColors(
-                                baseColor:
-                                    const Color.fromRGBO(229, 229, 229, 1),
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
+                              margin: const EdgeInsets.only(bottom: 6),
+                              child: Container(
+                                width: 44,
+                                height: 14,
+                                decoration: const BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(6))),
+                                margin: const EdgeInsets.only(right: 12),
+                                child: Shimmer.fromColors(
+                                  baseColor:
+                                      const Color.fromRGBO(229, 229, 229, 1),
+                                  highlightColor: Colors.grey[100]!,
+                                  child: Container(
+                                    width: 44,
+                                    height: 14,
+                                    decoration: const BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(6)),
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                             Container(
-                              width: 130,
-                              height: 32,
+                              width: 60,
+                              height: 14,
                               decoration: const BoxDecoration(
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(6))),
-                              margin: const EdgeInsets.only(top: 0),
+                              margin: const EdgeInsets.only(right: 12),
                               child: Shimmer.fromColors(
                                 baseColor:
                                     const Color.fromRGBO(229, 229, 229, 1),
@@ -1101,16 +1184,284 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                                   ),
                                 ),
                               ),
+                            ),
+                            Container(
+                              width: mediaQuerySizeInfo.width - 24 - 44 - 12,
+                              height: 100,
+                              decoration: const BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(6))),
+                              margin: const EdgeInsets.only(top: 12),
+                              child: Shimmer.fromColors(
+                                baseColor:
+                                    const Color.fromRGBO(229, 229, 229, 1),
+                                highlightColor: Colors.grey[100]!,
+                                child: Container(
+                                  width: 60,
+                                  height: 14,
+                                  decoration: const BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(6)),
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: 60,
+                              height: 14,
+                              decoration: const BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(6))),
+                              margin:
+                                  const EdgeInsets.only(top: 12, bottom: 12),
+                              child: Shimmer.fromColors(
+                                baseColor:
+                                    const Color.fromRGBO(229, 229, 229, 1),
+                                highlightColor: Colors.grey[100]!,
+                                child: Container(
+                                  width: 60,
+                                  height: 14,
+                                  decoration: const BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(6)),
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: const BoxDecoration(
+                                      color: Colors.transparent,
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(16))),
+                                  margin: const EdgeInsets.only(right: 12),
+                                  child: Shimmer.fromColors(
+                                    baseColor:
+                                        const Color.fromRGBO(229, 229, 229, 1),
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  width: 130,
+                                  height: 32,
+                                  decoration: const BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(6))),
+                                  margin: const EdgeInsets.only(top: 0),
+                                  child: Shimmer.fromColors(
+                                    baseColor:
+                                        const Color.fromRGBO(229, 229, 229, 1),
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 60,
+                                      height: 14,
+                                      decoration: const BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(6)),
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 24,
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: const BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(22))),
+                          margin: const EdgeInsets.only(right: 12),
+                          child: Shimmer.fromColors(
+                            baseColor: const Color.fromRGBO(229, 229, 229, 1),
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: 44,
+                              height: 44,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 6),
+                              child: Container(
+                                width: 44,
+                                height: 14,
+                                decoration: const BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(6))),
+                                margin: const EdgeInsets.only(right: 12),
+                                child: Shimmer.fromColors(
+                                  baseColor:
+                                      const Color.fromRGBO(229, 229, 229, 1),
+                                  highlightColor: Colors.grey[100]!,
+                                  child: Container(
+                                    width: 44,
+                                    height: 14,
+                                    decoration: const BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(6)),
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: 60,
+                              height: 14,
+                              decoration: const BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(6))),
+                              margin: const EdgeInsets.only(right: 12),
+                              child: Shimmer.fromColors(
+                                baseColor:
+                                    const Color.fromRGBO(229, 229, 229, 1),
+                                highlightColor: Colors.grey[100]!,
+                                child: Container(
+                                  width: 60,
+                                  height: 14,
+                                  decoration: const BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(6)),
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: mediaQuerySizeInfo.width - 24 - 44 - 12,
+                              height: 100,
+                              decoration: const BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(6))),
+                              margin: const EdgeInsets.only(top: 12),
+                              child: Shimmer.fromColors(
+                                baseColor:
+                                    const Color.fromRGBO(229, 229, 229, 1),
+                                highlightColor: Colors.grey[100]!,
+                                child: Container(
+                                  width: 60,
+                                  height: 14,
+                                  decoration: const BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(6)),
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: 60,
+                              height: 14,
+                              decoration: const BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(6))),
+                              margin:
+                                  const EdgeInsets.only(top: 12, bottom: 12),
+                              child: Shimmer.fromColors(
+                                baseColor:
+                                    const Color.fromRGBO(229, 229, 229, 1),
+                                highlightColor: Colors.grey[100]!,
+                                child: Container(
+                                  width: 60,
+                                  height: 14,
+                                  decoration: const BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(6)),
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: const BoxDecoration(
+                                      color: Colors.transparent,
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(16))),
+                                  margin: const EdgeInsets.only(right: 12),
+                                  child: Shimmer.fromColors(
+                                    baseColor:
+                                        const Color.fromRGBO(229, 229, 229, 1),
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  width: 130,
+                                  height: 32,
+                                  decoration: const BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(6))),
+                                  margin: const EdgeInsets.only(top: 0),
+                                  child: Shimmer.fromColors(
+                                    baseColor:
+                                        const Color.fromRGBO(229, 229, 229, 1),
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 60,
+                                      height: 14,
+                                      decoration: const BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(6)),
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ],
                             )
                           ],
                         )
                       ],
                     )
                   ],
-                )
-              ],
-            ),
-          ));
+                ),
+              ))
+        ],
+      );
     }
 
     return Scaffold(
@@ -1486,9 +1837,6 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.bold)),
                                         ),
-                                        (!_readyLoadReply
-                                            ? skeleton()
-                                            : const SizedBox.shrink()),
                                         (painQuestionDetail.reply_num == 0
                                             ? SizedBox(
                                                 width:
@@ -2506,7 +2854,10 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                               ])))),
                 )
               : Expanded(
-                  child: skeleton(),
+                  child: SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: skeleton(),
+                  ),
                 ),
           _readyLoad
               ? Column(
@@ -2560,7 +2911,7 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                                                 bottom: 0),
                                             child: IconFont(
                                               IconNames.xiaoxi,
-                                              size: 24,
+                                              size: 20,
                                               color: '#000',
                                             ),
                                           ),
@@ -2590,7 +2941,7 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                                               readyLike
                                                   ? IconNames.dianzan_1
                                                   : IconNames.dianzan,
-                                              size: 24,
+                                              size: 20,
                                               color: readyLike
                                                   ? 'rgb(211,66,67)'
                                                   : '#000',
@@ -2622,7 +2973,7 @@ class _PainQuestionDetailPageState extends State<PainQuestionDetailPage> {
                                               readyCollect
                                                   ? IconNames.shoucang_1
                                                   : IconNames.shoucang,
-                                              size: 24,
+                                              size: 20,
                                               color: readyCollect
                                                   ? 'rgb(252,189,84)'
                                                   : '#000',

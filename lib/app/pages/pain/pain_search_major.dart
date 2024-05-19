@@ -1170,18 +1170,18 @@ class PainSearchMajorPageState extends State<PainSearchMajorPage>
                                                 child: Container(
                                                   margin: const EdgeInsets.only(
                                                       right: 4),
-                                                  width: 24,
-                                                  height: 24,
+                                                  width: 20,
+                                                  height: 20,
                                                   child: readyLike
                                                       ? IconFont(
                                                           IconNames.dianzan_1,
-                                                          size: 24,
+                                                          size: 20,
                                                           color:
                                                               'rgb(211,66,67)',
                                                         )
                                                       : IconFont(
                                                           IconNames.dianzan,
-                                                          size: 24,
+                                                          size: 20,
                                                           color: '#000',
                                                         ),
                                                 ),
@@ -1209,18 +1209,18 @@ class PainSearchMajorPageState extends State<PainSearchMajorPage>
                                                 child: Container(
                                                   margin: const EdgeInsets.only(
                                                       right: 4),
-                                                  width: 24,
-                                                  height: 24,
+                                                  width: 20,
+                                                  height: 20,
                                                   child: readyCollect
                                                       ? IconFont(
                                                           IconNames.shoucang_1,
-                                                          size: 24,
+                                                          size: 20,
                                                           color:
                                                               'rgb(252,189,84)',
                                                         )
                                                       : IconFont(
                                                           IconNames.shoucang,
-                                                          size: 24,
+                                                          size: 20,
                                                           color: '#000',
                                                         ),
                                                 ),
@@ -1245,11 +1245,11 @@ class PainSearchMajorPageState extends State<PainSearchMajorPage>
                                               Container(
                                                 margin: const EdgeInsets.only(
                                                     right: 4),
-                                                width: 24,
-                                                height: 24,
+                                                width: 20,
+                                                height: 20,
                                                 child: IconFont(
                                                   IconNames.xiaoxi,
-                                                  size: 24,
+                                                  size: 20,
                                                   color: '#000',
                                                 ),
                                               ),
@@ -1268,11 +1268,11 @@ class PainSearchMajorPageState extends State<PainSearchMajorPage>
                                       ],
                                     ),
                                     SizedBox(
-                                      width: 24,
-                                      height: 24,
+                                      width: 20,
+                                      height: 20,
                                       child: IconFont(
                                         IconNames.fenxiang,
-                                        size: 24,
+                                        size: 20,
                                         color: '#000',
                                       ),
                                     )

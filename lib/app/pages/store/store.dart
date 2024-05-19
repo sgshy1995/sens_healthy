@@ -450,13 +450,7 @@ class _StorePageState extends State<StorePage>
                                     width: 24,
                                     height: 24,
                                     margin: const EdgeInsets.only(right: 6),
-                                    child: Center(
-                                      child: IconFont(
-                                        IconNames.xiaoxizhongxin,
-                                        size: 20,
-                                        color: 'rgb(0,0,0)',
-                                      ),
-                                    ),
+                                    child: null,
                                   )
                                 ],
                               )

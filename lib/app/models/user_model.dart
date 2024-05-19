@@ -73,12 +73,18 @@ class UserOnlyNeedTypeModel {
   final String? avatar;
   final int? gender;
   final String phone;
+  final int? identity;
+  final int? authenticate;
+  final int? if_lecture_auth;
   UserOnlyNeedTypeModel(
       {required this.id,
       this.name,
       this.avatar,
       this.gender,
-      required this.phone});
+      required this.phone,
+      this.identity,
+      this.authenticate,
+      this.if_lecture_auth});
   factory UserOnlyNeedTypeModel.fromJson(Map<String, dynamic>? json) {
     return json != null
         ? UserOnlyNeedTypeModel(
@@ -86,9 +92,19 @@ class UserOnlyNeedTypeModel {
             name: json['name'],
             phone: json['phone'],
             avatar: json['avatar'],
-            gender: json['gender'])
+            gender: json['gender'],
+            identity: json['identity'],
+            authenticate: json['authenticate'],
+            if_lecture_auth: json['if_lecture_auth'])
         : UserOnlyNeedTypeModel(
-            id: '', name: null, phone: '', avatar: null, gender: null);
+            id: '',
+            name: null,
+            phone: '',
+            avatar: null,
+            gender: null,
+            identity: null,
+            authenticate: null,
+            if_lecture_auth: null);
   }
 }
 

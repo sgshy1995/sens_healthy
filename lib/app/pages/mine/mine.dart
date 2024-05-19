@@ -14,6 +14,8 @@ import '../../providers/api/user_client_provider.dart';
 import '../../providers/api/store_client_provider.dart';
 import '../../providers/api/appointment_client_provider.dart';
 import '../../providers/api/major_client_provider.dart';
+import '../../providers/api/notification_client_provider.dart';
+import '../../controllers/notification_controller.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import './menus/mine_record_menu.dart';
 import './menus/mine_live_course_order_menu.dart';
@@ -26,8 +28,14 @@ import './menus/mine_help_menu.dart';
 import './menus/mine_doctor_enter_menu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// 定义回调函数类型
+typedef PainNotificationCallback = void Function(int num);
+
 class MinePage extends StatefulWidget {
-  const MinePage({super.key});
+  const MinePage({super.key, required this.painNotificationCallback});
+
+  final PainNotificationCallback painNotificationCallback;
+
   @override
   State<MinePage> createState() => _MinePageState();
 }
@@ -44,6 +52,10 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
       Get.put(AppointmentClientProvider());
   final MajorClientProvider majorClientProvider =
       Get.put(MajorClientProvider());
+  final NotificationClientProvider notificationClientProvider =
+      Get.put(NotificationClientProvider());
+  final NotificationController notificationController =
+      Get.put(NotificationController());
 
   late AnimationController _animationController;
   late Animation<Color?> _colorTween;
@@ -365,6 +377,37 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
     return completer.future;
   }
 
+  Future<int?> loadPainNotificationCounts(String userId) {
+    Completer<int?> completer = Completer();
+    notificationClientProvider
+        .findManyPainNotifications(userId: userId, read: 0)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+      widget.painNotificationCallback(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
+  Future<String?> loadPainNotificationCountsInfo() async {
+    Completer<String?> completer = Completer();
+    Future.delayed(const Duration(milliseconds: 100), () async {
+      final String? userId = await checkUserId();
+
+      // 等待所有异步任务完成
+      final List<int?> results =
+          await Future.wait([loadPainNotificationCounts(userId!)]);
+
+      notificationController.setPainNotiicationNum(results[0] ?? 0);
+    }).then((value) {
+      completer.complete('success');
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
   void handleGotoHistory(int index) {
     Get.toNamed('/mine_history', arguments: {'initialIndex': index});
   }
@@ -451,6 +494,13 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
     loadEquipmentOrderCounts();
   }
 
+  void handleGotoNotificationPage() {
+    Get.toNamed('/notification')!.then((value) {
+      widget
+          .painNotificationCallback(notificationController.painNotiicationNum);
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -491,7 +541,8 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
       loadInfos(),
       loadEquipmentOrderCounts(),
       loadPatientCourseOrderCounts(),
-      loadMajorCourseOrderCounts()
+      loadMajorCourseOrderCounts(),
+      loadPainNotificationCountsInfo()
     ]);
     _refreshController.refreshCompleted();
     _refreshController.loadComplete();
@@ -576,51 +627,94 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
                       SizedBox(
                         height: mediaQuerySafeInfo.top,
                       ),
-                      SizedBox(
-                        height: 48,
-                        child: _scrollDistance <= 0
-                            ? Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  const SizedBox.shrink(),
-                                  Row(
+                      Stack(
+                        children: [
+                          SizedBox(
+                            height: 48,
+                            child: _scrollDistance <= 0
+                                ? Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
-                                      Container(
-                                        width: 24,
-                                        height: 24,
-                                        margin: const EdgeInsets.only(
-                                            right: 12, left: 0),
-                                        child: Center(
-                                          child: IconFont(
-                                            IconNames.xiaoxizhongxin,
-                                            size: 20,
-                                            color: 'rgb(0,0,0)',
-                                          ),
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: handleGotoSettingPage,
-                                        child: Container(
-                                          width: 24,
-                                          height: 24,
-                                          margin:
-                                              const EdgeInsets.only(right: 0),
-                                          child: Center(
-                                            child: IconFont(
-                                              IconNames.shezhi,
-                                              size: 20,
-                                              color: 'rgb(0,0,0)',
+                                      const SizedBox.shrink(),
+                                      Row(
+                                        children: [
+                                          GestureDetector(
+                                            onTap: handleGotoNotificationPage,
+                                            child: Container(
+                                              width: 24,
+                                              height: 24,
+                                              color: Colors.transparent,
+                                              margin: const EdgeInsets.only(
+                                                  right: 12, left: 0),
+                                              child: Center(
+                                                child: IconFont(
+                                                  IconNames.xiaoxizhongxin,
+                                                  size: 20,
+                                                  color: 'rgb(0,0,0)',
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ),
+                                          GestureDetector(
+                                            onTap: handleGotoSettingPage,
+                                            child: Container(
+                                              width: 24,
+                                              height: 24,
+                                              color: Colors.transparent,
+                                              margin: const EdgeInsets.only(
+                                                  right: 0),
+                                              child: Center(
+                                                child: IconFont(
+                                                  IconNames.shezhi,
+                                                  size: 20,
+                                                  color: 'rgb(0,0,0)',
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        ],
                                       )
                                     ],
                                   )
-                                ],
-                              )
-                            : const SizedBox.shrink(),
+                                : const SizedBox.shrink(),
+                          ),
+                          _scrollDistance <= 0
+                              ? GetBuilder<NotificationController>(
+                                  builder: (controller) {
+                                  return (controller.painNotiicationNum > 0
+                                      ? Positioned(
+                                          top: 2,
+                                          right: 26,
+                                          child: GestureDetector(
+                                            onTap: handleGotoNotificationPage,
+                                            child: Container(
+                                              width: 24,
+                                              height: 24,
+                                              decoration: const BoxDecoration(
+                                                  color: Color.fromRGBO(
+                                                      249, 81, 84, 1),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(24))),
+                                              child: Center(
+                                                child: Text(
+                                                  '${controller.painNotiicationNum > 99 ? '99+' : controller.painNotiicationNum}',
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              ),
+                                            ),
+                                          ))
+                                      : const SizedBox.shrink());
+                                })
+                              : const SizedBox.shrink()
+                        ],
                       ),
                     ],
                   ),
@@ -1256,80 +1350,121 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
                         SizedBox(
                           height: mediaQuerySafeInfo.top,
                         ),
-                        SizedBox(
-                          height: 48,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              AnimatedOpacity(
-                                opacity: _opacity,
-                                duration: const Duration(milliseconds: 30),
-                                curve: Curves.linear, // 指定渐变方式
-                                child: GetBuilder<UserController>(
-                                    builder: (controller) {
-                                  return Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        controller.userInfo.name ?? '赴康云用户',
-                                        style: const TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      (controller.userInfo.identity == 1
-                                          ? Container(
-                                              width: 18,
-                                              height: 18,
-                                              margin: const EdgeInsets.only(
-                                                  left: 8),
-                                              child: Center(
-                                                child: IconFont(
-                                                    IconNames.guanfangrenzheng,
-                                                    size: 18),
-                                              ),
-                                            )
-                                          : const SizedBox.shrink())
-                                    ],
-                                  );
-                                }),
-                              ),
-                              Row(
+                        Stack(
+                          children: [
+                            SizedBox(
+                              height: 48,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Container(
-                                    width: 24,
-                                    height: 24,
-                                    margin: const EdgeInsets.only(
-                                        right: 12, left: 0),
-                                    child: Center(
-                                      child: IconFont(
-                                        IconNames.xiaoxizhongxin,
-                                        size: 20,
-                                        color: 'rgb(0,0,0)',
-                                      ),
-                                    ),
+                                  AnimatedOpacity(
+                                    opacity: _opacity,
+                                    duration: const Duration(milliseconds: 30),
+                                    curve: Curves.linear, // 指定渐变方式
+                                    child: GetBuilder<UserController>(
+                                        builder: (controller) {
+                                      return Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            controller.userInfo.name ?? '赴康云用户',
+                                            style: const TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          (controller.userInfo.identity == 1
+                                              ? Container(
+                                                  width: 18,
+                                                  height: 18,
+                                                  margin: const EdgeInsets.only(
+                                                      left: 8),
+                                                  child: Center(
+                                                    child: IconFont(
+                                                        IconNames
+                                                            .guanfangrenzheng,
+                                                        size: 18),
+                                                  ),
+                                                )
+                                              : const SizedBox.shrink())
+                                        ],
+                                      );
+                                    }),
                                   ),
-                                  GestureDetector(
-                                    onTap: handleGotoSettingPage,
-                                    child: Container(
-                                      width: 24,
-                                      height: 24,
-                                      margin: const EdgeInsets.only(right: 0),
-                                      child: Center(
-                                        child: IconFont(
-                                          IconNames.shezhi,
-                                          size: 20,
-                                          color: 'rgb(0,0,0)',
+                                  Row(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: handleGotoNotificationPage,
+                                        child: Container(
+                                          width: 24,
+                                          height: 24,
+                                          color: Colors.transparent,
+                                          margin: const EdgeInsets.only(
+                                              right: 12, left: 0),
+                                          child: Center(
+                                            child: IconFont(
+                                              IconNames.xiaoxizhongxin,
+                                              size: 20,
+                                              color: 'rgb(0,0,0)',
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ),
+                                      GestureDetector(
+                                        onTap: handleGotoSettingPage,
+                                        child: Container(
+                                          width: 24,
+                                          height: 24,
+                                          color: Colors.transparent,
+                                          margin:
+                                              const EdgeInsets.only(right: 0),
+                                          child: Center(
+                                            child: IconFont(
+                                              IconNames.shezhi,
+                                              size: 20,
+                                              color: 'rgb(0,0,0)',
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    ],
                                   )
                                 ],
-                              )
-                            ],
-                          ),
+                              ),
+                            ),
+                            GetBuilder<NotificationController>(
+                                builder: (controller) {
+                              return (controller.painNotiicationNum > 0
+                                  ? Positioned(
+                                      top: 2,
+                                      right: 26,
+                                      child: GestureDetector(
+                                        onTap: handleGotoNotificationPage,
+                                        child: Container(
+                                          width: 24,
+                                          height: 24,
+                                          decoration: const BoxDecoration(
+                                              color: Color.fromRGBO(
+                                                  249, 81, 84, 1),
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(24))),
+                                          child: Center(
+                                            child: Text(
+                                              '${controller.painNotiicationNum > 99 ? '99+' : controller.painNotiicationNum}',
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ),
+                                      ))
+                                  : const SizedBox.shrink());
+                            })
+                          ],
                         ),
                       ],
                     ),

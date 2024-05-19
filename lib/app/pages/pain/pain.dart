@@ -7,7 +7,9 @@ import '../../controllers/user_controller.dart';
 import '../../providers/api/store_client_provider.dart';
 import '../../providers/api/appointment_client_provider.dart';
 import '../../providers/api/major_client_provider.dart';
+import '../../providers/api/notification_client_provider.dart';
 import '../../controllers/store_controller.dart';
+import '../../controllers/notification_controller.dart';
 import './pain_question.dart';
 import './pain_consult.dart';
 import '../../../components/keep_alive_wrapper.dart';
@@ -15,8 +17,13 @@ import 'package:get/get.dart';
 import './pain_question_publish.dart';
 import './pain_search.dart';
 
+// 定义回调函数类型
+typedef PainNotificationCallback = void Function(int num);
+
 class PainPage extends StatefulWidget {
-  const PainPage({super.key});
+  const PainPage({super.key, required this.painNotificationCallback});
+
+  final PainNotificationCallback painNotificationCallback;
 
   @override
   State<PainPage> createState() => _PainPageState();
@@ -30,12 +37,16 @@ class _PainPageState extends State<PainPage>
       GlobalKey<PainConsultPageState>();
   final UserController userController = Get.put(UserController());
   final StoreController storeController = Get.put(StoreController());
+  final NotificationController notificationController =
+      Get.put(NotificationController());
   final StoreClientProvider storeClientProvider =
       Get.put(StoreClientProvider());
   final AppointmentClientProvider appointmentClientProvider =
       Get.put(AppointmentClientProvider());
   final MajorClientProvider majorClientProvider =
       Get.put(MajorClientProvider());
+  final NotificationClientProvider notificationClientProvider =
+      Get.put(NotificationClientProvider());
 
   late TabController _tabController;
   double _opacity = 1.0; // 初始透明度
@@ -203,6 +214,19 @@ class _PainPageState extends State<PainPage>
     return completer.future;
   }
 
+  Future<int?> loadPainNotificationCounts(String userId) {
+    Completer<int?> completer = Completer();
+    notificationClientProvider
+        .findManyPainNotifications(userId: userId, read: 0)
+        .then((result) {
+      completer.complete(result.data.totalCount);
+      widget.painNotificationCallback(result.data.totalCount);
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
   Future<String?> checkUserId() async {
     Completer<String?> completer = Completer();
     if (userController.userInfo.id.isEmpty) {
@@ -281,11 +305,30 @@ class _PainPageState extends State<PainPage>
     return completer.future;
   }
 
+  Future<String?> loadPainNotificationCountsInfo() async {
+    Completer<String?> completer = Completer();
+    Future.delayed(const Duration(milliseconds: 100), () async {
+      final String? userId = await checkUserId();
+
+      // 等待所有异步任务完成
+      final List<int?> results =
+          await Future.wait([loadPainNotificationCounts(userId!)]);
+
+      notificationController.setPainNotiicationNum(results[0] ?? 0);
+    }).then((value) {
+      completer.complete('success');
+    }).catchError((e) {
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+
   void loadGlobalDatas() {
     Future.wait([
       loadEquipmentOrderCounts(),
       loadPatientCourseOrderCounts(),
-      loadMajorCourseOrderCounts()
+      loadMajorCourseOrderCounts(),
+      loadPainNotificationCountsInfo()
     ]);
   }
 
@@ -293,6 +336,13 @@ class _PainPageState extends State<PainPage>
     Get.toNamed('/mine_equipment_order', arguments: {'initialIndex': 0})!
         .then((value) {
       loadEquipmentOrderCounts();
+    });
+  }
+
+  void handleGotoNotificationPage() {
+    Get.toNamed('/notification')!.then((value) {
+      widget
+          .painNotificationCallback(notificationController.painNotiicationNum);
     });
   }
 
@@ -413,16 +463,20 @@ class _PainPageState extends State<PainPage>
                                             ),
                                           ),
                                         ),
-                                        Container(
-                                          width: 24,
-                                          height: 24,
-                                          margin:
-                                              const EdgeInsets.only(right: 6),
-                                          child: Center(
-                                            child: IconFont(
-                                              IconNames.xiaoxizhongxin,
-                                              size: 20,
-                                              color: 'rgb(0,0,0)',
+                                        GestureDetector(
+                                          onTap: handleGotoNotificationPage,
+                                          child: Container(
+                                            width: 24,
+                                            height: 24,
+                                            color: Colors.transparent,
+                                            margin:
+                                                const EdgeInsets.only(right: 6),
+                                            child: Center(
+                                              child: IconFont(
+                                                IconNames.xiaoxizhongxin,
+                                                size: 20,
+                                                color: 'rgb(0,0,0)',
+                                              ),
                                             ),
                                           ),
                                         )
@@ -435,7 +489,7 @@ class _PainPageState extends State<PainPage>
                           ),
                           GetBuilder<StoreController>(builder: (controller) {
                             return ((controller.equipmentWaitCounts +
-                                        controller.equipmentShippingCounts) >=
+                                        controller.equipmentShippingCounts) >
                                     0
                                 ? Positioned(
                                     top: mediaQuerySafeInfo.top + 8,
@@ -458,6 +512,41 @@ class _PainPageState extends State<PainPage>
                                           child: Center(
                                             child: Text(
                                               '${(controller.equipmentWaitCounts + controller.equipmentShippingCounts) > 99 ? '99+' : (controller.equipmentWaitCounts + controller.equipmentShippingCounts)}',
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ))
+                                : const SizedBox.shrink());
+                          }),
+                          GetBuilder<NotificationController>(
+                              builder: (controller) {
+                            return (controller.painNotiicationNum > 0
+                                ? Positioned(
+                                    top: mediaQuerySafeInfo.top + 8,
+                                    right: 8,
+                                    child: AnimatedOpacity(
+                                      opacity: _opacity,
+                                      duration:
+                                          const Duration(milliseconds: 30),
+                                      curve: Curves.linear, // 指定渐变方式
+                                      child: GestureDetector(
+                                        onTap: handleGotoNotificationPage,
+                                        child: Container(
+                                          width: 24,
+                                          height: 24,
+                                          decoration: const BoxDecoration(
+                                              color: Color.fromRGBO(
+                                                  249, 81, 84, 1),
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(24))),
+                                          child: Center(
+                                            child: Text(
+                                              '${controller.painNotiicationNum > 99 ? '99+' : controller.painNotiicationNum}',
                                               style: const TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 12,

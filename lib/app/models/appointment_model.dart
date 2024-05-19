@@ -218,7 +218,7 @@ class BookTypeModel {
                 ? UserOnlyNeedTypeModel.fromJson(json['patient_user_info'])
                 : null,
             room_info: json['room_info'] != null
-                ? RoomTypeModel.fromJson(json['patient_user_info'])
+                ? RoomTypeModel.fromJson(json['room_info'])
                 : null,
           )
         : BookTypeModel(
@@ -297,5 +297,23 @@ class RoomTypeModel {
             status: 0,
             created_at: '',
             updated_at: '');
+  }
+}
+
+class RoomEnterTypeModel {
+  final UserOnlyNeedTypeModel? user; //用户信息
+  final String sign; //签名
+  final int app_id; //AppId
+  RoomEnterTypeModel({this.user, required this.sign, required this.app_id});
+
+  factory RoomEnterTypeModel.fromJson(Map<String, dynamic>? json) {
+    return json != null
+        ? RoomEnterTypeModel(
+            user: json['patient_user_info'] != null
+                ? UserOnlyNeedTypeModel.fromJson(json['patient_user_info'])
+                : null,
+            sign: json['sign'],
+            app_id: json['app_id'])
+        : RoomEnterTypeModel(user: null, sign: '', app_id: 0);
   }
 }

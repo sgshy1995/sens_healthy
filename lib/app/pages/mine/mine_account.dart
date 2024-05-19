@@ -12,6 +12,9 @@ import '../../controllers/user_controller.dart';
 import '../../providers/api/user_client_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../providers/api/notification_client_provider.dart';
+import '../../controllers/notification_controller.dart';
+
 class MineAccountPage extends StatefulWidget {
   const MineAccountPage({super.key});
 
@@ -23,6 +26,10 @@ class _MineAccountPageState extends State<MineAccountPage> {
   final UserClientProvider userClientProvider = Get.put(UserClientProvider());
   final UserController userController = Get.put(UserController());
   final GlobalController globalController = Get.put(GlobalController());
+  final NotificationClientProvider notificationClientProvider =
+      Get.put(NotificationClientProvider());
+  final NotificationController notificationController =
+      Get.put(NotificationController());
 
   void handleGoBack() {
     Get.back();
@@ -46,6 +53,10 @@ class _MineAccountPageState extends State<MineAccountPage> {
   }
 
   void handleLogout() async {
+    //清除推送注册id绑定的用户信息
+    notificationClientProvider
+        .addHistoryUserIdInfo({'registration_id': notificationController.rid});
+    //退出登录
     userClientProvider.logoutAction();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');

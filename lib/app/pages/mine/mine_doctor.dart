@@ -95,6 +95,7 @@ class _MineDoctorPageState extends State<MineDoctorPage>
     appointmentClientProvider
         .findManyBooksReadyBookedAction(userController.userInfo.id)
         .then((result) {
+      print('bookList is $bookList');
       if (result.code == 200) {
         setState(() {
           bookList = result.data!;
@@ -104,6 +105,7 @@ class _MineDoctorPageState extends State<MineDoctorPage>
         completer.completeError('error');
       }
     }).catchError((e) {
+      print('error $e');
       completer.completeError(e);
     });
 
@@ -752,6 +754,10 @@ class _MineDoctorPageState extends State<MineDoctorPage>
 
   void handleGotoPatientRecord(String userId) {
     Get.toNamed('/mine_doctor_patient_record', arguments: {'userId': userId});
+  }
+
+  void handleGotoCenterLive(String roomId) {
+    Get.toNamed('/center_live_lecturer', arguments: {'roomId': roomId});
   }
 
   @override
@@ -1541,29 +1547,33 @@ class _MineDoctorPageState extends State<MineDoctorPage>
                                                                         ),
                                                                         Row(
                                                                           children: [
-                                                                            Container(
-                                                                              height: 32,
-                                                                              padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-                                                                              decoration: const BoxDecoration(color: Color.fromRGBO(140, 68, 238, 1), borderRadius: BorderRadius.all(Radius.circular(10))),
-                                                                              child: Row(
-                                                                                children: [
-                                                                                  Container(
-                                                                                    width: 18,
-                                                                                    height: 18,
-                                                                                    margin: const EdgeInsets.only(right: 4),
-                                                                                    child: Center(
-                                                                                      child: IconFont(
-                                                                                        IconNames.live_fill,
-                                                                                        size: 18,
-                                                                                        color: '#fff',
+                                                                            //handleGotoCenterLive
+                                                                            GestureDetector(
+                                                                              onTap: () => handleGotoCenterLive(bookList[index].room_info!.id),
+                                                                              child: Container(
+                                                                                height: 32,
+                                                                                padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                                                                                decoration: const BoxDecoration(color: Color.fromRGBO(140, 68, 238, 1), borderRadius: BorderRadius.all(Radius.circular(10))),
+                                                                                child: Row(
+                                                                                  children: [
+                                                                                    Container(
+                                                                                      width: 18,
+                                                                                      height: 18,
+                                                                                      margin: const EdgeInsets.only(right: 4),
+                                                                                      child: Center(
+                                                                                        child: IconFont(
+                                                                                          IconNames.live_fill,
+                                                                                          size: 18,
+                                                                                          color: '#fff',
+                                                                                        ),
                                                                                       ),
                                                                                     ),
-                                                                                  ),
-                                                                                  const Text(
-                                                                                    '进入直播间',
-                                                                                    style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                                                                                  )
-                                                                                ],
+                                                                                    const Text(
+                                                                                      '进入直播间',
+                                                                                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                                                                    )
+                                                                                  ],
+                                                                                ),
                                                                               ),
                                                                             )
                                                                           ],

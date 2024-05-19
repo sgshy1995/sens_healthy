@@ -236,4 +236,29 @@ class AppointmentClientProvider extends GlobalClientProvider {
         code: jsonMap['code'], message: jsonMap['message'], data: list);
     return dataFinalModel;
   }
+
+  // 根据ID获取房间信息
+  Future<DataFinalModel<RoomTypeModel>> getOneRoomByIdAction(String id) async {
+    final jsonData = await get('/room/id/$id');
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel<RoomTypeModel> dataFinalModel = DataFinalModel(
+        code: jsonMap['code'],
+        message: jsonMap['message'],
+        data: RoomTypeModel.fromJson(jsonMap['data']));
+    return dataFinalModel;
+  }
+
+  // 进入房间
+  Future<DataFinalModel<RoomEnterTypeModel>> enterRoomAction(
+      String id, String role) async {
+    final jsonData = await post('/room/enter', {'id': id, 'role': role});
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    final DataFinalModel<RoomEnterTypeModel> dataFinalModel = DataFinalModel(
+        code: jsonMap['code'],
+        message: jsonMap['message'],
+        data: RoomEnterTypeModel.fromJson(jsonMap['data']));
+    return dataFinalModel;
+  }
 }

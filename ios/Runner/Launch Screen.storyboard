@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+    <device id="retina6_72" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22504"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="EHf-IW-A2E">
+            <objects>
+                <viewController id="01J-lp-oVM" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
+                        <rect key="frame" x="0.0" y="0.0" width="430" height="932"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" image="text_fk" translatesAutoresizingMaskIntoConstraints="NO" id="BA0-eC-FNZ">
+                                <rect key="frame" x="115.33333333333333" y="873.66666666666663" width="199.33333333333337" height="24"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="BA0-eC-FNZ" secondAttribute="height" multiplier="349:42" id="QGK-fQ-hId"/>
+                                    <constraint firstAttribute="height" constant="24" id="plA-mT-HD3"/>
+                                </constraints>
+                            </imageView>
+                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" image="logo_fk" translatesAutoresizingMaskIntoConstraints="NO" id="1D1-yP-wFp">
+                                <rect key="frame" x="145" y="396" width="140" height="140"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="140" id="O24-Vm-Q8W"/>
+                                    <constraint firstAttribute="height" constant="140" id="Y7v-M2-TjJ"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="1D1-yP-wFp" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="DIh-Gz-3xd"/>
+                            <constraint firstItem="BA0-eC-FNZ" firstAttribute="centerY" secondItem="Bcu-3y-fUS" secondAttribute="bottom" constant="-12.5" id="Lfr-ke-f8c"/>
+                            <constraint firstItem="1D1-yP-wFp" firstAttribute="centerX" secondItem="BA0-eC-FNZ" secondAttribute="centerX" id="VOj-ah-8lS"/>
+                            <constraint firstItem="1D1-yP-wFp" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="lqC-ra-5v2"/>
+                            <constraint firstItem="BA0-eC-FNZ" firstAttribute="width" secondItem="BA0-eC-FNZ" secondAttribute="height" multiplier="349:42" id="tcV-xr-ROE"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="53" y="375"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="logo_fk" width="160" height="160"/>
+        <image name="text_fk" width="349" height="42"/>
+    </resources>
+</document>

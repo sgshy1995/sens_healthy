@@ -60,6 +60,10 @@ import './app/pages/center/center_major_detail.dart';
 import './app/pages/mine/mine_doctor_patient_record.dart';
 import './app/pages/mine/professinal/mine_professinal_joint.dart';
 import './app/pages/mine/professinal/mine_professinal_spine.dart';
+import './app/pages/center/center_live_lecturer.dart';
+import './app/pages/notification/notification.dart';
+import './app/pages/notification/notification_like.dart';
+import './app/pages/notification/notification_say.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env.dev"); // 加载开发环境配置
@@ -91,7 +95,6 @@ Future main() async {
           // 修改默认进度指示器颜色
 
           scaffoldBackgroundColor: Colors.white,
-          backgroundColor: Colors.white,
           dialogBackgroundColor: Colors.white,
           primaryColor: Colors.black, // 修改主题的默认颜色为绿色
           progressIndicatorTheme: const ProgressIndicatorThemeData(
@@ -327,6 +330,26 @@ Future main() async {
           GetPage(
             name: '/mine_professinal_spine',
             page: () => const MineProfessinalSpinePage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/center_live_lecturer',
+            page: () => const CenterLiveLecturerPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/notification',
+            page: () => const NotificationPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/notification_like',
+            page: () => const NotificationLikePage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/notification_say',
+            page: () => const NotificationSayPage(),
             middlewares: [AuthMiddleware()],
           ),
         ],
