@@ -95,7 +95,6 @@ class _MineDoctorPageState extends State<MineDoctorPage>
     appointmentClientProvider
         .findManyBooksReadyBookedAction(userController.userInfo.id)
         .then((result) {
-      print('bookList is $bookList');
       if (result.code == 200) {
         setState(() {
           bookList = result.data!;
@@ -105,7 +104,6 @@ class _MineDoctorPageState extends State<MineDoctorPage>
         completer.completeError('error');
       }
     }).catchError((e) {
-      print('error $e');
       completer.completeError(e);
     });
 
@@ -140,7 +138,9 @@ class _MineDoctorPageState extends State<MineDoctorPage>
   }
 
   void handleGotoTimeManage() {
-    Get.toNamed('mine_doctor_time');
+    Get.toNamed('mine_doctor_time')!.then((value) {
+      _onRefresh();
+    });
   }
 
   void handleShowDeleteDialog(BookTypeModel item) {
@@ -511,7 +511,8 @@ class _MineDoctorPageState extends State<MineDoctorPage>
                                           width: 4,
                                         )),
                                         TextSpan(
-                                          text: item.patient_user_info!.name,
+                                          text: item.patient_user_info!.name ??
+                                              '赴康云用户',
                                           style: const TextStyle(
                                               color: Color.fromRGBO(0, 0, 0, 1),
                                               fontSize: 14,
@@ -757,7 +758,10 @@ class _MineDoctorPageState extends State<MineDoctorPage>
   }
 
   void handleGotoCenterLive(String roomId) {
-    Get.toNamed('/center_live_lecturer', arguments: {'roomId': roomId});
+    Get.toNamed('/center_live_lecturer', arguments: {'roomId': roomId})!
+        .then((value) {
+      _onRefresh();
+    });
   }
 
   @override

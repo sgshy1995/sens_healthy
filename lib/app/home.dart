@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -146,13 +147,27 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         setState(() {
           debugLable = "flutter onOpenNotification: $message";
         });
-        Get.toNamed('/pain_question_detail', arguments: {
-          'questionId': message['extras']['question_id'],
-          'painNotificationId': message['extras']['id']
-        })!
-            .then((value) {
-          jpush.setBadge(notificationController.painNotiicationNum);
-        });
+        if (GetPlatform.isIOS) {
+          Get.toNamed('/pain_question_detail', arguments: {
+            'questionId': message['extras']['question_id'],
+            'painNotificationId': message['extras']['id']
+          })!
+              .then((value) {
+            jpush.setBadge(notificationController.painNotiicationNum);
+          });
+        } else if (GetPlatform.isAndroid) {
+          Map<String, dynamic> jsonMap =
+              json.decode(message['extras']['cn.jpush.android.EXTRA']);
+          final String questionId = jsonMap['question_id'];
+          final String painNotificationId = jsonMap['id'];
+          Get.toNamed('/pain_question_detail', arguments: {
+            'questionId': questionId,
+            'painNotificationId': painNotificationId
+          })!
+              .then((value) {
+            jpush.setBadge(notificationController.painNotiicationNum);
+          });
+        }
       }, onReceiveMessage: (Map<String, dynamic> message) async {
         print("flutter onReceiveMessage: $message");
         setState(() {

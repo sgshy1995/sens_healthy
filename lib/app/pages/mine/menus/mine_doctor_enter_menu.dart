@@ -4,8 +4,16 @@ import 'package:get/get.dart';
 import '../../../../iconfont/icon_font.dart';
 import '../../../controllers/user_controller.dart';
 
+// 定义回调函数类型
+typedef EnterCallback = void Function();
+
 class MineDoctorEnterMenu extends StatefulWidget {
-  const MineDoctorEnterMenu({super.key});
+  const MineDoctorEnterMenu(
+      {super.key, required this.booksLength, required this.enterCallback});
+
+  final int booksLength;
+
+  final EnterCallback enterCallback;
 
   @override
   State<MineDoctorEnterMenu> createState() => _MineDoctorEnterMenuState();
@@ -15,7 +23,9 @@ class _MineDoctorEnterMenuState extends State<MineDoctorEnterMenu> {
   final UserController userController = Get.put(UserController());
 
   void handleGotoDoctorPage() {
-    Get.toNamed('mine_doctor');
+    Get.toNamed('mine_doctor')!.then((value) {
+      widget.enterCallback();
+    });
   }
 
   @override
@@ -67,16 +77,40 @@ class _MineDoctorEnterMenuState extends State<MineDoctorEnterMenu> {
                               fontWeight: FontWeight.bold))
                     ],
                   ),
-                  SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: Center(
-                      child: IconFont(
-                        IconNames.qianjin,
-                        size: 16,
-                        color: 'rgb(255, 255, 255)',
-                      ),
-                    ),
+                  Row(
+                    children: [
+                      widget.booksLength > 0
+                          ? Container(
+                              width: 24,
+                              height: 24,
+                              decoration: const BoxDecoration(
+                                  color: Color.fromRGBO(249, 81, 84, 1),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(24))),
+                              margin: const EdgeInsets.only(right: 12),
+                              child: Center(
+                                child: Text(
+                                  '${widget.booksLength > 99 ? '99+' : widget.booksLength}',
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: Center(
+                          child: IconFont(
+                            IconNames.qianjin,
+                            size: 16,
+                            color: 'rgb(255, 255, 255)',
+                          ),
+                        ),
+                      )
+                    ],
                   )
                 ],
               ),

@@ -408,6 +408,31 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
     return completer.future;
   }
 
+  int booksLength = 0;
+
+  Future<String?> loadBooks() async {
+    Completer<String?> completer = Completer();
+    Future.delayed(const Duration(milliseconds: 100), () async {
+      final String? userId = await checkUserId();
+      appointmentClientProvider
+          .findManyBooksReadyBookedAction(userId!)
+          .then((result) {
+        if (result.code == 200) {
+          setState(() {
+            booksLength = result.data!.length;
+          });
+          completer.complete('success');
+        } else {
+          completer.completeError('error');
+        }
+      }).catchError((e) {
+        completer.completeError(e);
+      });
+    });
+
+    return completer.future;
+  }
+
   void handleGotoHistory(int index) {
     Get.toNamed('/mine_history', arguments: {'initialIndex': index});
   }
@@ -534,6 +559,10 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
     _scrollController.addListener(_scrollListener);
   }
 
+  void enterCallback() {
+    loadBooks();
+  }
+
   void _onRefresh() async {
     // monitor network fetch
     Future.wait([
@@ -542,7 +571,8 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
       loadEquipmentOrderCounts(),
       loadPatientCourseOrderCounts(),
       loadMajorCourseOrderCounts(),
-      loadPainNotificationCountsInfo()
+      loadPainNotificationCountsInfo(),
+      loadBooks()
     ]);
     _refreshController.refreshCompleted();
     _refreshController.loadComplete();
@@ -1105,7 +1135,9 @@ class _MinePageState extends State<MinePage> with TickerProviderStateMixin {
                                               controller
                                                       .userInfo.authenticate ==
                                                   2)
-                                          ? const MineDoctorEnterMenu()
+                                          ? MineDoctorEnterMenu(
+                                              booksLength: booksLength,
+                                              enterCallback: enterCallback)
                                           : const SizedBox.shrink();
                                     }),
                                     Padding(

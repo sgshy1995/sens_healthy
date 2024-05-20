@@ -481,6 +481,24 @@ class CenterCoursePageState extends State<CenterCoursePage>
     });
   }
 
+  void handleGotoCenterLive(PatientCourseTypeModel item) {
+    Get.toNamed('/center_live_patient',
+            arguments: {'roomId': item.room_info!.id})!
+        .then((value) {
+      final int findIndex = patientCourseDataPagination.data
+          .indexWhere((element) => element.id == item.id);
+      appointmentClientProvider
+          .getPatientCourseByIdAction(item.id)
+          .then((result) {
+        if (result.code == 200 && result.data != null) {
+          setState(() {
+            patientCourseDataPagination.data[findIndex] = result.data!;
+          });
+        }
+      });
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1239,6 +1257,8 @@ class CenterCoursePageState extends State<CenterCoursePage>
                                                                   Row(
                                                                     children: [
                                                                       GestureDetector(
+                                                                        onTap: () =>
+                                                                            handleGotoCenterLive(patientCourseDataPagination.data[index]),
                                                                         child:
                                                                             Container(
                                                                           height:

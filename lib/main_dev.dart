@@ -60,10 +60,11 @@ import './app/pages/center/center_major_detail.dart';
 import './app/pages/mine/mine_doctor_patient_record.dart';
 import './app/pages/mine/professinal/mine_professinal_joint.dart';
 import './app/pages/mine/professinal/mine_professinal_spine.dart';
-import './app/pages/center/center_live_lecturer.dart';
 import './app/pages/notification/notification.dart';
 import './app/pages/notification/notification_like.dart';
 import './app/pages/notification/notification_say.dart';
+import './app/pages/center/center_live_lecturer.dart';
+import './app/pages/center/center_live_patient.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env.dev"); // 加载开发环境配置
@@ -333,11 +334,6 @@ Future main() async {
             middlewares: [AuthMiddleware()],
           ),
           GetPage(
-            name: '/center_live_lecturer',
-            page: () => const CenterLiveLecturerPage(),
-            middlewares: [AuthMiddleware()],
-          ),
-          GetPage(
             name: '/notification',
             page: () => const NotificationPage(),
             middlewares: [AuthMiddleware()],
@@ -350,6 +346,16 @@ Future main() async {
           GetPage(
             name: '/notification_say',
             page: () => const NotificationSayPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/center_live_lecturer',
+            page: () => const CenterLiveLecturerPage(),
+            middlewares: [AuthMiddleware()],
+          ),
+          GetPage(
+            name: '/center_live_patient',
+            page: () => const CenterLivePatientPage(),
             middlewares: [AuthMiddleware()],
           ),
         ],

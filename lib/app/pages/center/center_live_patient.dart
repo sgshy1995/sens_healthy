@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:indexed/indexed.dart';
@@ -21,27 +20,24 @@ import '../../models/appointment_model.dart';
 
 import '../../controllers/global_controller.dart';
 import '../../controllers/user_controller.dart';
-import '../../models/user_model.dart';
 import '../../providers/api/appointment_client_provider.dart';
-import '../../providers/api/user_client_provider.dart';
 // import 'package:tencent_trtc_cloud/web/Simulation_js.dart';
 // import 'package:tencent_trtc_cloud/web/trtc_cloud_js.dart';
 // import 'package:tencent_trtc_cloud/web/trtc_cloud_listener_web.dart';
 // import 'package:tencent_trtc_cloud/web/trtc_cloud_web.dart';
 
-class CenterLiveLecturerPage extends StatefulWidget {
-  const CenterLiveLecturerPage({super.key});
+class CenterLivePatientPage extends StatefulWidget {
+  const CenterLivePatientPage({super.key});
 
   @override
-  State<CenterLiveLecturerPage> createState() => _CenterLiveLecturerPageState();
+  State<CenterLivePatientPage> createState() => _CenterLivePatientPageState();
 }
 
-class _CenterLiveLecturerPageState extends State<CenterLiveLecturerPage> {
+class _CenterLivePatientPageState extends State<CenterLivePatientPage> {
   final UserController userController = Get.put(UserController());
   final GlobalController globalController = Get.put(GlobalController());
   final AppointmentClientProvider appointmentClientProvider =
       Get.put(AppointmentClientProvider());
-  final UserClientProvider userClientProvider = Get.put(UserClientProvider());
   GlobalKey firstElementKey = GlobalKey();
   GlobalKey secondElementKey = GlobalKey();
 
@@ -136,8 +132,6 @@ class _CenterLiveLecturerPageState extends State<CenterLiveLecturerPage> {
 
   String closingId = '';
 
-  bool ifShouDong = false;
-
   void setDelayed() {
     final String timeNow = DateTime.now().millisecondsSinceEpoch.toString();
     setState(() {
@@ -211,6 +205,8 @@ class _CenterLiveLecturerPageState extends State<CenterLiveLecturerPage> {
     return completer.future;
   }
 
+  bool ifShouDong = false;
+
   void onRtcListener(type, param) {
     //进房回调事件
     if (type == TRTCCloudListener.onEnterRoom) {
@@ -223,7 +219,7 @@ class _CenterLiveLecturerPageState extends State<CenterLiveLecturerPage> {
       //param参数为远端用户userId
       onUserEnterRoom = true;
     }
-    // 远端用户退房
+    // 远端用户进房
     if (type == TRTCCloudListener.onRemoteUserLeaveRoom) {
       //param参数为远端用户userId
       onUserEnterRoom = false;
@@ -258,7 +254,6 @@ class _CenterLiveLecturerPageState extends State<CenterLiveLecturerPage> {
         });
       }
     }
-
     // 本地用户退房
     if (type == TRTCCloudListener.onExitRoom) {
       //被动退房
@@ -293,7 +288,7 @@ class _CenterLiveLecturerPageState extends State<CenterLiveLecturerPage> {
           roomInfo = roomInfoGet;
         });
         appointmentClientProvider
-            .enterRoomAction(roomId, 'lecturer')
+            .enterRoomAction(roomId, 'patient')
             .then((result) {
           if (result.code == 200) {
             setState(() {
@@ -387,367 +382,6 @@ class _CenterLiveLecturerPageState extends State<CenterLiveLecturerPage> {
       cameraType = cameraType == 'front' ? 'backend' : 'front';
     });
     txDeviceManager!.switchCamera(cameraType == 'front');
-  }
-
-  void handleGotoPatientRecord(String userId) {
-    Get.toNamed('/mine_doctor_patient_record', arguments: {'userId': userId});
-  }
-
-  void handleShowPatientUserInfoDialog() {
-    final String timeNow = DateTime.now().millisecondsSinceEpoch.toString();
-    setState(() {
-      closingId = timeNow;
-    });
-    showLoading('请稍后...');
-    userClientProvider
-        .getUserInfoByUserIdAction(roomInfo!.patient_user_id)
-        .then((resultOuter) {
-      final UserTypeModel user = resultOuter.data!;
-      if (resultOuter.code == 200 && resultOuter.data != null) {
-        userClientProvider
-            .getInfoByUserIdAction(roomInfo!.patient_user_id)
-            .then((result) {
-          if (result.code == 200 && result.data != null) {
-            final UserInfoTypeModel userInfo = result.data!;
-            hideLoading();
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return StatefulBuilder(
-                    builder: (BuildContext context, StateSetter setState) {
-                  return AlertDialog(
-                    surfaceTintColor: const Color.fromRGBO(255, 255, 255, 1),
-                    backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
-                    shadowColor: Colors.transparent,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(8), // 设置顶部边缘为直角
-                      ),
-                    ),
-                    title: null,
-                    content: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(
-                          height: 12,
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Center(
-                              child: Text(
-                                '患者信息',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 24,
-                            ),
-                            SizedBox(
-                              width: 32,
-                              height: 32,
-                              child: (user.avatar == null)
-                                  ? const CircleAvatar(
-                                      radius: 16,
-                                      backgroundImage: AssetImage(
-                                          'assets/images/avatar.webp'),
-                                    )
-                                  : CircleAvatar(
-                                      backgroundColor: const Color.fromRGBO(
-                                          254, 251, 254, 1),
-                                      radius: 16,
-                                      backgroundImage: CachedNetworkImageProvider(
-                                          '${globalController.cdnBaseUrl}/${user.avatar}'),
-                                    ),
-                            ),
-                            const SizedBox(
-                              height: 12,
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                    child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    RichText(
-                                        maxLines: 3,
-                                        overflow: TextOverflow.clip,
-                                        textAlign: TextAlign.left,
-                                        text: TextSpan(
-                                          children: [
-                                            const TextSpan(
-                                              text: '姓名/昵称',
-                                              style: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      0, 0, 0, 1),
-                                                  fontSize: 14,
-                                                  fontWeight:
-                                                      FontWeight.normal),
-                                            ),
-                                            const WidgetSpan(
-                                                child: SizedBox(
-                                              width: 4,
-                                            )),
-                                            TextSpan(
-                                              text: user.name ?? '赴康云用户',
-                                              style: const TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      0, 0, 0, 1),
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          ],
-                                        ))
-                                  ],
-                                ))
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 6,
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                    child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    RichText(
-                                        maxLines: 3,
-                                        overflow: TextOverflow.clip,
-                                        textAlign: TextAlign.left,
-                                        text: TextSpan(
-                                          children: [
-                                            const TextSpan(
-                                              text: '性别',
-                                              style: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      0, 0, 0, 1),
-                                                  fontSize: 14,
-                                                  fontWeight:
-                                                      FontWeight.normal),
-                                            ),
-                                            const WidgetSpan(
-                                                child: SizedBox(
-                                              width: 4,
-                                            )),
-                                            TextSpan(
-                                              text: user.gender == 1
-                                                  ? '男'
-                                                  : user.gender == 0
-                                                      ? '女'
-                                                      : '未知',
-                                              style: const TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      0, 0, 0, 1),
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          ],
-                                        ))
-                                  ],
-                                ))
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 6,
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                    child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    RichText(
-                                        maxLines: 3,
-                                        overflow: TextOverflow.clip,
-                                        textAlign: TextAlign.left,
-                                        text: TextSpan(
-                                          children: [
-                                            const TextSpan(
-                                              text: '年龄',
-                                              style: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      0, 0, 0, 1),
-                                                  fontSize: 14,
-                                                  fontWeight:
-                                                      FontWeight.normal),
-                                            ),
-                                            const WidgetSpan(
-                                                child: SizedBox(
-                                              width: 4,
-                                            )),
-                                            TextSpan(
-                                              text: '${userInfo.age ?? '未知'}',
-                                              style: const TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      0, 0, 0, 1),
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          ],
-                                        ))
-                                  ],
-                                ))
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 12,
-                            ),
-                            userInfo.injury_history == null
-                                ? const Text(
-                                    '伤痛档案未维护',
-                                    style: TextStyle(
-                                        color: Color.fromRGBO(200, 200, 200, 1),
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold),
-                                  )
-                                : GestureDetector(
-                                    onTap: () =>
-                                        handleGotoPatientRecord(user.id),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          height: 32,
-                                          padding: const EdgeInsets.fromLTRB(
-                                              12, 0, 12, 0),
-                                          decoration: BoxDecoration(
-                                              color: Colors.transparent,
-                                              borderRadius:
-                                                  const BorderRadius.all(
-                                                      Radius.circular(10)),
-                                              border: Border.all(
-                                                  width: 1,
-                                                  color: Colors.black)),
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              const Text('查看伤痛档案',
-                                                  style: TextStyle(
-                                                      color: Color.fromRGBO(
-                                                          0, 0, 0, 1),
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.bold)),
-                                              Container(
-                                                width: 14,
-                                                height: 14,
-                                                margin: const EdgeInsets.only(
-                                                    left: 4),
-                                                child: Center(
-                                                  child: IconFont(
-                                                    IconNames.qianjin,
-                                                    size: 14,
-                                                    color: '#000',
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                  )
-                          ],
-                        ),
-                        // const SizedBox(
-                        //   height: 12,
-                        // ),
-                        // Row(
-                        //   crossAxisAlignment: CrossAxisAlignment.start,
-                        //   children: [
-                        //     Container(
-                        //       width: 18,
-                        //       height: 18,
-                        //       margin: const EdgeInsets.only(right: 4),
-                        //       child: Center(
-                        //         child: IconFont(
-                        //           IconNames.jingshi,
-                        //           size: 14,
-                        //           color: '#000',
-                        //         ),
-                        //       ),
-                        //     ),
-                        //     Column(
-                        //       crossAxisAlignment: CrossAxisAlignment.start,
-                        //       children: [
-                        //         const Text('请确认您已阅读并悉知',
-                        //             style: TextStyle(
-                        //                 color: Colors.black,
-                        //                 fontSize: 14,
-                        //                 fontWeight: FontWeight.bold)),
-                        //         GestureDetector(
-                        //           onTap: handleGotoExplain,
-                        //           child: const Text('《 面对面康复课程预约时间说明 》',
-                        //               style: TextStyle(
-                        //                   decoration: TextDecoration.underline,
-                        //                   decorationThickness: 2,
-                        //                   decorationColor:
-                        //                       Color.fromRGBO(211, 66, 67, 1),
-                        //                   color: Color.fromRGBO(211, 66, 67, 1),
-                        //                   fontSize: 14,
-                        //                   fontWeight: FontWeight.bold)),
-                        //         ),
-                        //       ],
-                        //     ),
-                        //   ],
-                        // )
-                      ],
-                    ),
-                    actions: <Widget>[
-                      SizedBox(
-                        height: 32,
-                        child: ElevatedButton(
-                          style: ButtonStyle(
-                              padding: MaterialStateProperty.all<EdgeInsets>(
-                                  const EdgeInsets.fromLTRB(12, 0, 12, 0)),
-                              backgroundColor:
-                                  MaterialStateProperty.all(Colors.black),
-                              shape: MaterialStateProperty.all(
-                                  const RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(4)),
-                                      side: BorderSide(
-                                          color: Colors.black, width: 1)))),
-                          onPressed: () {
-                            // 点击确认按钮时执行的操作
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text(
-                            '确认',
-                            style: TextStyle(color: Colors.white, fontSize: 14),
-                          ),
-                        ),
-                      )
-                    ],
-                  );
-                });
-              },
-            );
-          } else {
-            showToast(result.message);
-            hideLoading();
-          }
-        }).catchError((e) {
-          showToast('获取信息失败, 请稍后再试');
-          hideLoading();
-        });
-      } else {
-        showToast(resultOuter.message);
-        hideLoading();
-      }
-    }).catchError((e1) {
-      showToast('获取信息失败, 请稍后再试');
-      hideLoading();
-    });
   }
 
   bool ifRemoteAudioEnable = true;
@@ -966,7 +600,6 @@ class _CenterLiveLecturerPageState extends State<CenterLiveLecturerPage> {
   void initState() {
     super.initState();
     roomId = Get.arguments['roomId'];
-    initRoom();
     getCheckPermissions().then((value) {
       if (value == 'success') {
         initTrtc().then((valueIn) {
@@ -1052,8 +685,8 @@ class _CenterLiveLecturerPageState extends State<CenterLiveLecturerPage> {
                                       ),
                                       Text(
                                         !onUserEnterRoom
-                                            ? '等待用户进入房间'
-                                            : '等待用户开启画面',
+                                            ? '等待医师进入房间'
+                                            : '等待医师开启画面',
                                         style: const TextStyle(
                                             color: Color.fromRGBO(
                                                 224, 222, 223, 1),
@@ -1072,7 +705,7 @@ class _CenterLiveLecturerPageState extends State<CenterLiveLecturerPage> {
                               // viewId TRTCCloudVideoView生成的viewId
                               TRTCCloudVideoView(onViewCreated: (viewId) {
                                   trtcCloud!.startRemoteView(
-                                      roomInfo!.patient_user_id,
+                                      roomInfo!.lecturer_user_id,
                                       TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG,
                                       viewId);
                                 }),
@@ -1080,9 +713,7 @@ class _CenterLiveLecturerPageState extends State<CenterLiveLecturerPage> {
                       ),
                       (onUserEnterRoom && !onUserAudioAvailable)
                           ? Positioned(
-                              top: isSwapped
-                                  ? mediaQuerySafeInfo.top + 12 + 20 + 12
-                                  : 12,
+                              top: isSwapped ? mediaQuerySafeInfo.top + 12 : 12,
                               right: 12,
                               child: SizedBox(
                                 width: 18,
@@ -1364,32 +995,6 @@ class _CenterLiveLecturerPageState extends State<CenterLiveLecturerPage> {
                       ),
                     ))
                 : const SizedBox.shrink(),
-            Indexed(
-              index: 5,
-              child: ifShowTools && roomInfo != null
-                  ? Positioned(
-                      top: mediaQuerySafeInfo.top + 12,
-                      right: 12,
-                      child: GestureDetector(
-                        onTap: handleShowPatientUserInfoDialog,
-                        child: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: const BoxDecoration(
-                              color: Colors.black,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10))),
-                          child: Center(
-                            child: IconFont(
-                              IconNames.jingshi,
-                              size: 16,
-                              color: '#fff',
-                            ),
-                          ),
-                        ),
-                      ))
-                  : const SizedBox.shrink(),
-            ),
             ifHiddenSmall
                 ? Indexed(
                     index: 6,
