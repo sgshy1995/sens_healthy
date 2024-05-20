@@ -65,7 +65,9 @@ class _CenterLivePatientPageState extends State<CenterLivePatientPage> {
       ].request();
       print(statuses[Permission.camera]);
       print(statuses[Permission.microphone]);
-      if (statuses[Permission.camera] == PermissionStatus.granted &&
+      if (GetPlatform.isIOS) {
+        completer.complete('success');
+      } else if (statuses[Permission.camera] == PermissionStatus.granted &&
           statuses[Permission.microphone] == PermissionStatus.granted) {
         completer.complete('success');
       } else {
