@@ -12,56 +12,60 @@ import '../../controllers/user_controller.dart';
 import './login_phone_first.dart';
 import './login_phone_second.dart';
 
-class LoginPhoneController extends GetxController {
-  RxInt step = 0.obs;
-  RxString phone = ''.obs;
-  RxString code = ''.obs;
-  final RxBool ifExist = false.obs;
-  void _handleChangeStep(
-      int stepNew, bool ifExistNew, String phoneNew, String codeNew) {
-    phone.value = phoneNew;
-    code.value = codeNew;
-    ifExist.value = ifExistNew;
-    step.value = stepNew;
+class LoginPhone extends StatefulWidget {
+  const LoginPhone({super.key});
 
-    print('_handleChangeStep step 变化为: $stepNew');
-
-    update();
-  }
-
-  void _handleBackStep(int stepNew) {
-    step.value = stepNew;
-    print('_handleBackStep step 变化为: $stepNew');
-    update();
-  }
+  @override
+  State<LoginPhone> createState() => _LoginPhoneState();
 }
 
-class LoginPhone extends StatelessWidget {
-  LoginPhone({super.key});
+class _LoginPhoneState extends State<LoginPhone> {
+  int step = 0;
+  String phone = '';
+  String code = '';
+  bool ifExist = false;
+
+  void handleChangeStep(
+      int stepNew, bool ifExistNew, String phoneNew, String codeNew) {
+    setState(() {
+      phone = phoneNew;
+      code = codeNew;
+      ifExist = ifExistNew;
+      step = stepNew;
+    });
+
+    print('_handleChangeStep step 变化为: $stepNew');
+  }
+
+  void handleBackStep(int stepNew) {
+    setState(() {
+      step = stepNew;
+    });
+    print('_handleBackStep step 变化为: $stepNew');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<LoginPhoneController>(
-        init: LoginPhoneController(), // 在这里初始化控制器
-        builder: (controller) {
-          return Column(
-            children: [
-              Visibility(
-                visible: controller.step.value == 0,
-                child:
-                    LoginPhoneFirstPage(callback: controller._handleChangeStep),
-              ),
-              Visibility(
-                visible: controller.step.value == 1,
-                child: LoginPhoneSecond(
-                    callback: controller._handleBackStep,
-                    initialIsExist: controller.ifExist.value,
-                    phone: controller.phone.value,
-                    code: controller.code.value),
-              ),
-            ],
-          );
-        });
-    ;
+    return Column(
+      children: [
+        Visibility(
+          visible: step == 0,
+          child: LoginPhoneFirstPage(callback: handleChangeStep),
+        ),
+        Visibility(
+          visible: step == 1,
+          child: LoginPhoneSecond(
+              callback: handleBackStep,
+              initialIsExist: ifExist,
+              phone: phone,
+              code: code),
+        ),
+      ],
+    );
   }
 }

@@ -18,37 +18,45 @@ import '../../cache/token_manager.dart';
 // 定义回调函数类型
 typedef StepCallback = void Function(int step);
 
-class LoginPhoneSecondController extends GetxController {}
-
-class LoginPhoneSecond extends StatelessWidget {
-  LoginPhoneSecond(
+class LoginPhoneSecond extends StatefulWidget {
+  const LoginPhoneSecond(
       {super.key,
       required this.callback,
       required this.initialIsExist,
       required this.phone,
-      required this.code}) {
-    isExist = initialIsExist.obs;
-  }
-
-  late final String phone;
-  late final String code;
+      required this.code});
 
   final StepCallback callback;
 
   final bool initialIsExist;
-  final RxBool isCooling = true.obs;
-  final RxBool sendLoading = false.obs;
-  final RxInt coolNumber = 60.obs;
-  late final RxBool isExist;
 
-  final RxBool loginLoading = false.obs;
+  final String phone;
+
+  final String code;
+
+  @override
+  State<LoginPhoneSecond> createState() => _LoginPhoneSecondState();
+}
+
+class _LoginPhoneSecondState extends State<LoginPhoneSecond> {
+  final TextEditingController _textController = TextEditingController();
+
+  bool isCooling = true;
+  bool sendLoading = false;
+  int coolNumber = 60;
+
+  late bool isExist;
+
+  bool loginLoading = false;
 
   late final Timer? timer;
 
-  final RxString capture = ''.obs;
+  String capture = '';
 
   void updateCapture(String newCapture) {
-    capture.value = newCapture;
+    setState(() {
+      capture = newCapture;
+    });
   }
 
   Future<String?> getUserInfo(String token) async {
@@ -86,15 +94,17 @@ class LoginPhoneSecond extends StatelessWidget {
   }
 
   void submit() {
-    if (loginLoading.value) {
+    if (loginLoading) {
       return;
     }
-    if (capture.value.isEmpty) {
+    if (capture.isEmpty) {
       showToast('请输入短信验证码');
     } else {
-      loginLoading.value = true;
+      setState(() {
+        loginLoading = true;
+      });
       userClientProvider
-          .loginAction(userController.uuid, phone, capture.value)
+          .loginAction(userController.uuid, widget.phone, capture)
           .then((result) async {
         if (result.code == 200 && result.data != null) {
           final token = result.data!.token;
@@ -102,12 +112,16 @@ class LoginPhoneSecond extends StatelessWidget {
           userController.setToken(token);
           // 等待所有异步任务完成
           await Future.wait([getUserInfo(token), getInfo(token)]);
-          loginLoading.value = false;
+          setState(() {
+            loginLoading = false;
+          });
           final String? tokenGet = await TokenManager.getToken();
           print('已经设置的token $tokenGet');
           Get.offAndToNamed('/');
         } else {
-          loginLoading.value = false;
+          setState(() {
+            loginLoading = false;
+          });
           showToast(result.message);
         }
       });
@@ -122,24 +136,34 @@ class LoginPhoneSecond extends StatelessWidget {
       GetInstance().find<UserClientProvider>();
 
   void reGetCapture() {
-    if (sendLoading.value) {
+    if (sendLoading) {
       return;
     }
-    isExist.value = false;
-    sendLoading.value = true;
+    setState(() {
+      isExist = false;
+      sendLoading = true;
+    });
+
     userClientProvider
-        .capturePhoneAction(userController.uuid, phone, code, ifReSend: '1')
+        .capturePhoneAction(userController.uuid, widget.phone, widget.code,
+            ifReSend: '1')
         .then((result) {
-      sendLoading.value = false;
+      setState(() {
+        sendLoading = false;
+      });
       print('校验手机和验证码结果: ${result.code}');
       // 移除Base64字符串的前缀
       if (result.code == 201) {
-        isCooling.value = true;
+        setState(() {
+          isCooling = true;
+        });
         startTimer();
       } else if (result.code == 409) {
         showToast('验证码仍在有效期内');
-        isExist.value = true;
-        isCooling.value = true;
+        setState(() {
+          isExist = true;
+          isCooling = true;
+        });
         startTimer();
       } else {
         showToast(result.message);
@@ -148,33 +172,54 @@ class LoginPhoneSecond extends StatelessWidget {
   }
 
   void goBackToPreStep() {
-    callback(0);
+    widget.callback(0);
   }
 
   void startTimer() {
     try {
       timer?.cancel(); // 取消定时器
     } catch (e) {}
-    coolNumber.value = 60;
+    setState(() {
+      coolNumber = 60;
+    });
     timer = Timer.periodic(const Duration(seconds: 1), (timerIn) {
-      if (coolNumber.value > 0) {
-        coolNumber.value -= 1;
+      if (coolNumber > 0) {
+        setState(() {
+          coolNumber -= 1;
+        });
       } else {
         if (timer != null) {
           timer!.cancel(); // 取消定时器
         }
-        coolNumber.value = 60;
-        isCooling.value = false;
+        setState(() {
+          coolNumber = 60;
+          isCooling = false;
+        });
       }
     });
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (isCooling.value) {
+  void initState() {
+    super.initState();
+    isExist = widget.initialIsExist;
+    if (isCooling) {
       startTimer();
     }
+    _textController.addListener(() {
+      print('onChanged: ${_textController.text}');
+      updateCapture(_textController.text);
+    });
+  }
 
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final EdgeInsets mediaQuerySafeInfo = MediaQuery.of(context).padding;
 
     return Container(
@@ -200,11 +245,10 @@ class LoginPhoneSecond extends StatelessWidget {
                   ),
                   Container(
                     margin: const EdgeInsets.only(bottom: 24),
-                    child: Obx(() => Text(
-                        isExist.value ? '您的短信验证码仍在有效期内' : '一条短信验证码已发送至您的手机',
+                    child: Text(isExist ? '您的短信验证码仍在有效期内' : '一条短信验证码已发送至您的手机',
                         style: const TextStyle(
                             color: Color.fromRGBO(38, 38, 38, 1),
-                            fontSize: 14))),
+                            fontSize: 14)),
                   ),
                 ],
               ),
@@ -234,6 +278,7 @@ class LoginPhoneSecond extends StatelessWidget {
               children: [
                 Expanded(
                     child: TextField(
+                  controller: _textController,
                   autofocus: true, // 设置为 true，使 TextField 自动获取焦点
                   textAlignVertical: TextAlignVertical.center,
                   style: const TextStyle(
@@ -280,7 +325,7 @@ class LoginPhoneSecond extends StatelessWidget {
                   decoration: const BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                       color: Color.fromRGBO(239, 239, 239, 1)),
-                  child: Obx(() => sendLoading.value
+                  child: sendLoading
                       ? const Center(
                           child: SizedBox(
                             width: 24,
@@ -290,7 +335,7 @@ class LoginPhoneSecond extends StatelessWidget {
                                 strokeWidth: 2),
                           ),
                         )
-                      : isCooling.value
+                      : isCooling
                           ? Center(
                               child: Center(
                                 child: Text(
@@ -311,7 +356,7 @@ class LoginPhoneSecond extends StatelessWidget {
                                       fontSize: 14),
                                 ),
                               ),
-                            )),
+                            ),
                 )
               ],
             ),

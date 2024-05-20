@@ -132,6 +132,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     if (!mounted) return;
   }
 
+  //预请求获取网络权限
+  void getCapture() async {
+    await userClientProvider.captureAction(userController.uuid);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -139,6 +144,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
     //获取设备信息
     GetDeviceInfo().getDeviceId();
+
+    getCapture();
 
     isChecked = false;
 
@@ -301,7 +308,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                     backgroundColor:
                                         const Color.fromRGBO(255, 255, 255, 1),
                                     isScrollControlled: true,
-                                    context: context,
+                                    context: Get.context!,
                                     builder: (BuildContext context) {
                                       return SingleChildScrollView(
                                           child: Padding(
@@ -310,7 +317,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                                       .viewInsets
                                                       .bottom),
                                               child:
-                                                  LoginPhone() // Your form widget here
+                                                  const LoginPhone() // Your form widget here
                                               ));
                                     });
                               }
