@@ -22,6 +22,8 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+def applicationName = "io.flutter.app.FlutterApplication"
+
 android {
     // assets compine only set 33.
     compileSdkVersion 33
@@ -55,6 +57,7 @@ android {
         versionName flutterVersionName
 
         manifestPlaceholders = [
+            applicationName: applicationName,
             JPUSH_PKGNAME : applicationId,
             JPUSH_APPKEY : "900ccedfbebacec90cd6c259", // NOTE: JPush 上注册的包名对应的 Appkey.
             JPUSH_CHANNEL : "developer-default", //暂时填写默认值即可.
