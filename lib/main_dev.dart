@@ -102,7 +102,15 @@ Future main() async {
             color: Color.fromRGBO(200, 200, 200, 1), // 设置进度指示器的颜色
           ),
         ),
-        builder: EasyLoading.init(),
+        builder: EasyLoading.init(
+          builder: (context, child) {
+            return MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: const TextScaler.linear(1.0)),
+              child: child!,
+            );
+          },
+        ),
         debugShowCheckedModeBanner: false,
         initialRoute: token is String ? '/' : '/login',
         getPages: [
