@@ -19,6 +19,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/api/notification_client_provider.dart';
 import '../../controllers/notification_controller.dart';
 
+import '../../home.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -213,6 +215,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     _controller3.dispose();
   }
 
+  void loginSuccessCallback() {
+    Get.back();
+    Future.delayed(const Duration(milliseconds: 100), () {
+      Get.off(const HomePage());
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final EdgeInsets mediaQuerySafeInfo = MediaQuery.of(context).padding;
@@ -316,8 +325,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                                   bottom: MediaQuery.of(context)
                                                       .viewInsets
                                                       .bottom),
-                                              child:
-                                                  const LoginPhone() // Your form widget here
+                                              child: LoginPhone(
+                                                  loginSuccessCallback:
+                                                      loginSuccessCallback) // Your form widget here
                                               ));
                                     });
                               }

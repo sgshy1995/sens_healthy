@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get_connect/http/src/status/http_status.dart';
 import 'package:sens_healthy/components/toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../cache/token_manager.dart';
 import '../controllers/user_controller.dart';
 
 class ApiResponse<T> {
@@ -54,22 +55,30 @@ class GlobalClientProvider extends GetConnect {
 
     httpClient.timeout = const Duration(seconds: 10);
     // It's will attach 'apikey' property on header from all requests
-    httpClient.addRequestModifier<dynamic>((request) {
+    httpClient.addRequestModifier<dynamic>((request) async {
       if (userController.token.isNotEmpty) {
         final token = userController.token;
         request.headers['Authorization'] = "Bearer $token";
+      } else {
+        final String? tokenGet = await TokenManager.getToken();
+        if (tokenGet != null && tokenGet.isNotEmpty) {
+          request.headers['Authorization'] = "Bearer $tokenGet";
+        } else {}
       }
 
       request.headers['Connection'] = 'close';
       return request;
     });
-    httpClient.addAuthenticator<dynamic>((request) async {
-      // Try reading data from the 'action' key. If it doesn't exist, returns null.
-      if (userController.token.isNotEmpty) {
-        request.headers['Authorization'] = "Bearer $userController.token";
-      }
-      return request;
-    });
+    // httpClient.addAuthenticator<dynamic>((request) async {
+    //   // Try reading data from the 'action' key. If it doesn't exist, returns null.
+    //   if (userController.token.isNotEmpty) {
+    //     print('设置了token前缀');
+    //     request.headers['Authorization'] = "Bearer ${userController.token}";
+    //   } else {
+    //     print('没有token');
+    //   }
+    //   return request;
+    // });
 
     httpClient.addResponseModifier((request, response) {
       final Object? responseBody = response ?? response.body;
@@ -78,8 +87,9 @@ class GlobalClientProvider extends GetConnect {
       //final String previousRoute = Get.previousRoute;
       if (statusCode == 401 &&
           userController.token.isNotEmpty &&
-          userController.token != readyOffToken) {
-        showToast('登录已过期, 请重新登录');
+          userController.token != readyOffToken &&
+          Get.currentRoute != '/login') {
+        //showToast('登录已过期, 请重新登录');
         Future.delayed(const Duration(seconds: 1), () {
           readyOffToken = userController.token;
           Get.offAllNamed('/login');
@@ -88,8 +98,9 @@ class GlobalClientProvider extends GetConnect {
           responseBody is Map<String, dynamic> &&
           responseBody['code'] == 401 &&
           userController.token.isNotEmpty &&
-          userController.token != readyOffToken) {
-        showToast('登录已过期, 请重新登录');
+          userController.token != readyOffToken &&
+          Get.currentRoute != '/login') {
+        //showToast('登录已过期, 请重新登录');
         Future.delayed(const Duration(seconds: 1), () {
           readyOffToken = userController.token;
           Get.offAllNamed('/login');

@@ -17,6 +17,8 @@ import '../../cache/token_manager.dart';
 
 // 定义回调函数类型
 typedef StepCallback = void Function(int step);
+// 定义回调函数类型
+typedef LoginSuccessCallback = void Function();
 
 class LoginPhoneSecond extends StatefulWidget {
   const LoginPhoneSecond(
@@ -24,9 +26,12 @@ class LoginPhoneSecond extends StatefulWidget {
       required this.callback,
       required this.initialIsExist,
       required this.phone,
-      required this.code});
+      required this.code,
+      required this.loginSuccessCallback});
 
   final StepCallback callback;
+
+  final LoginSuccessCallback loginSuccessCallback;
 
   final bool initialIsExist;
 
@@ -117,7 +122,8 @@ class _LoginPhoneSecondState extends State<LoginPhoneSecond> {
           });
           final String? tokenGet = await TokenManager.getToken();
           print('已经设置的token $tokenGet');
-          Get.offAndToNamed('/');
+          widget.loginSuccessCallback();
+          //Get.offAndToNamed('/');
         } else {
           setState(() {
             loginLoading = false;

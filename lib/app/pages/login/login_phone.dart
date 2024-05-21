@@ -12,8 +12,13 @@ import '../../controllers/user_controller.dart';
 import './login_phone_first.dart';
 import './login_phone_second.dart';
 
+// 定义回调函数类型
+typedef LoginSuccessCallback = void Function();
+
 class LoginPhone extends StatefulWidget {
-  const LoginPhone({super.key});
+  const LoginPhone({super.key, required this.loginSuccessCallback});
+
+  final LoginSuccessCallback loginSuccessCallback;
 
   @override
   State<LoginPhone> createState() => _LoginPhoneState();
@@ -44,6 +49,10 @@ class _LoginPhoneState extends State<LoginPhone> {
     print('_handleBackStep step 变化为: $stepNew');
   }
 
+  void loginSuccessCallback() {
+    widget.loginSuccessCallback();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -63,7 +72,8 @@ class _LoginPhoneState extends State<LoginPhone> {
               callback: handleBackStep,
               initialIsExist: ifExist,
               phone: phone,
-              code: code),
+              code: code,
+              loginSuccessCallback: loginSuccessCallback),
         ),
       ],
     );
