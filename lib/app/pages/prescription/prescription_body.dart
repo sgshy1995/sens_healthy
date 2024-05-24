@@ -17,12 +17,18 @@ import 'package:shimmer/shimmer.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class PrescriptionBody extends StatefulWidget {
-  final int? part;
-  final int? symptoms;
-  final int? phase;
+  final String? rehabilitation;
+  final String? part;
+  final String? symptoms;
+  final String? phase;
   final int? hotOrder;
   const PrescriptionBody(
-      {super.key, this.part, this.symptoms, this.phase, this.hotOrder});
+      {super.key,
+      this.rehabilitation,
+      this.part,
+      this.symptoms,
+      this.phase,
+      this.hotOrder});
 
   @override
   State<PrescriptionBody> createState() => PrescriptionBodyState();
@@ -35,9 +41,10 @@ class PrescriptionBodyState extends State<PrescriptionBody>
       Get.put(PrescriptionClientProvider());
   final UserController userController = Get.put(UserController());
 
-  late int? partGet;
-  late int? symptomsGet;
-  late int? phaseGet;
+  late String? rehabilitationGet;
+  late String? partGet;
+  late String? symptomsGet;
+  late String? phaseGet;
 
   /* 数据信息 */
   bool readyLoad = false;
@@ -79,6 +86,7 @@ class PrescriptionBodyState extends State<PrescriptionBody>
   void initState() {
     super.initState();
 
+    rehabilitationGet = widget.rehabilitation;
     partGet = widget.part;
     symptomsGet = widget.symptoms;
     phaseGet = widget.phase;
@@ -107,11 +115,12 @@ class PrescriptionBodyState extends State<PrescriptionBody>
     Completer<String> completer = Completer();
     prescriptionClientProvider
         .getPrescriptionsByCustomAction(
+            rehabilitation: rehabilitationGet,
             part: partGet,
-            pageNo: page ?? _currentPageNo + 1,
+            symptoms: symptomsGet,
             phase: phaseGet,
-            hotOrder: widget.hotOrder,
-            symptoms: symptomsGet)
+            pageNo: page ?? _currentPageNo + 1,
+            hotOrder: widget.hotOrder)
         .then((value) {
       final valueGet = value.data.data;
       final pageNo = value.data.pageNo;

@@ -26,33 +26,32 @@ class _RecoveryPageState extends State<RecoveryPage>
   final UserController userController = Get.put(UserController());
   late TabController _tabController;
 
-  int? part;
-  int? symptoms;
-  int? phase;
+  String? rehabilitationOne;
+  String? rehabilitationTwo;
+  String? rehabilitationThree;
 
-  List<String> partList = ['肩关节', '肘关节', '腕关节', '髋关节', '膝关节', '踝关节', '脊柱'];
+  String? rehabilitation;
+  String? part;
+  String? symptoms;
+  String? phase;
 
-  List<String> symptomsList = ['疼痛', '肿胀', '活动受限', '弹响'];
+  String? rehabilitationShow;
+  String? partShow;
+  String? symptomsShow;
+  String? phaseShow;
 
-  List<String> phaseList = ['0-2周', '3-6周', '6-12周', '12周以后'];
-
-  final List<String> tabsList = [
-    '热门',
-    '最新',
-    '肩关节',
-    '肘关节',
-    '腕关节',
-    '髋关节',
-    '膝关节',
-    '踝关节',
-    '脊柱'
-  ];
+  final List<String> tabsList = ['热门', '最新', '', '', ''];
 
   void handleClearSelect() {
     setState(() {
+      rehabilitation = null;
       part = null;
       symptoms = null;
       phase = null;
+      rehabilitationShow = null;
+      partShow = null;
+      symptomsShow = null;
+      phaseShow = null;
     });
   }
 
@@ -60,11 +59,46 @@ class _RecoveryPageState extends State<RecoveryPage>
     // 在这里处理标签的点击事件
   }
 
+  List<PrescriptionTagTypeModel> prescriptionTagList = [];
+
+  void loadData() {
+    prescriptionClientProvider.findManyPrescriptionTagsAction().then((result) {
+      final List<PrescriptionTagTypeModel> prescriptionTagListGet =
+          result.data!;
+      setState(() {
+        prescriptionTagList = prescriptionTagListGet;
+      });
+      final List<PrescriptionTagTypeModel> prescriptionTagListGetRoot =
+          prescriptionTagListGet.where((i) => i.parent_id == '0').toList();
+      prescriptionTagListGetRoot
+          .sort((a, b) => a.priority.compareTo(b.priority));
+      if (prescriptionTagListGetRoot.isNotEmpty) {
+        setState(() {
+          tabsList[2] = prescriptionTagListGetRoot[0].title;
+          rehabilitationOne = prescriptionTagListGetRoot[0].id;
+        });
+      }
+      if (prescriptionTagListGetRoot.length > 1) {
+        setState(() {
+          tabsList[3] = prescriptionTagListGetRoot[1].title;
+          rehabilitationTwo = prescriptionTagListGetRoot[1].id;
+        });
+      }
+      if (prescriptionTagListGetRoot.length > 2) {
+        setState(() {
+          tabsList[4] = prescriptionTagListGetRoot[2].title;
+          rehabilitationThree = prescriptionTagListGetRoot[2].id;
+        });
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 9, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(_handleTabSelection);
+    loadData();
   }
 
   @override
@@ -79,6 +113,7 @@ class _RecoveryPageState extends State<RecoveryPage>
       PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               PrescriptionSectionPage(
+                rehabilitation: rehabilitation,
                 part: part,
                 symptoms: symptoms,
                 phase: phase,
@@ -99,18 +134,28 @@ class _RecoveryPageState extends State<RecoveryPage>
     ).then((value) {
       if (value != null) {
         print(value);
-        if (part != null || symptoms != null || phase != null) {
+        if (rehabilitation != null ||
+            part != null ||
+            symptoms != null ||
+            phase != null) {
           _prescriptionBodyState.currentState?.readyLoad = false;
           _prescriptionBodyState.currentState?.initPagination();
+          _prescriptionBodyState.currentState?.rehabilitationGet =
+              value['rehabilitation'];
           _prescriptionBodyState.currentState?.partGet = value['part'];
           _prescriptionBodyState.currentState?.symptomsGet = value['symptoms'];
           _prescriptionBodyState.currentState?.phaseGet = value['phase'];
           _prescriptionBodyState.currentState?.onRefresh();
         }
         setState(() {
+          rehabilitation = value['rehabilitation'];
+          rehabilitationShow = value['rehabilitationShow'];
           part = value['part'];
+          partShow = value['partShow'];
           symptoms = value['symptoms'];
+          symptomsShow = value['symptomsShow'];
           phase = value['phase'];
+          phaseShow = value['phaseShow'];
         });
       }
     });
@@ -175,7 +220,10 @@ class _RecoveryPageState extends State<RecoveryPage>
                   ),
                 )
               : const SizedBox.shrink()),
-          ((part == null && symptoms == null && phase == null)
+          ((rehabilitation == null &&
+                  part == null &&
+                  symptoms == null &&
+                  phase == null)
               ? Expanded(
                   child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -208,27 +256,31 @@ class _RecoveryPageState extends State<RecoveryPage>
                         indicatorColor: const Color.fromRGBO(211, 66, 67, 1),
                         controller: _tabController,
                         tabs: List.generate(tabsList.length, (index) {
-                          return Tab(
-                            child: index == 0
-                                ? Row(
-                                    children: [
-                                      Container(
-                                        width: 18,
-                                        height: 18,
-                                        margin: const EdgeInsets.only(right: 4),
-                                        child: GestureDetector(
-                                          child: Center(
-                                            child: IconFont(IconNames.hot,
-                                                size: 18,
-                                                color: 'rgb(211, 66, 67)'),
-                                          ),
-                                        ),
-                                      ),
-                                      Text(tabsList[index])
-                                    ],
-                                  )
-                                : Text(tabsList[index]),
-                          );
+                          return tabsList[index].isNotEmpty
+                              ? Tab(
+                                  child: index == 0
+                                      ? Row(
+                                          children: [
+                                            Container(
+                                              width: 18,
+                                              height: 18,
+                                              margin: const EdgeInsets.only(
+                                                  right: 4),
+                                              child: GestureDetector(
+                                                child: Center(
+                                                  child: IconFont(IconNames.hot,
+                                                      size: 18,
+                                                      color:
+                                                          'rgb(211, 66, 67)'),
+                                                ),
+                                              ),
+                                            ),
+                                            Text(tabsList[index])
+                                          ],
+                                        )
+                                      : Text(tabsList[index]),
+                                )
+                              : const SizedBox.shrink();
                         }),
                       ),
                     ),
@@ -239,40 +291,30 @@ class _RecoveryPageState extends State<RecoveryPage>
                     Expanded(
                       child: TabBarView(
                         controller: _tabController,
-                        children: const [
-                          KeepAliveWrapper(
+                        children: [
+                          const KeepAliveWrapper(
                               child: PrescriptionBody(
                             hotOrder: 1,
                           )),
-                          KeepAliveWrapper(child: PrescriptionBody()),
-                          KeepAliveWrapper(
-                              child: PrescriptionBody(
-                            part: 0,
-                          )),
-                          KeepAliveWrapper(
-                              child: PrescriptionBody(
-                            part: 1,
-                          )),
-                          KeepAliveWrapper(
-                              child: PrescriptionBody(
-                            part: 2,
-                          )),
-                          KeepAliveWrapper(
-                              child: PrescriptionBody(
-                            part: 3,
-                          )),
-                          KeepAliveWrapper(
-                              child: PrescriptionBody(
-                            part: 4,
-                          )),
-                          KeepAliveWrapper(
-                              child: PrescriptionBody(
-                            part: 5,
-                          )),
-                          KeepAliveWrapper(
-                              child: PrescriptionBody(
-                            part: 6,
-                          ))
+                          const KeepAliveWrapper(child: PrescriptionBody()),
+                          rehabilitationOne != null
+                              ? KeepAliveWrapper(
+                                  child: PrescriptionBody(
+                                  rehabilitation: rehabilitationOne,
+                                ))
+                              : const SizedBox.shrink(),
+                          rehabilitationTwo != null
+                              ? KeepAliveWrapper(
+                                  child: PrescriptionBody(
+                                  rehabilitation: rehabilitationTwo,
+                                ))
+                              : const SizedBox.shrink(),
+                          rehabilitationThree != null
+                              ? KeepAliveWrapper(
+                                  child: PrescriptionBody(
+                                  rehabilitation: rehabilitationThree,
+                                ))
+                              : const SizedBox.shrink(),
                         ],
                       ),
                     )
@@ -295,48 +337,78 @@ class _RecoveryPageState extends State<RecoveryPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('已选择',
-                                style: TextStyle(
-                                  color: Colors.black26,
-                                  fontSize: 13,
-                                )),
-                            GestureDetector(
-                              onTap: showSectionPage,
-                              child: Text(
-                                  '${partList[part!]} / ${symptomsList[symptoms!]} / ${phaseList[phase!]}',
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 14,
-                                  )),
+                            const Row(
+                              children: [
+                                Text('已选择',
+                                    style: TextStyle(
+                                      color: Colors.black26,
+                                      fontSize: 13,
+                                    )),
+                                SizedBox(
+                                  width: 8,
+                                )
+                              ],
                             ),
-                            GestureDetector(
-                              onTap: handleClearSelect,
-                              child: Container(
-                                padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
-                                decoration: const BoxDecoration(
-                                    color: Color.fromRGBO(0, 0, 0, 0.7),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(6))),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 12,
-                                      height: 12,
-                                      margin: const EdgeInsets.only(right: 4),
-                                      child: Center(
-                                        child: IconFont(IconNames.guanbi,
-                                            size: 12,
-                                            color: 'rgb(255, 255, 255)'),
+                            Expanded(
+                                child: GestureDetector(
+                              onTap: showSectionPage,
+                              child: RichText(
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: phaseShow != null
+                                            ? '$rehabilitationShow / $partShow / $symptomsShow / $phaseShow'
+                                            : symptomsShow != null
+                                                ? '$rehabilitationShow / $partShow / $symptomsShow'
+                                                : partShow != null
+                                                    ? '$rehabilitationShow / $partShow'
+                                                    : '$rehabilitationShow',
+                                        style: const TextStyle(
+                                            color: Colors.black, fontSize: 14),
                                       ),
-                                    ),
-                                    const Text('清空选择',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 13,
-                                        ))
-                                  ],
+                                    ],
+                                  )),
+                            )),
+                            Row(
+                              children: [
+                                const SizedBox(
+                                  width: 8,
                                 ),
-                              ),
+                                GestureDetector(
+                                  onTap: handleClearSelect,
+                                  child: Container(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(4, 2, 4, 2),
+                                    decoration: const BoxDecoration(
+                                        color: Color.fromRGBO(0, 0, 0, 0.7),
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(6))),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 12,
+                                          height: 12,
+                                          margin:
+                                              const EdgeInsets.only(right: 4),
+                                          child: Center(
+                                            child: IconFont(IconNames.guanbi,
+                                                size: 12,
+                                                color: 'rgb(255, 255, 255)'),
+                                          ),
+                                        ),
+                                        const Text('清空',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 13,
+                                            ))
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              ],
                             )
                           ],
                         ),
@@ -350,6 +422,7 @@ class _RecoveryPageState extends State<RecoveryPage>
                         child: KeepAliveWrapper(
                             child: PrescriptionBody(
                       key: _prescriptionBodyState,
+                      rehabilitation: rehabilitation,
                       part: part,
                       symptoms: symptoms,
                       phase: phase,

@@ -53,38 +53,24 @@ class _PrescriptionDetailPageState extends State<PrescriptionDetailPage>
     });
   }
 
-  List<String> partList = ['肩关节', '肘关节', '腕关节', '髋关节', '膝关节', '踝关节', '脊柱'];
+  List<PrescriptionTagTypeModel> prescriptionTagList = [];
 
-  List<String> symptomsList = ['疼痛', '肿胀', '活动受限', '弹响'];
-
-  List<String> phaseList = ['0-2周', '3-6周', '6-12周', '12周以后'];
-
-  PrescriptionTypeModel prescriptionDetail = PrescriptionTypeModel(
-      id: '',
-      title: '',
-      cover: '',
-      prescription_type: 1,
-      watch_num: 0,
-      prescription_video: null,
-      prescription_content: null,
-      description: '',
-      gist: null,
-      difficulty: 1,
-      time_length: '',
-      part: 0,
-      symptoms: 0,
-      phase: 0,
-      publish_time: '',
-      status: 0,
-      created_at: '',
-      updated_at: '');
+  PrescriptionTypeModel prescriptionDetail =
+      PrescriptionTypeModel.fromJson(null);
   bool _readyLoad = false;
 
   void getDetailData() {
-    prescriptionClientProvider.getPrescriptionByIdAction(dataId).then((result) {
-      if (result.code == 200) {
-        final prescriptionNew = result.data!;
+    Future.wait([
+      prescriptionClientProvider.getPrescriptionByIdAction(dataId),
+      prescriptionClientProvider.findManyPrescriptionTagsAction()
+    ]).then((results) {
+      if (results[0].code == 200) {
+        final prescriptionNew = results[0].data! as PrescriptionTypeModel;
+        final List<PrescriptionTagTypeModel> prescriptionTagListGet =
+            results[1].data! as List<PrescriptionTagTypeModel>;
+
         setState(() {
+          prescriptionTagList = prescriptionTagListGet;
           prescriptionDetail = prescriptionNew;
           setState(() {
             _readyLoad = true;
@@ -94,7 +80,7 @@ class _PrescriptionDetailPageState extends State<PrescriptionDetailPage>
           prescriptionClientProvider
               .addPrescriptionWatchNumAction(dataId)
               .then((result1) {
-            if (result.code == 200) {
+            if (result1.code == 200) {
               setState(() {
                 prescriptionDetail.watch_num += 1;
               });
@@ -481,65 +467,115 @@ class _PrescriptionDetailPageState extends State<PrescriptionDetailPage>
                                                                   .fromRGBO(255,
                                                                   222, 103, 1),
                                               fontSize: 14)),
-                                      const SizedBox(
-                                        height: 18,
-                                        width: 6,
-                                      ),
-                                      Container(
-                                        margin: const EdgeInsets.only(left: 8),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 12,
+                                  ),
+                                  Wrap(
+                                    spacing: 8.0, // 间距
+                                    runSpacing: 2.0, // 行间距
+                                    children: [
+                                      Chip(
+                                        side: BorderSide.none,
                                         padding: const EdgeInsets.fromLTRB(
-                                            8, 2, 8, 2),
-                                        decoration: const BoxDecoration(
-                                            color: Color.fromRGBO(
-                                                211, 66, 67, 0.3),
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(6))),
-                                        child: Text(
-                                          partList[prescriptionDetail.part],
-                                          style: const TextStyle(
+                                            4, 0, 4, 0),
+                                        backgroundColor: const Color.fromRGBO(
+                                            211, 66, 67, 0.3),
+                                        labelStyle: const TextStyle(
                                             color:
                                                 Color.fromRGBO(211, 66, 67, 1),
-                                            fontSize: 14,
-                                          ),
-                                        ),
+                                            fontSize: 14),
+                                        label: Text(prescriptionTagList
+                                                    .firstWhereOrNull((e) =>
+                                                        e.id ==
+                                                        prescriptionDetail
+                                                            .rehabilitation) !=
+                                                null
+                                            ? prescriptionTagList
+                                                .firstWhereOrNull((e) =>
+                                                    e.id ==
+                                                    prescriptionDetail
+                                                        .rehabilitation)!
+                                                .title
+                                            : ''),
                                       ),
-                                      Container(
-                                        margin: const EdgeInsets.only(left: 8),
-                                        padding: const EdgeInsets.fromLTRB(
-                                            8, 2, 8, 2),
-                                        decoration: const BoxDecoration(
-                                            color: Color.fromRGBO(
-                                                211, 66, 67, 0.3),
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(6))),
-                                        child: Text(
-                                          symptomsList[
-                                              prescriptionDetail.symptoms],
-                                          style: const TextStyle(
-                                            color:
-                                                Color.fromRGBO(211, 66, 67, 1),
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        margin: const EdgeInsets.only(left: 8),
-                                        padding: const EdgeInsets.fromLTRB(
-                                            8, 2, 8, 2),
-                                        decoration: const BoxDecoration(
-                                            color: Color.fromRGBO(
-                                                211, 66, 67, 0.3),
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(6))),
-                                        child: Text(
-                                          phaseList[prescriptionDetail.phase],
-                                          style: const TextStyle(
-                                            color:
-                                                Color.fromRGBO(211, 66, 67, 1),
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      )
+                                      prescriptionTagList.firstWhereOrNull(
+                                                  (e) =>
+                                                      e.id ==
+                                                      prescriptionDetail
+                                                          .part) !=
+                                              null
+                                          ? Chip(
+                                              side: BorderSide.none,
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      4, 0, 4, 0),
+                                              backgroundColor:
+                                                  const Color.fromRGBO(
+                                                      211, 66, 67, 0.3),
+                                              labelStyle: const TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      211, 66, 67, 1),
+                                                  fontSize: 14),
+                                              label: Text(prescriptionTagList
+                                                  .firstWhereOrNull((e) =>
+                                                      e.id ==
+                                                      prescriptionDetail.part)!
+                                                  .title),
+                                            )
+                                          : const SizedBox.shrink(),
+                                      prescriptionTagList.firstWhereOrNull(
+                                                  (e) =>
+                                                      e.id ==
+                                                      prescriptionDetail
+                                                          .symptoms) !=
+                                              null
+                                          ? Chip(
+                                              side: BorderSide.none,
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      4, 0, 4, 0),
+                                              backgroundColor:
+                                                  const Color.fromRGBO(
+                                                      211, 66, 67, 0.3),
+                                              labelStyle: const TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      211, 66, 67, 1),
+                                                  fontSize: 14),
+                                              label: Text(prescriptionTagList
+                                                  .firstWhereOrNull((e) =>
+                                                      e.id ==
+                                                      prescriptionDetail
+                                                          .symptoms)!
+                                                  .title),
+                                            )
+                                          : const SizedBox.shrink(),
+                                      prescriptionTagList.firstWhereOrNull(
+                                                  (e) =>
+                                                      e.id ==
+                                                      prescriptionDetail
+                                                          .phase) !=
+                                              null
+                                          ? Chip(
+                                              side: BorderSide.none,
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      4, 0, 4, 0),
+                                              backgroundColor:
+                                                  const Color.fromRGBO(
+                                                      211, 66, 67, 0.3),
+                                              labelStyle: const TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      211, 66, 67, 1),
+                                                  fontSize: 14),
+                                              label: Text(prescriptionTagList
+                                                  .firstWhereOrNull((e) =>
+                                                      e.id ==
+                                                      prescriptionDetail.phase)!
+                                                  .title),
+                                            )
+                                          : const SizedBox.shrink(),
                                     ],
                                   ),
                                   const SizedBox(
@@ -637,6 +673,8 @@ class _PrescriptionDetailPageState extends State<PrescriptionDetailPage>
                       SliverFillRemaining(
                         hasScrollBody: false,
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
                             Expanded(
                                 child: AnimatedSwitcher(
@@ -656,89 +694,218 @@ class _PrescriptionDetailPageState extends State<PrescriptionDetailPage>
                                           tabIndex), // add this line
                                       index: tabIndex,
                                       children: <Widget>[
-                                        Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              12, 0, 12, 0),
-                                          child: Column(
-                                            children: [
-                                              (description.isNotEmpty
-                                                  ? RichText(
-                                                      maxLines:
-                                                          descriptionReadMore
-                                                              ? 9999
-                                                              : 12,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      textAlign: TextAlign.left,
-                                                      text: TextSpan(
-                                                        children: [
-                                                          TextSpan(
-                                                            text:
-                                                                prescriptionDetail
+                                        Visibility(
+                                            visible: tabIndex == 0,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      12, 0, 12, 0),
+                                              child: Column(
+                                                children: [
+                                                  (description.isNotEmpty
+                                                      ? RichText(
+                                                          maxLines:
+                                                              descriptionReadMore
+                                                                  ? 9999
+                                                                  : 12,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          textAlign:
+                                                              TextAlign.left,
+                                                          text: TextSpan(
+                                                            children: [
+                                                              TextSpan(
+                                                                text: prescriptionDetail
                                                                     .description,
-                                                            style: const TextStyle(
-                                                                color: Color
-                                                                    .fromRGBO(
-                                                                        0,
-                                                                        0,
-                                                                        0,
-                                                                        1),
-                                                                fontSize: 15,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .normal),
-                                                          )
-                                                        ],
-                                                      ))
-                                                  : Container(
-                                                      width: mediaQuerySizeInfo
-                                                              .width -
-                                                          24,
-                                                      margin:
-                                                          const EdgeInsets.only(
-                                                              top: 24),
-                                                      child: Center(
-                                                        child: Column(
-                                                          children: [
-                                                            SizedBox(
-                                                              width: 100,
-                                                              height: 100,
-                                                              child:
-                                                                  Image.asset(
-                                                                'assets/images/empty.png',
-                                                                fit: BoxFit
-                                                                    .contain,
-                                                              ),
-                                                            ),
-                                                            const Text(
-                                                              '暂无内容',
-                                                              style: TextStyle(
-                                                                  color: Color
-                                                                      .fromRGBO(
+                                                                style: const TextStyle(
+                                                                    color: Color
+                                                                        .fromRGBO(
+                                                                            0,
+                                                                            0,
+                                                                            0,
+                                                                            1),
+                                                                    fontSize:
+                                                                        15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .normal),
+                                                              )
+                                                            ],
+                                                          ))
+                                                      : Container(
+                                                          width:
+                                                              mediaQuerySizeInfo
+                                                                      .width -
+                                                                  24,
+                                                          margin:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  top: 24),
+                                                          child: Center(
+                                                            child: Column(
+                                                              children: [
+                                                                SizedBox(
+                                                                  width: 100,
+                                                                  height: 100,
+                                                                  child: Image
+                                                                      .asset(
+                                                                    'assets/images/empty.png',
+                                                                    fit: BoxFit
+                                                                        .contain,
+                                                                  ),
+                                                                ),
+                                                                const Text(
+                                                                  '暂无内容',
+                                                                  style: TextStyle(
+                                                                      color: Color.fromRGBO(
                                                                           224,
                                                                           222,
                                                                           223,
                                                                           1),
-                                                                  fontSize: 14),
-                                                            )
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    )),
-                                              const SizedBox(
-                                                height: 12,
+                                                                      fontSize:
+                                                                          14),
+                                                                )
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        )),
+                                                  const SizedBox(
+                                                    height: 12,
+                                                  ),
+                                                  (description.isNotEmpty &&
+                                                          isRichTextGreaterThan12LinesDescription(
+                                                              12,
+                                                              mediaQuerySizeInfo
+                                                                      .width -
+                                                                  24)
+                                                      ? GestureDetector(
+                                                          onTap:
+                                                              handleChangeDescriptionReadMore,
+                                                          child:
+                                                              (!descriptionReadMore
+                                                                  ? const Text(
+                                                                      '阅读更多...',
+                                                                      style: TextStyle(
+                                                                          color: Color.fromRGBO(
+                                                                              211,
+                                                                              66,
+                                                                              67,
+                                                                              1),
+                                                                          fontSize:
+                                                                              14),
+                                                                    )
+                                                                  : const Text(
+                                                                      '收起',
+                                                                      style: TextStyle(
+                                                                          color: Color.fromRGBO(
+                                                                              211,
+                                                                              66,
+                                                                              67,
+                                                                              1),
+                                                                          fontSize:
+                                                                              14),
+                                                                    )),
+                                                        )
+                                                      : const SizedBox
+                                                          .shrink()),
+                                                  SizedBox(
+                                                    height: mediaQuerySafeInfo
+                                                            .bottom +
+                                                        12,
+                                                  ),
+                                                ],
                                               ),
-                                              (description.isNotEmpty &&
-                                                      isRichTextGreaterThan12LinesDescription(
-                                                          12,
-                                                          mediaQuerySizeInfo
-                                                                  .width -
-                                                              24)
-                                                  ? GestureDetector(
-                                                      onTap:
-                                                          handleChangeDescriptionReadMore,
-                                                      child:
-                                                          (!descriptionReadMore
+                                            )),
+                                        Visibility(
+                                            visible: tabIndex == 1,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      12, 0, 12, 0),
+                                              child: Column(
+                                                children: [
+                                                  (gist != null &&
+                                                          gist.isNotEmpty
+                                                      ? RichText(
+                                                          maxLines: gistReadMore
+                                                              ? 9999
+                                                              : 12,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          textAlign:
+                                                              TextAlign.left,
+                                                          text: TextSpan(
+                                                            children: [
+                                                              TextSpan(
+                                                                text:
+                                                                    prescriptionDetail
+                                                                        .gist,
+                                                                style: const TextStyle(
+                                                                    color: Color
+                                                                        .fromRGBO(
+                                                                            0,
+                                                                            0,
+                                                                            0,
+                                                                            1),
+                                                                    fontSize:
+                                                                        15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .normal),
+                                                              )
+                                                            ],
+                                                          ))
+                                                      : Container(
+                                                          width:
+                                                              mediaQuerySizeInfo
+                                                                      .width -
+                                                                  24,
+                                                          margin:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  top: 24),
+                                                          child: Center(
+                                                            child: Column(
+                                                              children: [
+                                                                SizedBox(
+                                                                  width: 100,
+                                                                  height: 100,
+                                                                  child: Image
+                                                                      .asset(
+                                                                    'assets/images/empty.png',
+                                                                    fit: BoxFit
+                                                                        .contain,
+                                                                  ),
+                                                                ),
+                                                                const Text(
+                                                                  '暂无内容',
+                                                                  style: TextStyle(
+                                                                      color: Color.fromRGBO(
+                                                                          224,
+                                                                          222,
+                                                                          223,
+                                                                          1),
+                                                                      fontSize:
+                                                                          14),
+                                                                )
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        )),
+                                                  const SizedBox(
+                                                    height: 12,
+                                                  ),
+                                                  (gist != null &&
+                                                          gist.isNotEmpty &&
+                                                          isRichTextGreaterThan12LinesGist(
+                                                              12,
+                                                              mediaQuerySizeInfo
+                                                                      .width -
+                                                                  24)
+                                                      ? GestureDetector(
+                                                          onTap:
+                                                              handleChangeGistReadMore,
+                                                          child: (!gistReadMore
                                                               ? const Text(
                                                                   '阅读更多...',
                                                                   style: TextStyle(
@@ -763,130 +930,17 @@ class _PrescriptionDetailPageState extends State<PrescriptionDetailPage>
                                                                       fontSize:
                                                                           14),
                                                                 )),
-                                                    )
-                                                  : const SizedBox.shrink()),
-                                              SizedBox(
-                                                height:
-                                                    mediaQuerySafeInfo.bottom +
+                                                        )
+                                                      : const SizedBox
+                                                          .shrink()),
+                                                  SizedBox(
+                                                    height: mediaQuerySafeInfo
+                                                            .bottom +
                                                         12,
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              12, 0, 12, 0),
-                                          child: Column(
-                                            children: [
-                                              (gist != null && gist.isNotEmpty
-                                                  ? RichText(
-                                                      maxLines: gistReadMore
-                                                          ? 9999
-                                                          : 12,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      textAlign: TextAlign.left,
-                                                      text: TextSpan(
-                                                        children: [
-                                                          TextSpan(
-                                                            text:
-                                                                prescriptionDetail
-                                                                    .gist,
-                                                            style: const TextStyle(
-                                                                color: Color
-                                                                    .fromRGBO(
-                                                                        0,
-                                                                        0,
-                                                                        0,
-                                                                        1),
-                                                                fontSize: 15,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .normal),
-                                                          )
-                                                        ],
-                                                      ))
-                                                  : Container(
-                                                      width: mediaQuerySizeInfo
-                                                              .width -
-                                                          24,
-                                                      margin:
-                                                          const EdgeInsets.only(
-                                                              top: 24),
-                                                      child: Center(
-                                                        child: Column(
-                                                          children: [
-                                                            SizedBox(
-                                                              width: 100,
-                                                              height: 100,
-                                                              child:
-                                                                  Image.asset(
-                                                                'assets/images/empty.png',
-                                                                fit: BoxFit
-                                                                    .contain,
-                                                              ),
-                                                            ),
-                                                            const Text(
-                                                              '暂无内容',
-                                                              style: TextStyle(
-                                                                  color: Color
-                                                                      .fromRGBO(
-                                                                          224,
-                                                                          222,
-                                                                          223,
-                                                                          1),
-                                                                  fontSize: 14),
-                                                            )
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    )),
-                                              const SizedBox(
-                                                height: 12,
-                                              ),
-                                              (gist != null &&
-                                                      gist.isNotEmpty &&
-                                                      isRichTextGreaterThan12LinesGist(
-                                                          12,
-                                                          mediaQuerySizeInfo
-                                                                  .width -
-                                                              24)
-                                                  ? GestureDetector(
-                                                      onTap:
-                                                          handleChangeGistReadMore,
-                                                      child: (!gistReadMore
-                                                          ? const Text(
-                                                              '阅读更多...',
-                                                              style: TextStyle(
-                                                                  color: Color
-                                                                      .fromRGBO(
-                                                                          211,
-                                                                          66,
-                                                                          67,
-                                                                          1),
-                                                                  fontSize: 14),
-                                                            )
-                                                          : const Text(
-                                                              '收起',
-                                                              style: TextStyle(
-                                                                  color: Color
-                                                                      .fromRGBO(
-                                                                          211,
-                                                                          66,
-                                                                          67,
-                                                                          1),
-                                                                  fontSize: 14),
-                                                            )),
-                                                    )
-                                                  : const SizedBox.shrink()),
-                                              SizedBox(
-                                                height:
-                                                    mediaQuerySafeInfo.bottom +
-                                                        12,
-                                              ),
-                                            ],
-                                          ),
-                                        )
+                                            ))
                                       ],
                                     )))
                           ],

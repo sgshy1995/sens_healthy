@@ -26,6 +26,13 @@ class UserModel {
 class PrescriptionClientProvider extends GlobalClientProvider {
   PrescriptionClientProvider() : super(); // 调用 GlobalClientProvider 的构造函数
 
+  static List<PrescriptionTagTypeModel> fromJsonListPrescriptionTag(
+      List<dynamic> jsonList) {
+    return jsonList
+        .map((json) => PrescriptionTagTypeModel.fromJson(json))
+        .toList();
+  }
+
   Future<List<UserModel>> getUsers() async {
     final response = await get('users/path');
     if (response.status.hasError) {
@@ -56,14 +63,18 @@ class PrescriptionClientProvider extends GlobalClientProvider {
       getPrescriptionsByCustomAction(
           {int? pageNo = 1,
           int? pageSize = 10,
-          int? part,
-          int? symptoms,
-          int? phase,
+          String? rehabilitation,
+          String? part,
+          String? symptoms,
+          String? phase,
           int? hotOrder}) async {
     final Map<String, dynamic> queryMap = {
       'pageNo': pageNo.toString(),
       'pageSize': pageSize.toString()
     };
+    if (rehabilitation != null) {
+      queryMap['rehabilitation'] = rehabilitation.toString();
+    }
     if (part != null) {
       queryMap['part'] = part.toString();
     }
@@ -119,6 +130,22 @@ class PrescriptionClientProvider extends GlobalClientProvider {
 
     final DataFinalModel dataFinalModel =
         DataFinalModel(code: jsonMap['code'], message: jsonMap['message']);
+    return dataFinalModel;
+  }
+
+  // 获取可检索的标签
+  Future<DataFinalModel<List<PrescriptionTagTypeModel>>>
+      findManyPrescriptionTagsAction() async {
+    final Map<String, dynamic> query = {'status': '1'};
+    final jsonData = await get('/prescription_tag/custom', query: query);
+    final Map<String, dynamic> jsonMap = jsonData.body; // 将 JSON 数据解析为 Map
+
+    late List<PrescriptionTagTypeModel> list =
+        fromJsonListPrescriptionTag(jsonMap['data']);
+
+    final DataFinalModel<List<PrescriptionTagTypeModel>> dataFinalModel =
+        DataFinalModel(
+            code: jsonMap['code'], message: jsonMap['message'], data: list);
     return dataFinalModel;
   }
 

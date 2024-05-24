@@ -486,7 +486,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Beijing Fukang Technology Co., Ltd. (6FKDSK3X98)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Beijing Fukang Technology Co., Ltd. (6FKDSK3X98)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1.0.3;
+				CURRENT_PROJECT_VERSION = 1.0.6;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 6FKDSK3X98;
 				ENABLE_BITCODE = NO;
@@ -497,7 +497,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 103;
+				MARKETING_VERSION = 106;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.sensHealthy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -680,7 +680,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer: GuangSheng Sheng (V6S4ZV3KDP)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: GuangSheng Sheng (V6S4ZV3KDP)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1.0.3;
+				CURRENT_PROJECT_VERSION = 1.0.6;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 6FKDSK3X98;
 				ENABLE_BITCODE = NO;
@@ -691,7 +691,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 103;
+				MARKETING_VERSION = 106;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.sensHealthy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -714,7 +714,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Beijing Fukang Technology Co., Ltd. (6FKDSK3X98)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Beijing Fukang Technology Co., Ltd. (6FKDSK3X98)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1.0.3;
+				CURRENT_PROJECT_VERSION = 1.0.6;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 6FKDSK3X98;
 				ENABLE_BITCODE = NO;
@@ -725,7 +725,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 103;
+				MARKETING_VERSION = 106;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.sensHealthy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
