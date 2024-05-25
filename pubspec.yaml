@@ -77,6 +77,7 @@ dependencies:
   jpush_flutter: ^3.0.0
   indexed: ^0.0.8
   uni_links2: ^0.6.0+2
+  flutter_native_splash: ^2.4.0
 
 dev_dependencies:
   flutter_test:
